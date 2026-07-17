@@ -1,0 +1,636 @@
+{{!--
+  Bottom panel, branched per class. Matches the printed sheets:
+    Bard          → Class Details + Instruments (3 stone slots) + Jack of All Trades
+    Bone Whisp.   → Class Details / Known Spells + Undead Puppet
+    Cleric        → Class Details / Religion + Divine Prayers
+    Cutthroat     → Class Details / Guild + Tokens + Talents grid
+    Druid         → Class Details / Primal Gifts (5×5)
+    Tinkerer      → Class Details / Gadget Belt (4×5)
+    Warrior       → Class Details / Combat Talents tree
+    Wizard        → Class Details / Spellbook (15 lines)
+
+  Class Details (top of every panel) is a read-only reference card sourced
+  from the rules PDF — Max HP, Weapon Specialty, Main Item, Armour
+  Proficiency, Starting Gear. Resolved server-side as ctx.classDetails.
+--}}
+
+{{#if isWarrior}}
+<div class="warrior-row">
+  {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
+  <section class="tabbed-card weathered-card">
+    <header class="tab-label">{{localize "FLAIL.Warrior.WeatheredLabel"}}</header>
+    <div class="weathered-body">
+      <span class="weathered-name">{{localize "FLAIL.Warrior.WeatheredButton"}}</span>
+      <button type="button"
+              class="weathered-toggle-btn weathered-{{#if system.weatheredAvailable}}available{{else}}unavailable{{/if}}"
+              data-action="toggleWeathered"
+              {{#unless editable}}disabled{{/unless}}>
+        {{#if system.weatheredAvailable}}
+        <i class="fas fa-check-circle"></i>
+        <span>{{localize "FLAIL.Warrior.WeatheredAvailable"}}</span>
+        {{else}}
+        <i class="fas fa-times-circle"></i>
+        <span>{{localize "FLAIL.Warrior.WeatheredUnavailable"}}</span>
+        {{/if}}
+      </button>
+    </div>
+  </section>
+  <section class="tabbed-card combat-talents-card">
+    <header class="tab-label">{{localize "FLAIL.Section.CombatTalents"}}</header>
+    <p class="hint">{{localize "FLAIL.Hint.CombatTalents"}}</p>
+    <div class="talent-slot-list">
+      {{#each combatTalents as |slot|}}
+      <div class="talent-slot {{#if slot.currentDisplay.invalid}}talent-slot-invalid{{/if}} {{#if slot.beyondCurrentLevel}}talent-slot-locked{{/if}}">
+        <div class="talent-slot-header">
+          <span class="talent-slot-level">
+            Level {{slot.level}}
+            {{#if slot.beyondCurrentLevel}}<i class="fas fa-lock talent-slot-lock-icon" title="Reach character level {{slot.level}} to unlock this slot."></i>{{/if}}
+          </span>
+          <select name="system.combatTalents.{{@index}}" class="talent-select" {{#if slot.beyondCurrentLevel}}disabled{{else}}{{#unless ../editable}}disabled{{/unless}}{{/if}}>
+            <option value="" {{#unless slot.current}}selected{{/unless}}>— choose talent —</option>
+            {{#each slot.trees as |tree|}}
+            <optgroup label="{{tree.label}}">
+              {{#each tree.entries as |entry|}}
+              <option value="{{entry.key}}"
+                      {{#if entry.current}}selected{{/if}}
+                      {{#unless entry.available}}{{#unless entry.current}}disabled{{/unless}}{{/unless}}>
+                {{entry.label}}
+              </option>
+              {{/each}}
+            </optgroup>
+            {{/each}}
+          </select>
+        </div>
+        {{#if slot.currentDisplay}}
+        <div class="talent-slot-body">
+          <span class="talent-tier-badge talent-tier-{{slot.currentDisplay.tier}}">{{slot.currentDisplay.tier}}</span>
+          <span class="talent-tree-name">{{slot.currentDisplay.tree}}</span>
+          <p class="talent-desc">{{slot.currentDisplay.desc}}</p>
+          {{#if slot.currentDisplay.invalid}}
+          <p class="talent-invalid-warn"><i class="fas fa-triangle-exclamation"></i> Prerequisites not met by earlier slots — reshuffle or reselect.</p>
+          {{/if}}
+        </div>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+  </section>
+</div>
+
+{{else if isWizard}}
+<div class="wizard-row">
+  {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
+  <section class="tabbed-card wizard-master-card">
+    <header class="tab-label">{{localize "FLAIL.Wizard.MasterLabel"}}</header>
+    <div class="wizard-master-row">
+      <label class="wizard-master-label" for="wizard-master-picker">{{localize "FLAIL.Wizard.MasterPickLabel"}}:</label>
+      <select id="wizard-master-picker" name="system.classOptions.wizardMaster" class="wizard-master-select" {{#unless wizardMasterEditable}}disabled{{/unless}}>
+        {{#each wizardMasterOptions as |opt|}}
+        <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{opt.label}}</option>
+        {{/each}}
+      </select>
+      {{#if wizardMasterShowLockBtn}}
+      <button type="button"
+              class="wizard-master-lock-btn wizard-master-{{#if wizardMasterLocked}}locked{{else}}unlocked{{/if}}"
+              data-action="toggleWizardMasterLock"
+              {{#if wizardMasterLocked}}{{#unless wizardMasterCanUnlock}}disabled title="{{localize 'FLAIL.Wizard.MasterLockedGmOnly'}}"{{/unless}}{{/if}}
+              {{#unless wizardMasterLocked}}title="{{localize 'FLAIL.Wizard.MasterLockHint'}}"{{/unless}}>
+        {{#if wizardMasterLocked}}
+        <i class="fas fa-lock"></i>
+        <span>{{localize "FLAIL.Wizard.MasterUnlock"}}</span>
+        {{else}}
+        <i class="fas fa-lock-open"></i>
+        <span>{{localize "FLAIL.Wizard.MasterLock"}}</span>
+        {{/if}}
+      </button>
+      {{/if}}
+    </div>
+    {{#if wizardMaster}}
+    <div class="wizard-master-details wizard-master-tradition-{{wizardMaster.tradition}}">
+      <p class="wizard-master-tagline"><em>{{wizardMaster.tagline}}</em></p>
+      {{#unless wizardMasterLocked}}
+      {{!-- Repertoire is shown only while the apprenticeship is
+           still being chosen. Once the Wizard commits to a master
+           (locked), the repertoire block hides — the useful spells
+           have presumably been dragged into the personal spellbook,
+           and hiding it declutters the sheet. --}}
+      <div class="wizard-master-spells-block">
+        <p class="wizard-master-spells-label"><strong>{{wizardMaster.shortLabel}}</strong> — {{localize "FLAIL.Wizard.MasterRepertoire"}}</p>
+        <ul class="wizard-master-spells-list">
+          {{#each wizardMasterSpells as |s|}}
+          <li class="wizard-master-spell">
+            <img class="wms-img" src="{{s.img}}" alt="" />
+            <span class="wms-name">{{s.name}}</span>
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+      <p class="wizard-master-drag-hint">
+        <i class="fas fa-hand-pointer"></i>
+        {{localize "FLAIL.Wizard.MasterDragHint"}}
+      </p>
+      {{/unless}}
+    </div>
+    {{else}}
+    <p class="wizard-master-empty"><em>{{localize "FLAIL.Wizard.MasterEmptyHint"}}</em></p>
+    {{/if}}
+  </section>
+  <section class="tabbed-card wizard-skills-card">
+    <header class="tab-label">{{localize "FLAIL.Wizard.SkillsLabel"}}</header>
+    <div class="wizard-skills-row">
+      <button type="button"
+              class="wizard-read-magic-btn"
+              data-action="readMagic"
+              title="{{localize 'FLAIL.Wizard.ReadMagicHint'}}"
+              {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-scroll"></i>
+        <span>{{localize "FLAIL.Wizard.ReadMagicLabel"}}</span>
+      </button>
+    </div>
+  </section>
+  <section class="tabbed-card spellbook-card">
+    <header class="tab-label">{{localize "FLAIL.Section.Spellbook"}}</header>
+    {{!-- Drop zone — accepts spell Items whose tradition is any of the
+         wizard-adjacent schools (arcane / flame / shadow / ooze /
+         illusion). Rejects dark-tradition spells and non-spell Items.
+         Master gating: non-arcane spells are only accepted when the
+         wizard's chosen Master matches the spell's tradition. --}}
+    <ul class="known-spells-list known-spells-dropzone wizard-spellbook-list" data-drop-target="wizardSpells">
+      {{#each knownWizardSpells as |s|}}
+      <li class="known-spell wizard-spell wizard-spell-{{s.tradition}}" draggable="true" data-item-id="{{s.id}}" data-tooltip="{{s.tooltipText}}">
+        <img class="spell-img" src="{{s.img}}" alt="{{s.name}}" />
+        <span class="spell-name">{{s.name}}</span>
+        <span class="spell-meta">
+          <button type="button" data-action="itemEdit"   data-item-id="{{s.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+          <button type="button" data-action="itemDelete" data-item-id="{{s.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="spell-delete"><i class="fas fa-trash"></i></button>
+        </span>
+        <button type="button" class="spell-cast-btn wizard-spell-cast" data-action="castWizardSpell" data-item-id="{{s.id}}" title="{{localize 'FLAIL.Wizard.CastButtonHint'}}">
+          <i class="fas fa-hat-wizard"></i>
+        </button>
+        <span class="spell-dice" title="{{localize 'FLAIL.Field.SuggestedDice'}}">{{s.suggestedDice}}d6</span>
+      </li>
+      {{/each}}
+      {{#unless knownWizardSpells.length}}
+      <li class="wizard-spellbook-empty">
+        <i class="fas fa-book"></i>
+        <span>{{localize "FLAIL.Wizard.SpellbookEmptyHint"}}</span>
+      </li>
+      {{/unless}}
+    </ul>
+  </section>
+</div>
+
+{{else if isBoneWhisperer}}
+<div class="bw-row">
+  {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
+  <section class="tabbed-card animate-dead-card">
+    <header class="tab-label">{{localize "FLAIL.BoneWhisperer.AnimateDead.Label"}}</header>
+    <p class="hint">{{localize "FLAIL.BoneWhisperer.AnimateDead.Hint"}}</p>
+    <button type="button" class="animate-dead-btn" data-action="rollSave" data-attribute="int" title="{{localize 'FLAIL.BoneWhisperer.AnimateDead.Tooltip'}}">
+      <i class="fas fa-skull"></i>
+      <span>{{localize "FLAIL.BoneWhisperer.AnimateDead.Label"}}</span>
+    </button>
+  </section>
+  <section class="tabbed-card known-spells-card">
+    <header class="tab-label">{{localize "FLAIL.Section.KnownSpells"}}</header>
+    {{!-- Drop zone — accepts spell Items with tradition === "dark" --}}
+    <ul class="known-spells-list known-spells-dropzone" data-drop-target="darkSpells">
+      {{#each knownDarkSpells as |s|}}
+      <li class="known-spell" draggable="true" data-item-id="{{s.id}}" data-tooltip="{{s.tooltipText}}">
+        <img class="spell-img" src="{{s.img}}" alt="{{s.name}}" />
+        <span class="spell-name">{{s.name}}</span>
+        {{!-- Hover-revealed action cluster sits BEFORE the dice chip so
+             the chip stays as the rightmost visual marker on the row.   --}}
+        <span class="spell-meta">
+          <button type="button" data-action="itemEdit"   data-item-id="{{s.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+          <button type="button" data-action="itemDelete" data-item-id="{{s.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="spell-delete"><i class="fas fa-trash"></i></button>
+        </span>
+        {{#if ../hasSpiritLanternInHands}}
+        <button type="button" class="spell-cast-btn" data-action="castDarkSpell" data-item-id="{{s.id}}" title="{{localize 'FLAIL.DarkArts.Cast'}}">
+          <i class="fas fa-skull"></i>
+        </button>
+        {{/if}}
+        <span class="spell-dice" title="{{localize 'FLAIL.Field.SuggestedDice'}}">{{s.suggestedDice}}d6</span>
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+  <section class="tabbed-card undead-puppet-card">
+    <header class="tab-label">{{localize "FLAIL.Section.UndeadPuppet"}}</header>
+    <div class="puppet-fields">
+      <label class="full">Name
+        <input type="text" name="system.undeadPuppet.name" value="{{system.undeadPuppet.name}}" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label>HP
+        <input type="number" name="system.undeadPuppet.hp" value="{{system.undeadPuppet.hp}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label>Morale
+        <input type="number" name="system.undeadPuppet.morale" value="{{system.undeadPuppet.morale}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label>TH
+        <input type="number" name="system.undeadPuppet.th" value="{{system.undeadPuppet.th}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label>DMG
+        <input type="number" name="system.undeadPuppet.damage" value="{{system.undeadPuppet.damage}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      </label>
+    </div>
+  </section>
+</div>
+
+{{else if isCleric}}
+<div class="cleric-row">
+  {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
+  <section class="tabbed-card religion-card">
+    <header class="tab-label">{{localize "FLAIL.Section.Religion"}}</header>
+    <div class="religion-fields">
+      <label class="full">{{localize "FLAIL.Field.Religion"}}
+        <select name="system.classOptions.religion" {{#unless editable}}disabled{{/unless}}>
+          {{#each religionOptions as |opt|}}
+          <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{opt.label}}</option>
+          {{/each}}
+        </select>
+      </label>
+      {{#if religion}}
+      <p class="religion-blurb">{{religion.blurb}}</p>
+      <dl class="religion-derived">
+        <div class="row"><dt>{{localize "FLAIL.Field.God"}}</dt>
+          <dd><strong>{{religion.god}}</strong> — {{religion.godBlurb}}</dd></div>
+        <div class="row"><dt>{{localize "FLAIL.Field.HolySymbol"}}</dt>
+          <dd>{{religion.holySymbol}}.</dd></div>
+        <div class="row"><dt>{{localize "FLAIL.Field.Weapons"}}</dt>
+          <dd>{{religion.weaponsLabel}}.</dd></div>
+        <div class="row"><dt>{{localize "FLAIL.Field.Armour"}}</dt>
+          <dd>{{religion.armour}}.</dd></div>
+        <div class="row"><dt>{{localize "FLAIL.Field.LayOnHandsFumble"}}</dt>
+          <dd>{{religion.layOnHandsFumble}}</dd></div>
+      </dl>
+      {{else}}
+      <p class="religion-empty">{{localize "FLAIL.Religion.SelectPrompt"}}</p>
+      {{/if}}
+    </div>
+  </section>
+  <section class="tabbed-card divine-prayers-card">
+    <header class="tab-label">{{localize "FLAIL.Section.DivinePrayers"}}</header>
+    {{#if religion}}
+      {{!-- Drop zone — accepts prayer Items matching the chosen religion --}}
+      <ul class="known-spells-list known-spells-dropzone prayer-dropzone" data-drop-target="divinePrayers">
+        {{#each knownDivinePrayers as |p|}}
+        <li class="known-spell known-prayer" draggable="true" data-item-id="{{p.id}}" data-tooltip="{{p.tooltipText}}">
+          <img class="spell-img" src="{{p.img}}" alt="{{p.name}}" />
+          <span class="spell-name">{{p.name}}</span>
+          <span class="spell-meta">
+            <button type="button" data-action="itemEdit"   data-item-id="{{p.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+            <button type="button" data-action="itemDelete" data-item-id="{{p.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="spell-delete"><i class="fas fa-trash"></i></button>
+          </span>
+          {{#if ../hasHolySymbol}}
+          <button type="button" class="prayer-cast-btn" data-action="castPrayer" data-item-id="{{p.id}}" title="{{localize 'FLAIL.Prayer.CastTooltip'}}">
+            <i class="fas fa-hands-praying"></i>
+          </button>
+          {{/if}}
+        </li>
+        {{/each}}
+      </ul>
+    {{else}}
+    <p class="prayers-empty">{{localize "FLAIL.Religion.NoPrayersUntilChosen"}}</p>
+    {{/if}}
+  </section>
+</div>
+
+{{else if isCutthroat}}
+<div class="cutthroat-row">
+  {{!-- LEFT: Guild panel — drop zone (if empty) or full guild details --}}
+  <section class="tabbed-card guild-card-large">
+    <header class="tab-label">{{localize "FLAIL.Section.Guild"}}</header>
+    {{#if currentGuild}}
+    <div class="guild-detail">
+      <header class="guild-detail-header">
+        <img class="guild-img" src="{{currentGuild.img}}" alt="{{currentGuild.name}}" />
+        <div class="guild-title-block">
+          <div class="guild-name">{{currentGuild.name}}</div>
+          <div class="guild-blurb">{{currentGuild.blurb}}</div>
+        </div>
+        <button type="button" class="guild-remove-btn" data-action="removeGuild" title="{{localize 'FLAIL.Guild.RemoveTooltip'}}" {{#unless editable}}disabled{{/unless}}>
+          <i class="fas fa-times"></i>
+        </button>
+      </header>
+      <div class="guild-meta-row">
+        <div class="guild-meta-cell">
+          <strong>{{localize "FLAIL.Field.StartingTalents"}}:</strong>
+          <span>{{#each currentGuild.startingTalents as |t|}}{{t}}{{#unless @last}}, {{/unless}}{{/each}}</span>
+        </div>
+        <div class="guild-meta-cell">
+          <strong>{{localize "FLAIL.Field.Sigil"}}:</strong>
+          <span>{{currentGuild.sigil}}</span>
+        </div>
+      </div>
+      <div class="guild-actions-section">
+        <header class="guild-actions-header">
+          <i class="fas fa-coins"></i>
+          {{localize "FLAIL.Guild.SpendTokensTo"}}
+        </header>
+        <ul class="guild-actions-list">
+          {{#each currentGuild.specialActions as |a|}}
+          <li class="guild-action-row">
+            <button type="button" class="guild-action-btn" data-action="spendGuildAction" data-action-key="{{a.key}}" {{#unless ../editable}}disabled{{/unless}}>
+              <i class="fas fa-hand-fist"></i>
+              <span class="guild-action-name">{{a.name}}</span>
+            </button>
+            <span class="guild-action-desc">{{a.description}}</span>
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+    {{else}}
+    <div class="guild-dropzone" data-drop-target="guild">
+      <i class="fas fa-mask"></i>
+      <p>{{localize "FLAIL.Guild.DropPrompt"}}</p>
+    </div>
+    {{/if}}
+  </section>
+
+  {{!-- RIGHT: stacked class-details + talents --}}
+  <div class="cutthroat-right-column">
+    {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
+    <section class="tabbed-card talents-card" data-drop-target="thievingTalents">
+      <header class="tab-label">{{localize "FLAIL.Section.ThievingTalents"}}</header>
+      <p class="talents-count-line">
+        {{selectedTalents.length}} {{localize "FLAIL.Talents.KnownLabel"}}
+      </p>
+      {{#if selectedTalents.length}}
+      <ul class="talents-list">
+        {{#each selectedTalents as |t|}}
+        <li class="talent-row talent-marked" data-item-id="{{t.itemId}}" {{#if t.itemId}}draggable="true"{{/if}} data-tooltip="{{t.desc}}">
+          <button type="button" class="talent-name talent-rollable" data-action="rollTalent" data-talent="{{t.key}}" title="{{t.rollHint}}">
+            {{t.label}}
+          </button>
+          <span class="talent-save-badge talent-save-{{t.save}}">{{t.saveLabel}}</span>
+          {{#if t.itemId}}
+          <button type="button" class="talent-remove-btn" data-action="itemDelete" data-item-id="{{t.itemId}}" title="{{localize 'FLAIL.Talents.RemoveTooltip'}}">
+            <i class="fas fa-trash"></i>
+          </button>
+          {{else}}
+          <button type="button" class="talent-remove-btn" data-action="removeTalent" data-talent="{{t.key}}" title="{{localize 'FLAIL.Talents.RemoveTooltip'}}">
+            <i class="fas fa-xmark"></i>
+          </button>
+          {{/if}}
+        </li>
+        {{/each}}
+      </ul>
+      {{else}}
+      <p class="talents-empty">{{localize "FLAIL.Talents.NoneSelected"}}</p>
+      {{/if}}
+      <p class="talents-drop-hint">{{localize "FLAIL.Talents.DropHint"}}</p>
+    </section>
+  </div>
+</div>
+
+{{else if isDruid}}
+<div class="druid-row">
+  {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
+
+  {{!-- Shapeshift panel — always visible on the Druid class tab.
+       While inactive, shows current dominant-kingdom preview and
+       the Shapeshift button. While active, shows the beast form
+       card with the revert button. --}}
+  <section class="tabbed-card shapeshift-card {{#if shapeshift.active}}shapeshift-active{{/if}}">
+    <header class="tab-label">{{localize "FLAIL.Shapeshift.SectionLabel"}}</header>
+    {{#if shapeshift.active}}
+      <div class="shapeshift-body">
+        <div class="shapeshift-beast">
+          <strong class="beast-name">{{shapeshift.beastForm}}</strong>
+          <span class="beast-tagline">{{shapeshift.beast.tagline}}</span>
+        </div>
+        <div class="shapeshift-stats">
+          <span class="stat"><strong>HP</strong> {{shapeshift.beast.hp}}</span>
+          <span class="stat"><strong>Defence</strong> {{shapeshift.beast.defence}}</span>
+          <span class="stat"><strong>Mov</strong> {{shapeshift.beast.mov}}</span>
+          <span class="stat stat-th"><strong>+TH</strong> {{shapeshift.onesCount}}</span>
+        </div>
+        {{#if shapeshift.sixesCount}}
+        <p class="shapeshift-warn">
+          <i class="fas fa-triangle-exclamation"></i>
+          {{localize "FLAIL.Shapeshift.MutationWarning" sixes=shapeshift.sixesCount}}
+        </p>
+        {{/if}}
+        <button type="button" class="shapeshift-revert-btn" data-action="shapeshiftRevert">
+          <i class="fas fa-person"></i>
+          {{localize "FLAIL.Shapeshift.RevertButton"}}
+        </button>
+      </div>
+    {{else}}
+      <div class="shapeshift-body">
+        <p class="shapeshift-hint">{{localize "FLAIL.Shapeshift.Hint"}}</p>
+        {{#if shapeshift.dominant}}
+          {{#if shapeshift.dominant.hasTie}}
+          <p class="shapeshift-preview">
+            {{localize "FLAIL.Shapeshift.PreviewTied"}}
+            {{#each shapeshift.dominant.tied}}<span class="tie-kingdom">{{label}}</span>{{/each}}
+          </p>
+          {{else}}
+          <p class="shapeshift-preview">
+            {{localize "FLAIL.Shapeshift.PreviewSingle" kingdom=shapeshift.dominant.singleLabel}}
+          </p>
+          {{/if}}
+        {{else}}
+          <p class="shapeshift-preview shapeshift-preview-none">{{localize "FLAIL.Shapeshift.PreviewNone"}}</p>
+        {{/if}}
+        <button type="button" class="shapeshift-btn" data-action="shapeshiftStart" {{#unless shapeshift.dominant}}disabled{{/unless}}>
+          <i class="fas fa-paw"></i>
+          {{localize "FLAIL.Shapeshift.StartButton"}}
+        </button>
+      </div>
+    {{/if}}
+  </section>
+
+  <section class="tabbed-card primal-gifts-card" data-drop-target="primalGifts">
+    <header class="tab-label">{{localize "FLAIL.Section.PrimalGifts"}}</header>
+    <div class="gifts-grid">
+      {{#each knownPrimalGiftsByKingdom as |kingdom|}}
+      <div class="gift-kingdom">
+        <h4 class="kingdom-name">{{kingdom.label}} <span class="kingdom-count">({{kingdom.count}})</span></h4>
+        {{#if kingdom.gifts.length}}
+          <ul class="kingdom-owned-list">
+          {{#each kingdom.gifts as |gift|}}
+            <li class="owned-gift owned-gift-{{kingdom.key}}" data-item-id="{{gift.id}}" draggable="true" data-tooltip="{{gift.description}}">
+              <img class="owned-gift-img" src="{{gift.img}}" alt="{{gift.name}}" />
+              {{#if gift.activatable}}
+              <button type="button" class="owned-gift-name owned-gift-activate" data-action="activateGift" data-gift-kingdom="{{gift.kingdom}}" data-gift-key="{{gift.giftKey}}" title="{{gift.activateHint}}">{{gift.name}}</button>
+              {{else}}
+              <span class="owned-gift-name">{{gift.name}}</span>
+              {{/if}}
+              <span class="owned-gift-meta">
+                <button type="button" data-action="itemEdit"   data-item-id="{{gift.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+                <button type="button" data-action="itemDelete" data-item-id="{{gift.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="owned-gift-delete"><i class="fas fa-trash"></i></button>
+              </span>
+            </li>
+          {{/each}}
+          </ul>
+        {{else}}
+          <p class="kingdom-empty"><em>{{localize "FLAIL.PrimalGift.EmptyKingdom"}}</em></p>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+    <p class="gifts-duration-note">
+      <i class="fas fa-hourglass-half"></i>
+      {{localize "FLAIL.PrimalGift.DurationNote"}}
+    </p>
+    <p class="gifts-footer">
+      {{#if knownPrimalGiftsCount}}
+        {{localize "FLAIL.PrimalGift.DropHintFilled"}}
+      {{else}}
+        {{localize "FLAIL.PrimalGift.DropHintEmpty"}}
+      {{/if}}
+    </p>
+  </section>
+</div>
+
+{{else if isTinkerer}}
+<div class="tinkerer-row">
+  {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
+
+  {{!-- Resourcefulness — Tinkerer special skill. Modifies gear usage
+       threshold (5-6 instead of 4-6) and enables the repair flow. --}}
+  <section class="tabbed-card resourcefulness-card">
+    <header class="tab-label">{{localize "FLAIL.Tinkerer.SectionLabel"}}</header>
+    <div class="resourcefulness-body">
+      <p class="resourcefulness-hint">
+        <i class="fas fa-hammer"></i>
+        {{localize "FLAIL.Tinkerer.ResourcefulnessDescription"}}
+      </p>
+      <button type="button" class="repair-btn" data-action="repairItem">
+        <i class="fas fa-wrench"></i>
+        {{localize "FLAIL.Tinkerer.RepairButton"}}
+      </button>
+      <button type="button" class="quick-craft-btn" data-action="quickCraft">
+        <i class="fas fa-gears"></i>
+        {{localize "FLAIL.Tinkerer.QuickCraftButton"}}
+      </button>
+      <button type="button" class="fix-construct-btn" data-action="fixConstruct">
+        <i class="fas fa-robot"></i>
+        {{localize "FLAIL.Tinkerer.FixConstructButton"}}
+      </button>
+    </div>
+  </section>
+
+  <section class="tabbed-card gadget-belt-card" data-drop-target="gadgetBelt">
+    <header class="tab-label">{{localize "FLAIL.Section.GadgetBelt"}}</header>
+    <div class="gadgets-grid">
+      {{#each knownGadgetsByCategory as |category|}}
+      <div class="gadget-category">
+        <h4 class="category-name">{{category.label}} <span class="category-count">({{category.count}})</span></h4>
+        {{#if category.gadgets.length}}
+          <ul class="category-owned-list">
+          {{#each category.gadgets as |gadget|}}
+            <li class="owned-gadget owned-gadget-{{category.key}} {{#if gadget.used}}owned-gadget-used{{/if}}" data-item-id="{{gadget.id}}" draggable="true" data-tooltip="{{gadget.description}}">
+              <img class="owned-gadget-img" src="{{gadget.img}}" alt="{{gadget.name}}" />
+              <span class="owned-gadget-name">{{gadget.name}}</span>
+              {{#if gadget.releasable}}
+              <button type="button"
+                      class="owned-gadget-release"
+                      data-action="useDamageGadget"
+                      data-item-id="{{gadget.id}}"
+                      title="{{#if gadget.used}}{{localize 'FLAIL.Gadget.ReleaseUsedHint'}}{{else}}{{localize 'FLAIL.Gadget.ReleaseHint'}}{{/if}}"
+                      {{#if gadget.used}}disabled{{/if}}>
+                <i class="fas fa-bomb"></i>
+              </button>
+              {{/if}}
+              <span class="owned-gadget-meta">
+                <button type="button" data-action="itemEdit"   data-item-id="{{gadget.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+                <button type="button" data-action="itemDelete" data-item-id="{{gadget.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="owned-gadget-delete"><i class="fas fa-trash"></i></button>
+              </span>
+            </li>
+          {{/each}}
+          </ul>
+        {{else}}
+          <p class="category-empty"><em>{{localize "FLAIL.Gadget.EmptyCategory"}}</em></p>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+    <p class="gadgets-footer">
+      {{#if knownGadgetsCount}}
+        {{localize "FLAIL.Gadget.DropHintFilled"}}
+      {{else}}
+        {{localize "FLAIL.Gadget.DropHintEmpty"}}
+      {{/if}}
+    </p>
+  </section>
+</div>
+
+{{else if isBard}}
+<div class="bard-row">
+  <div class="bard-left-col">
+    {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
+    <section class="tabbed-card instruments-card">
+      <header class="tab-label">{{localize "FLAIL.Section.Instruments"}}</header>
+      <p class="hint">{{localize "FLAIL.Hint.InstrumentSlots"}}</p>
+      <div class="instrument-slots inventory-zone" data-zone="instruments">
+        {{#each inventory.instruments.slots as |slot|}}
+        {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="instruments" }}
+        {{/each}}
+      </div>
+    </section>
+  </div>
+  <section class="tabbed-card jack-card" data-drop-target="jackOfAllTrades">
+    <header class="tab-label">{{localize "FLAIL.Section.JackOfAllTrades"}}</header>
+    <p class="joat-slot-count">
+      {{jackOfAllTradesCount}} / {{jackOfAllTradesLevel}}
+      <span class="joat-slot-hint">{{localize "FLAIL.Bard.JOAT.SlotHint"}}</span>
+    </p>
+    {{#if jackOfAllTradesItems.length}}
+      <ul class="joat-list">
+      {{#each jackOfAllTradesItems as |j|}}
+        <li class="joat-item joat-item-{{j.type}} {{#if j.usedToday}}joat-item-used{{/if}}" data-item-id="{{j.id}}" draggable="true" data-tooltip="{{j.description}}">
+          <img class="joat-img" src="{{j.img}}" alt="{{j.name}}" />
+          <span class="joat-type-badge joat-type-badge-{{j.type}}">
+            {{#if (flail-eq j.type "talent")}}<i class="fas fa-mask"></i>{{/if}}
+            {{#if (flail-eq j.type "gadget")}}<i class="fas fa-wrench"></i>{{/if}}
+            {{#if (flail-eq j.type "spell")}}<i class="fas fa-hat-wizard"></i>{{/if}}
+          </span>
+          <span class="joat-name">{{j.name}}</span>
+          {{#if j.castable}}
+          <button type="button"
+                  class="joat-fire joat-fire-spell"
+                  data-action="castJoatSpell"
+                  data-item-id="{{j.id}}"
+                  title="{{localize 'FLAIL.Bard.JOAT.CastHint'}}"
+                  {{#if j.usedToday}}disabled{{/if}}>
+            <i class="fas fa-hat-wizard"></i>
+          </button>
+          {{/if}}
+          {{#if j.releasable}}
+          <button type="button"
+                  class="joat-fire joat-fire-gadget"
+                  data-action="useDamageGadget"
+                  data-item-id="{{j.id}}"
+                  title="{{localize 'FLAIL.Gadget.ReleaseHint'}}"
+                  {{#if j.usedToday}}disabled{{/if}}>
+            <i class="fas fa-bomb"></i>
+          </button>
+          {{/if}}
+          {{#if j.markable}}
+          <button type="button"
+                  class="joat-fire joat-fire-talent"
+                  data-action="toggleJoatUsed"
+                  data-item-id="{{j.id}}"
+                  title="{{#if j.usedToday}}{{localize 'FLAIL.Bard.JOAT.UnmarkHint'}}{{else}}{{localize 'FLAIL.Bard.JOAT.MarkHint'}}{{/if}}">
+            {{#if j.usedToday}}<i class="fas fa-check-circle"></i>{{else}}<i class="fas fa-circle"></i>{{/if}}
+          </button>
+          {{/if}}
+          <span class="joat-meta">
+            <button type="button" data-action="itemEdit"   data-item-id="{{j.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+            <button type="button" data-action="itemDelete" data-item-id="{{j.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="joat-delete"><i class="fas fa-trash"></i></button>
+          </span>
+        </li>
+      {{/each}}
+      </ul>
+    {{else}}
+      <p class="joat-empty"><em>{{localize "FLAIL.Bard.JOAT.EmptyHint"}}</em></p>
+    {{/if}}
+    <p class="joat-drop-hint">{{localize "FLAIL.Bard.JOAT.DropHint"}}</p>
+  </section>
+</div>
+
+{{/if}}

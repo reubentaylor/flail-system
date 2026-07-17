@@ -1,0 +1,8 @@
+{{!-- Tab nav --}}
+<nav class="flail-tabs">
+  {{#each tabs as |tab|}}
+  <button type="button" class="tab-btn {{#if tab.active}}active{{/if}}" data-action="tabSwitch" data-tab="{{tab.id}}">
+    {{tab.label}}
+  </button>
+  {{/each}}
+</nav>

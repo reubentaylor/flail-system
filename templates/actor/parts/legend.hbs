@@ -1,0 +1,23 @@
+{{!--
+  Storage legend, mirroring the printed sheet's footer.
+  Laid out as a 5-column grid that aligns with the inventory grid above:
+    Col 1: empty (placeholder area)
+    Col 2: CARRIED — over the Hands column
+    Col 3: WORN    — over the Body column
+    Cols 4–5: STASHED — centred over the Satchel pair
+--}}
+<section class="storage-legend">
+  <span class="legend-cell legend-empty"></span>
+  <span class="legend-cell legend-item carried">
+    <span class="legend-key">{{localize "FLAIL.Inventory.Considered.Carried"}}:</span>
+    <span class="legend-desc">{{localize "FLAIL.Inventory.LegendCarried"}}</span>
+  </span>
+  <span class="legend-cell legend-item worn">
+    <span class="legend-key">{{localize "FLAIL.Inventory.Considered.Worn"}}:</span>
+    <span class="legend-desc">{{localize "FLAIL.Inventory.LegendWorn"}}</span>
+  </span>
+  <span class="legend-cell legend-item stashed">
+    <span class="legend-key">{{localize "FLAIL.Inventory.Considered.Stashed"}}:</span>
+    <span class="legend-desc">{{localize "FLAIL.Inventory.LegendStashed"}}</span>
+  </span>
+</section>

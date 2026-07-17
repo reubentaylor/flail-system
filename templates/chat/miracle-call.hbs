@@ -1,0 +1,61 @@
+{{!--
+  Miracle Call chat card.
+  Shows: actor + word count, the Nd6 pool with 6s highlighted, and one
+  numbered God's Wrath entry per 6 rolled. The miracle itself is narrative
+  — the GM resolves the player's wish — so this card focuses on the
+  mechanical consequences.
+--}}
+<div class="flail-card cast-card miracle-call-card wraths-{{sixCount}}">
+
+  <header class="card-header">
+    <img class="actor-img" src="{{actor.img}}" />
+    <span class="actor-name">{{actor.name}}</span>
+    <h3>
+      <i class="fas fa-pray"></i>
+      {{localize "FLAIL.MiracleCall.Title"}}
+    </h3>
+  </header>
+
+  <div class="cast-meta">
+    <span class="meta-chip"><i class="fas fa-comment"></i> {{wordCount}} {{localize "FLAIL.MiracleCall.Words"}}</span>
+    <span class="meta-chip"><i class="fas fa-dice"></i> {{wordCount}}d6 rolled</span>
+    {{#if sixCount}}
+    <span class="meta-chip wrath-chip">{{sixCount}} × God's Wrath</span>
+    {{/if}}
+  </div>
+
+  {{!-- Dice display — 6s highlighted in red --}}
+  <div class="dice-tray">
+    {{#each dice as |d|}}
+      <span class="die {{#if (flail-eq d 6)}}is-six{{/if}}">{{d}}</span>
+    {{/each}}
+  </div>
+
+  {{!-- The miracle itself --}}
+  <div class="side-effect-banner miracle-banner">
+    <i class="fas fa-star"></i>
+    <span class="se-title">{{localize "FLAIL.MiracleCall.Granted.Title"}}</span>
+    <span class="se-text">{{localize "FLAIL.MiracleCall.Granted.Body"}}</span>
+  </div>
+
+  {{!-- One God's Wrath entry per 6 --}}
+  {{#if wrathResults.length}}
+  <div class="wrath-list">
+    <header class="wrath-header">
+      <i class="fas fa-skull-crossbones"></i>
+      <span>{{localize "FLAIL.MiracleCall.Wraths"}}</span>
+    </header>
+    {{#each wrathResults as |w|}}
+    <div class="wrath-entry">
+      <span class="wrath-roll">d10 → {{w.roll}}</span>
+      <strong>{{w.name}}:</strong>
+      <span>{{w.text}}</span>
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  <footer class="cast-footer">
+    <em>{{localize "FLAIL.MiracleCall.OncePerSession"}}</em>
+  </footer>
+</div>

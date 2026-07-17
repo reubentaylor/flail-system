@@ -1,0 +1,49 @@
+{{!-- Condition body --}}
+<section class="card">
+  <div class="row">
+    <label>{{localize "FLAIL.Field.ConditionType"}}
+      <select name="system.conditionType" {{#unless editable}}disabled{{/unless}}>
+        {{#each config.conditions as |c key|}}
+        <option value="{{key}}" {{#if (flail-eq key ../system.conditionType)}}selected{{/if}}>{{localize c.label}}</option>
+        {{/each}}
+        <option value="custom" {{#if (flail-eq system.conditionType 'custom')}}selected{{/if}}>{{localize "FLAIL.Condition.Custom"}}</option>
+      </select>
+    </label>
+    <label>{{localize "FLAIL.Field.ClearRequirement"}}
+      <select name="system.clearRequirement" {{#unless editable}}disabled{{/unless}}>
+        <option value="shortRest"      {{#if (flail-eq system.clearRequirement 'shortRest')}}selected{{/if}}>{{localize "FLAIL.Clear.shortRest"}}</option>
+        <option value="longRest"       {{#if (flail-eq system.clearRequirement 'longRest')}}selected{{/if}}>{{localize "FLAIL.Clear.longRest"}}</option>
+        <option value="fullRest"       {{#if (flail-eq system.clearRequirement 'fullRest')}}selected{{/if}}>{{localize "FLAIL.Clear.fullRest"}}</option>
+        <option value="meal"           {{#if (flail-eq system.clearRequirement 'meal')}}selected{{/if}}>{{localize "FLAIL.Clear.meal"}}</option>
+        <option value="medicalHealing" {{#if (flail-eq system.clearRequirement 'medicalHealing')}}selected{{/if}}>{{localize "FLAIL.Clear.medicalHealing"}}</option>
+        <option value="magicOrMiracle" {{#if (flail-eq system.clearRequirement 'magicOrMiracle')}}selected{{/if}}>{{localize "FLAIL.Clear.magicOrMiracle"}}</option>
+        <option value="other"          {{#if (flail-eq system.clearRequirement 'other')}}selected{{/if}}>{{localize "FLAIL.Clear.other"}}</option>
+      </select>
+    </label>
+  </div>
+
+  {{#if (flail-eq system.conditionType "injured")}}
+  <div class="row">
+    <label>{{localize "FLAIL.Field.InjuredVariant"}}
+      <select name="system.injuredVariant" {{#unless editable}}disabled{{/unless}}>
+        <option value="" {{#if (flail-eq system.injuredVariant '')}}selected{{/if}}>— pick —</option>
+        <option value="str" {{#if (flail-eq system.injuredVariant 'str')}}selected{{/if}}>-1 STR</option>
+        <option value="dex" {{#if (flail-eq system.injuredVariant 'dex')}}selected{{/if}}>-1 DEX</option>
+        <option value="th"  {{#if (flail-eq system.injuredVariant 'th')}}selected{{/if}}>-1 To Hit</option>
+      </select>
+    </label>
+  </div>
+  {{/if}}
+
+  <div class="row">
+    <label class="checkbox">
+      <input type="checkbox" name="system.stackable" {{#if system.stackable}}checked{{/if}} {{#unless editable}}disabled{{/unless}} />
+      {{localize "FLAIL.Field.Stackable"}}
+    </label>
+    {{#if system.stackable}}
+    <label>{{localize "FLAIL.Field.StackCount"}}
+      <input type="number" name="system.stackCount" value="{{system.stackCount}}" min="1" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    {{/if}}
+  </div>
+</section>

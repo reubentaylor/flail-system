@@ -1,0 +1,85 @@
+{{!--
+  Inventory tab.
+
+  Three zones rendered side by side:
+    Left column:    adornments, hands
+    Middle column:  body
+    Right column:   satchel
+
+  Each slot is a drop target. Items render in their assigned slot via
+  data-item-id. Slots locked by STR show with a padlock overlay.
+--}}
+<section class="tab-pane {{#if (flail-eq tabGroups.primary 'inventory')}}active{{/if}}" data-tab="inventory">
+
+  <div class="inventory-grid">
+
+    {{!-- ===== Adornment + Hands ===== --}}
+    <div class="inv-column inv-left">
+      <div class="inventory-zone" data-zone="adornment">
+        <h3>{{localize "FLAIL.Inventory.Adornment"}}</h3>
+        {{#each inventory.adornment.slots as |slot|}}
+        {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="adornment" }}
+        {{/each}}
+      </div>
+
+      <div class="inventory-zone" data-zone="hands">
+        <h3>{{localize "FLAIL.Inventory.Hands"}}</h3>
+        {{#each inventory.hands.slots as |slot|}}
+        {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="hands" hand=true }}
+        {{/each}}
+      </div>
+    </div>
+
+    {{!-- ===== Body ===== --}}
+    <div class="inv-column inv-mid">
+      <div class="inventory-zone" data-zone="body">
+        <h3>{{localize "FLAIL.Inventory.Body"}}</h3>
+        {{#each inventory.body.slots as |slot|}}
+        {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="body" }}
+        {{/each}}
+      </div>
+    </div>
+
+    {{!-- ===== Satchel ===== --}}
+    <div class="inv-column inv-right">
+      <div class="inventory-zone" data-zone="satchel">
+        <h3>{{localize "FLAIL.Inventory.Satchel"}}</h3>
+        {{#each inventory.satchel.slots as |slot|}}
+        {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="satchel" }}
+        {{/each}}
+      </div>
+    </div>
+  </div>
+
+  {{!-- ===== Loose / unequipped items ===== --}}
+  <div class="unequipped-list">
+    <header>
+      <h3>{{localize "FLAIL.Inventory.Unequipped"}}</h3>
+      <div class="header-actions">
+        <button type="button" data-action="itemCreate" data-item-type="weapon">+ {{localize "FLAIL.ItemType.weapon"}}</button>
+        <button type="button" data-action="itemCreate" data-item-type="armour">+ {{localize "FLAIL.ItemType.armour"}}</button>
+        <button type="button" data-action="itemCreate" data-item-type="gear">+ {{localize "FLAIL.ItemType.gear"}}</button>
+        <button type="button" data-action="itemCreate" data-item-type="condition">+ {{localize "FLAIL.ItemType.condition"}}</button>
+      </div>
+    </header>
+    <div class="item-list inventory-zone" data-zone="unequipped">
+      {{#each actor.items as |item|}}
+        {{#if (flail-eq item.system.location "unequipped")}}
+        <div class="item-row" draggable="true" data-item-id="{{item.id}}">
+          <img src="{{item.img}}" />
+          <span class="name">{{item.name}}</span>
+          <span class="type">{{item.type}}</span>
+          {{#if item.system.usage}}
+          <span class="usage">{{flail-pip item.system.usage.value item.system.usage.max}}</span>
+          {{/if}}
+          <span class="row-actions">
+            <button type="button" data-action="itemEdit" data-item-id="{{item.id}}" title="Edit"><i class="fas fa-edit"></i></button>
+            <button type="button" data-action="itemToChat" data-item-id="{{item.id}}" title="Show"><i class="fas fa-comment"></i></button>
+            <button type="button" data-action="itemDelete" data-item-id="{{item.id}}" title="Delete"><i class="fas fa-trash"></i></button>
+          </span>
+        </div>
+        {{/if}}
+      {{/each}}
+    </div>
+  </div>
+</section>

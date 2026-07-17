@@ -1,0 +1,59 @@
+{{!-- Weapon body --}}
+<section class="card">
+  <h3>{{localize "FLAIL.Section.Stats"}}</h3>
+  <div class="row">
+    <label>{{localize "FLAIL.Field.TH"}}
+      <input type="number" name="system.th" value="{{system.th}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.Damage"}}
+      <input type="number" name="system.damage" value="{{system.damage}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.WeaponType"}}
+      <select name="system.weaponType" {{#unless editable}}disabled{{/unless}}>
+        <option value="melee"   {{#if (flail-eq system.weaponType 'melee')}}selected{{/if}}>{{localize "FLAIL.WeaponType.Melee"}}</option>
+        <option value="missile" {{#if (flail-eq system.weaponType 'missile')}}selected{{/if}}>{{localize "FLAIL.WeaponType.Missile"}}</option>
+      </select>
+    </label>
+  </div>
+  <div class="row">
+    <label class="checkbox">
+      <input type="checkbox" name="system.twoHanded" {{#if system.twoHanded}}checked{{/if}} {{#unless editable}}disabled{{/unless}} />
+      {{localize "FLAIL.Field.TwoHanded"}}
+    </label>
+    <label>{{localize "FLAIL.Field.SlotsRequired"}}
+      <input type="number" name="system.slotsRequired" value="{{system.slotsRequired}}" min="1" max="2" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.Category"}}
+      <input type="text" name="system.category" value="{{system.category}}" placeholder="dagger, flail, shortBow…" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+  <div class="row">
+    <label class="full">{{localize "FLAIL.Field.SpecialtyTags"}}
+      <input type="text" name="system.tagsCsv" value="{{tagsCsv}}" placeholder="shortSword, blade" title="{{localize 'FLAIL.Hint.SpecialtyTags'}}" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+  <fieldset class="ranges">
+    <legend>{{localize "FLAIL.Field.Range"}}</legend>
+    {{#each config.weaponRange as |r key|}}
+    <label class="checkbox">
+      <input type="checkbox" name="system.range" value="{{key}}" {{#if (flail-includes ../system.range key)}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}} />
+      {{localize r.label}}
+    </label>
+    {{/each}}
+  </fieldset>
+</section>
+
+<section class="card">
+  <h3>{{localize "FLAIL.Section.Usage"}}</h3>
+  <div class="row">
+    <label>{{localize "FLAIL.Field.UsageMax"}}
+      <input type="number" name="system.usage.max" value="{{system.usage.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.UsageValue"}}
+      <input type="number" name="system.usage.value" value="{{system.usage.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.Cost"}}
+      <input type="number" name="system.cost" value="{{system.cost}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+</section>

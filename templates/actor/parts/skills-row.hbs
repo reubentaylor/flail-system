@@ -1,0 +1,131 @@
+{{!--
+  Special Skills + optional class tracker, in one row.
+  Tracker (right side, ~30% width):
+    - Bone Whisperer → Spirit (d20)
+    - Cleric         → Fumble Range (d20)
+    - Druid          → Animal Companion (text fields)
+    - Wizard         → Mana (d20)
+  Other classes show no tracker; Special Skills takes full width.
+--}}
+<div class="skills-row {{#if hasTracker}}with-tracker{{/if}}">
+
+  {{!-- Special Skills card --}}
+  <section class="tabbed-card skills-card">
+    <header class="tab-label">{{localize "FLAIL.Section.SpecialSkills"}}</header>
+    {{#if specialSkills.length}}
+    <ul class="skills-list">
+      {{#each specialSkills as |skill|}}
+      <li><strong>{{skill.name}}:</strong> {{skill.desc}}</li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="empty">{{localize "FLAIL.Empty.NoSkills"}}</p>
+    {{/if}}
+  </section>
+
+  {{!-- Class tracker --}}
+  {{#if isBoneWhisperer}}
+  <section class="tabbed-card tracker-card spirit-card">
+    <header class="tab-label">{{localize "FLAIL.Class.Spirit"}}</header>
+    <div class="d20-tracker">
+      <i class="fas fa-dice-d20 tracker-icon"></i>
+      <input type="number" name="system.resource.value" value="{{system.resource.value}}" min="0" max="20" {{#unless editable}}disabled{{/unless}} />
+      <div class="resource-buttons">
+        <button type="button" data-action="adjustResource" data-delta="1"  title="+1" {{#unless editable}}disabled{{/unless}}>+</button>
+        <button type="button" data-action="adjustResource" data-delta="-1" title="-1" {{#unless editable}}disabled{{/unless}}>−</button>
+      </div>
+    </div>
+    <p class="tracker-hint">use a d20 to track current spirit</p>
+  </section>
+  {{/if}}
+
+  {{#if isCleric}}
+  <section class="tabbed-card tracker-card fumble-card">
+    <header class="tab-label">{{localize "FLAIL.Class.FumbleRange"}}</header>
+    <div class="d20-tracker">
+      <i class="fas fa-dice-d20 tracker-icon"></i>
+      <input type="number" name="system.resource.value" value="{{system.resource.value}}" min="0" max="20" {{#unless editable}}disabled{{/unless}} />
+      <div class="resource-buttons">
+        <button type="button" data-action="adjustResource" data-delta="1"  title="+1" {{#unless editable}}disabled{{/unless}}>+</button>
+        <button type="button" data-action="adjustResource" data-delta="-1" title="-1" {{#unless editable}}disabled{{/unless}}>−</button>
+      </div>
+    </div>
+    <p class="tracker-hint">use a d20 to track fumble range</p>
+    <button type="button" class="lay-on-hands-btn" data-action="layOnHands" title="{{localize 'FLAIL.LayOnHands.Tooltip'}}" {{#unless editable}}disabled{{/unless}}>
+      <i class="fas fa-hand-holding-medical"></i>
+      <span>{{localize "FLAIL.LayOnHands.Button"}}</span>
+    </button>
+    <div class="miracle-call-row">
+      <button type="button" class="miracle-call-btn" data-action="miracleCall" title="{{localize 'FLAIL.MiracleCall.Tooltip'}}" {{#if system.miracleCallUsed}}disabled{{/if}} {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-pray"></i>
+        <span>{{localize "FLAIL.MiracleCall.Button"}}</span>
+      </button>
+      <button type="button" class="miracle-reset-btn" data-action="resetMiracleCall" title="{{localize 'FLAIL.MiracleCall.ResetTooltip'}}" {{#unless system.miracleCallUsed}}disabled{{/unless}} {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-rotate-left"></i>
+      </button>
+    </div>
+  </section>
+  {{/if}}
+
+  {{#if isWizard}}
+  <section class="tabbed-card tracker-card mana-card">
+    <header class="tab-label">{{localize "FLAIL.Class.Mana"}}</header>
+    <div class="d20-tracker">
+      <i class="fas fa-flask tracker-icon"></i>
+      <input type="number" name="system.resource.value" value="{{system.resource.value}}" min="0" max="{{system.resource.max}}" {{#unless editable}}disabled{{/unless}} />
+      <span class="mana-max-suffix">/ {{system.resource.max}}</span>
+      <div class="resource-buttons">
+        <button type="button" data-action="adjustResource" data-delta="1"  title="+1" {{#unless editable}}disabled{{/unless}}>+</button>
+        <button type="button" data-action="adjustResource" data-delta="-1" title="-1" {{#unless editable}}disabled{{/unless}}>−</button>
+      </div>
+    </div>
+    <p class="tracker-hint">{{localize "FLAIL.Wizard.ManaHint"}}</p>
+  </section>
+  {{/if}}
+
+  {{#if isDruid}}
+  <section class="tabbed-card tracker-card animal-companion-card">
+    <header class="tab-label">{{localize "FLAIL.Class.AnimalCompanion"}}</header>
+    <div class="ac-fields">
+      <label>Species:
+        <input type="text" name="system.animalCompanion.species" value="{{system.animalCompanion.species}}" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label>Name:
+        <input type="text" name="system.animalCompanion.name" value="{{system.animalCompanion.name}}" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label>Bonus/Skill:
+        <input type="text" name="system.animalCompanion.bonusSkill" value="{{system.animalCompanion.bonusSkill}}" {{#unless editable}}disabled{{/unless}} />
+      </label>
+    </div>
+  </section>
+  {{/if}}
+
+  {{#if isCutthroat}}
+  <section class="tabbed-card tracker-card guild-tokens-card">
+    <header class="tab-label">{{localize "FLAIL.Class.GuildTokens"}}</header>
+    <div class="guild-tokens-display">
+      <i class="fas fa-coins tracker-icon"></i>
+      <input type="number" name="system.guildTokens" value="{{guildTokens}}" min="0" max="{{guildTokensMax}}" {{#unless editable}}disabled{{/unless}} />
+      <span class="guild-tokens-max">/ {{guildTokensMax}}</span>
+      <div class="resource-buttons">
+        <button type="button" data-action="adjustGuildTokens" data-delta="1"  title="+1" {{#unless editable}}disabled{{/unless}}>+</button>
+        <button type="button" data-action="adjustGuildTokens" data-delta="-1" title="-1" {{#unless editable}}disabled{{/unless}}>−</button>
+      </div>
+    </div>
+    {{#if hasSigil}}
+    <p class="sigil-indicator sigil-worn"><i class="fas fa-check-circle"></i> {{localize "FLAIL.Class.SigilWorn"}}</p>
+    {{else}}
+    <p class="sigil-indicator sigil-missing"><i class="fas fa-times-circle"></i> {{localize "FLAIL.Class.SigilMissing"}}</p>
+    {{/if}}
+    <div class="guild-tokens-actions">
+      <button type="button" class="guild-spend-btn" data-action="spendGuildToken" title="{{localize 'FLAIL.GuildTokens.SpendTooltip'}}" {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-hand-fist"></i>
+        <span>{{localize "FLAIL.GuildTokens.Spend"}}</span>
+      </button>
+      <button type="button" class="guild-reset-btn" data-action="resetGuildTokens" title="{{localize 'FLAIL.GuildTokens.ResetTooltip'}}" {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-rotate-left"></i>
+      </button>
+    </div>
+  </section>
+  {{/if}}
+</div>

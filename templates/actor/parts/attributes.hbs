@@ -1,0 +1,37 @@
+{{!--
+  Attribute strip. Five big bordered boxes — each is a clickable button
+  that rolls a Save against that attribute. Shift = advantage, Ctrl/Cmd = disadvantage.
+--}}
+<section class="attribute-strip">
+  {{#each attributeList as |attr|}}
+  <div class="attribute-box {{#if attr.modified}}is-modified{{/if}}">
+    <button
+      type="button"
+      class="attr-roll"
+      data-action="rollSave"
+      data-attribute="{{attr.key}}"
+      title="{{attr.label}} — Shift: advantage / Ctrl: disadvantage"
+    >
+      <span class="attr-name">{{attr.abbr}}</span>
+    </button>
+    <div class="attr-values">
+      <input
+        type="number"
+        name="system.attributes.{{attr.key}}.base"
+        value="{{attr.base}}"
+        min="0"
+        max="20"
+        class="attr-base"
+        title="{{localize 'FLAIL.Field.Base'}}"
+        {{#unless ../editable}}disabled{{/unless}}
+      />
+      <span class="attr-slash">/</span>
+      <span class="attr-current">{{attr.current}}</span>
+    </div>
+    <div class="attr-labels">
+      <span>{{localize "FLAIL.Field.Base"}}</span>
+      <span>{{localize "FLAIL.Field.Current"}}</span>
+    </div>
+  </div>
+  {{/each}}
+</section>

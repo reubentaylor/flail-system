@@ -1,0 +1,1116 @@
+{
+  "TYPES": {
+    "Actor": {
+      "character": "Character",
+      "npc":       "NPC",
+      "construct": "Construct"
+    },
+    "Item": {
+      "weapon":     "Weapon",
+      "armour":     "Armour",
+      "gear":       "Gear",
+      "spell":      "Spell",
+      "prayer":     "Prayer",
+      "gift":       "Primal Gift",
+      "talent":     "Thieving Talent",
+      "gadget":     "Gadget",
+      "feature":    "Feature",
+      "condition":  "Condition",
+      "instrument": "Instrument",
+      "guild":      "Guild"
+    }
+  },
+  "FLAIL": {
+    "Sheet": {
+      "Character": "Character",
+      "NPC": "NPC",
+      "Item": "Item",
+      "Construct": "Construct"
+    },
+    "Common": {
+      "OK":     "OK",
+      "Cancel": "Cancel"
+    },
+    "Tab": {
+      "Main": "Main",
+      "Inventory": "Inventory",
+      "Features": "Features",
+      "Spells": "Spells",
+      "Biography": "Biography"
+    },
+    "Tab": {
+      "Abilities": "Abilities",
+      "Inventory": "Inventory",
+      "Class":     "Class",
+      "Notes":     "Notes"
+    },
+    "Section": {
+      "Stats": "Stats",
+      "Usage": "Usage",
+      "Properties": "Properties",
+      "Weapons": "Weapons",
+      "Conditions": "Conditions",
+      "Combinations": "Combinations",
+      "Features": "Features",
+      "Talents": "Talents",
+      "Gadgets": "Gadgets",
+      "Gifts": "Primal Gifts",
+      "Prayers": "Prayers",
+      "Instruments": "Instruments",
+      "ClassDetails": "Class Details",
+      "Spellbook": "Spellbook",
+      "Inventory": "Inventory",
+      "Attacks": "Attacks",
+      "EffectTable": "Effect Table",
+      "SpecialRules":    "Special",
+      "SpecialSkills":   "Special Skills",
+      "CombatTalents":   "Combat Talents",
+      "KnownSpells":     "Known Spells",
+      "UndeadPuppet":    "Undead Puppet",
+      "Religion":        "Religion",
+      "DivinePrayers":   "Divine Prayers",
+      "Guild":           "Guild",
+      "Tokens":          "Tokens",
+      "PrimalGifts":     "Primal Gifts",
+      "GadgetBelt":      "Gadget Belt",
+      "JackOfAllTrades": "Jack of All Trades",
+      "ThievingTalents": "Thieving Talents",
+      "Notes":           "Notes & Biography"
+    },
+    "Field": {
+      "Name": "Name",
+      "Class": "Class",
+      "Level": "Level",
+      "Coins": "Coins",
+      "HP": "HP",
+      "Defence":     "Defence",
+      "DefenceHint": "Flat damage reduction. Incoming damage is reduced by this amount (minimum 0) before HP loss.",
+      "Magical":     "Magical",
+      "MagicalHint": "Flag this item as magical. Magical items are excluded from Tinkerer repair, Quick Craft, and Fix Construct flows.",
+      "Adornment":     "Adornment",
+      "AdornmentHint": "Flag this item as an adornment (ring, amulet, sigil, talisman, charm, or similar). Only flagged items can occupy the two adornment inventory slots.",
+      "PortraitHint":  "Click to choose an image for this character (opens Tokenizer if installed; hold Shift for the image browser).",
+      "Reputation": "Reputation",
+      "Backstory": "Background",
+      "Background": "Background",
+      "Biography": "Biography",
+      "Notes": "Notes",
+      "AdventureLog": "Adventure Log",
+      "Description": "Description",
+      "TH": "To Hit",
+      "Damage": "Damage",
+      "WeaponType": "Type",
+      "TwoHanded": "Two-handed",
+      "SlotsRequired": "Slots",
+      "Category": "Category",
+      "SpecialtyTags": "Specialty Tags",
+      "SuggestedDice": "Suggested dice for the cast",
+      "Spirit": "Spirit remaining",
+      "Range": "Range",
+      "UsageMax": "Max",
+      "UsageValue": "Used",
+      "Cost": "Cost (coins)",
+      "ArmourType": "Armour Type",
+      "Defence": "Defence",
+      "Quantity": "Quantity",
+      "Tag": "Tag",
+      "Consumable": "Consumable",
+      "Tradition": "Tradition",
+      "SuggestedDice": "Default DICE",
+      "EffectFormula": "Effect / Formula",
+      "Religion": "Religion",
+      "God": "God",
+      "HolySymbol": "Holy Symbol",
+      "Weapons": "Weapons",
+      "Armour": "Armour",
+      "LayOnHandsFumble": "Lay on Hands fumble",
+      "Blurb": "Blurb",
+      "Sigil": "Guild Sigil",
+      "StartingTalents": "Starting Talents",
+      "SpecialActions": "Special Actions",
+      "Kingdom": "Kingdom",
+      "UsedToday": "Used today",
+      "Action": "Action",
+      "GrantsAdvOn": "Grants Adv on",
+      "GadgetType": "Gadget Type",
+      "FeatureType": "Feature Type",
+      "ConditionType": "Condition",
+      "ClearRequirement": "Clears",
+      "InjuredVariant": "Injured Variant",
+      "Stackable": "Stackable",
+      "StackCount": "Stacks",
+      "Effect": "Effect",
+      "Type": "Type",
+      "Movement": "Mov",
+      "Saves": "Saves",
+      "Morale": "Morale",
+      "Mana": "Mana",
+      "Base": "Base",
+      "Current": "Current",
+      "Clear": "Clear",
+      "Tagline": "Tagline"
+    },
+    "Hint": {
+      "CombosTriggerSkills": "Combinations may trigger class skills, Legendary Weapon effects, or instrument abilities.",
+      "EffectTable": "d10 lookup table — fill the entries you want this instrument to roll on. Empty entries roll as “no effect”.",
+      "EffectTableBanded": "The green band (1-4) rolls on Success — reserve it for effects that help the party. The red band (5-10) rolls on Fail or Fumble — reserve it for chaos and randomness. Range rows fill both indices with the same text.",
+      "Tagline": "Optional italicised phrase shown under the instrument name (e.g. “The obvious choice for the obvious bard”).",
+      "Level": "Mark all in one row to advance a level",
+      "CombatTalents": "Choose one combat talent per level. Write it down here.",
+      "Spellbook": "Spells live below; the spellbook list is just for tracking which are inscribed.",
+      "InstrumentSlots": "Drop an instrument here. Slot 2 unlocks at level 3, slot 3 at level 5. Worn — quick to ready.",
+      "DragDarkSpells": "Drag dark spells from the FLAIL Dark Spells compendium onto this list to learn them.",
+      "SpecialtyTags": "Comma-separated. -1 TH if NONE of these match the wielder's class weapon specialty list. Use specific names (shortSword) and broad ones (blade) so any rule wording can match."
+    },
+    "Placeholder": {
+      "Backstory":  "name and backstory here",
+      "Background": "background…",
+      "Tagline":    "e.g. “The obvious choice for the obvious bard”",
+      "EffectEntry": "what happens on this roll…"
+    },
+    "Attribute": {
+      "Str":  { "long": "Strength",     "abbr": "STR" },
+      "Dex":  { "long": "Dexterity",    "abbr": "DEX" },
+      "Cha":  { "long": "Charisma",     "abbr": "CHA" },
+      "Int":  { "long": "Intelligence", "abbr": "INT" },
+      "Luck": { "long": "Luck",         "abbr": "LUCK" }
+    },
+    "Class": {
+      "Bard":          "Bard",
+      "BoneWhisperer": "Bone Whisperer",
+      "Cleric":        "Cleric",
+      "Cutthroat":     "Cutthroat",
+      "Druid":         "Druid",
+      "Tinkerer":      "Tinkerer",
+      "Warrior":       "Warrior",
+      "Wizard":        "Wizard",
+      "Spirit":         "Spirit",
+      "Mana":           "Mana",
+      "FumbleRange":    "Fumble Range",
+      "AnimalCompanion":"Animal Companion",
+      "GuildTokens":    "Guild Tokens",
+      "SigilWorn":      "Sigil worn — tokens can be spent",
+      "SigilMissing":   "Sigil not worn — tokens cannot be spent"
+    },
+    "ClassDetails": {
+      "Labels": {
+        "MaxHp":     "Max Hit Points",
+        "WeaponSpec":"Weapon Specialty",
+        "MainItem":  "Main Item",
+        "Armour":    "Armour Proficiency",
+        "Gear":      "Starting Gear"
+      },
+      "Bard": {
+        "MaxHp":     "9",
+        "WeaponSpec":"crossbow, dagger, short bow, short sword, and similar.",
+        "MainItem":  "musical instruments.",
+        "Armour":    "basic armour.",
+        "Gear":      "grub, lantern, short sword, instrument, 4d6 coins."
+      },
+      "BoneWhisperer": {
+        "MaxHp":     "12",
+        "WeaponSpec":"dagger, flail, scythe, short sword, and similar.",
+        "MainItem":  "spirit lantern (always lit if spirit is not depleted).",
+        "Armour":    "basic armour.",
+        "Gear":      "grub, spirit lantern, random scroll, weapon, 3d6 coins."
+      },
+      "Cleric": {
+        "MaxHp":     "12",
+        "WeaponSpec":"depends on religion.",
+        "MainItem":  "holy symbol (depends on religion).",
+        "Armour":    "depends on religion.",
+        "Gear":      "grub, torches, holy symbol, weapon, d6 coins."
+      },
+      "Cutthroat": {
+        "MaxHp":     "10",
+        "WeaponSpec":"blowgun, crossbow, dagger, short sword, and other small weapons.",
+        "MainItem":  "guild sigil (depends on guild).",
+        "Armour":    "basic armour.",
+        "Gear":      "grub, thieves' tools, guild sigil, two weapons, 4d10 coins."
+      },
+      "Druid": {
+        "MaxHp":     "13",
+        "WeaponSpec":"axe, bows, club, mace, quarterstaff, sling, spear.",
+        "MainItem":  "none.",
+        "Armour":    "no armour.",
+        "Gear":      "grub, torches, weapon, herb, random animal companion, d6 coins."
+      },
+      "Tinkerer": {
+        "MaxHp":     "9",
+        "WeaponSpec":"bows, blowgun, dagger, hand axe, short sword, and similar.",
+        "MainItem":  "sparkle of life (insert on construct).",
+        "Armour":    "basic, light armour.",
+        "Gear":      "grub, lantern, weapon, basic armour, sparkle of life, gadget belt, 6d6 coins."
+      },
+      "Warrior": {
+        "MaxHp":     "14",
+        "WeaponSpec":"all weapons.",
+        "MainItem":  "none.",
+        "Armour":    "all armour.",
+        "Gear":      "grub, torches, weapon, basic armour, helmet, 3d6 coins."
+      },
+      "Wizard": {
+        "MaxHp":     "8",
+        "WeaponSpec":"crossbow, dagger, quarterstaff, short sword, wand, and similar.",
+        "MainItem":  "spellbook.",
+        "Armour":    "no armour.",
+        "Gear":      "grub, torches, spellbook, weapon, random essence (see potions), 2d10 coins."
+      }
+    },
+    "Resource": {
+      "Spirit":          "Spirit",
+      "Mana":            "Mana",
+      "Miraclecalls":    "Miracle Calls",
+      "Guildtokens":     "Guild Tokens",
+      "Constructpoints": "Construct Points"
+    },
+    "Inventory": {
+      "Adornment":   "Adornments",
+      "Hands":       "Hands",
+      "Body":        "Body",
+      "Satchel":     "Satchel",
+      "Instruments": "Instruments",
+      "Unequipped":  "Loose / Unequipped",
+      "OffHand":     "Off-hand",
+      "MainHand":    "Main hand",
+      "BodySlot":    "Body",
+      "AdornmentPlaceholder": "ring, amulet, sigil, talisman, or charm",
+      "UnlocksAt":      "Unlocks at",
+      "UnlocksAtLevel": "Unlocks at level",
+      "LegendCarried": "ready to use",
+      "LegendWorn":    "quick to ready",
+      "LegendStashed": "spend one action to equip",
+      "Considered": {
+        "Carried": "Carried",
+        "Worn":    "Worn",
+        "Stashed": "Stashed"
+      }
+    },
+    "Condition": {
+      "Drained":          "Drained",
+      "Exhausted":        "Exhausted",
+      "Injured":          "Injured",
+      "PersistentInjury": "Persistent Injury",
+      "Poisoned":         "Poisoned",
+      "Starved":          "Starved",
+      "Petrified":        "Petrified",
+      "Custom":           "Custom"
+    },
+    "InjuredVariant": {
+      "Str": "Injured (-1 STR)",
+      "Dex": "Injured (-1 DEX)",
+      "Th":  "Injured (-1 To Hit)"
+    },
+    "Clear": {
+      "shortRest":      "after a short rest",
+      "longRest":       "after a long rest",
+      "fullRest":       "after a full rest",
+      "meal":           "after a meal",
+      "medicalHealing": "with medical healing",
+      "magicOrMiracle": "by magic or miracle",
+      "other":          "as written"
+    },
+    "Death": {
+      "NearDeath":     "Near Death Experience",
+      "KnockedOut":    "Knocked Out",
+      "Dizzy":         "Dizzy",
+      "Hurt":          "Hurt",
+      "Scarred":       "Scarred",
+      "HorribleWound": "Horrible Wound",
+      "Maimed":        "Maimed",
+      "Dead":          "Dead!"
+    },
+    "Hit": {
+      "Fail":          "Fail",
+      "Fumble":        "Fumble",
+      "Minor":         "Minor Hit",
+      "Major":         "Major Hit",
+      "DeathBlow":     "DEATH BLOW",
+      "DeathBlowDesc": "Instantly slain — or roll on the Death Table if a PC.",
+      "FumbleDesc":    "Hit an ally for d8 OR mark usage on a carried item."
+    },
+    "Effect": {
+      "WitnessMe": {
+        "Name":    "Witness Me",
+        "Trigger": "Bard hits with a triple",
+        "AllyBuff": "All allies gain +1 die to hit on their next attack."
+      }
+    },
+    "Combo": {
+      "Pair":      "Pair",
+      "Triplet":   "Triplet",
+      "Poker":     "Four of a Kind",
+      "FullHouse": "Full House",
+      "TwoPair":   "Two Pair",
+      "Sequence3": "Sequence ×3",
+      "Sequence4": "Sequence ×4",
+      "Sequence5": "Sequence ×5"
+    },
+    "Range": {
+      "Near":    "Near",
+      "Distant": "Distant",
+      "Far":     "Far Away"
+    },
+    "WeaponType": {
+      "Melee":   "Melee",
+      "Missile": "Missile"
+    },
+    "Tradition": {
+      "Arcane":   "Arcane (Wizard)",
+      "Dark":     "Dark (Bone Whisperer)",
+      "Illusion": "Illusion",
+      "Custom":   "Custom"
+    },
+    "Kingdom": {
+      "Mammal":    "Mammal",
+      "Reptile":   "Reptile",
+      "Bird":      "Bird",
+      "Amphibian": "Amphibian",
+      "Fish":      "Fish",
+      "Insect":    "Insect"
+    },
+    "FeatureType": {
+      "Class":      "Class Skill",
+      "Race":       "Racial Trait",
+      "Background": "Background",
+      "Other":      "Other"
+    },
+    "ItemType": {
+      "weapon":     "Weapon",
+      "armour":     "Armour",
+      "gear":       "Gear",
+      "spell":      "Spell",
+      "prayer":     "Prayer",
+      "gift":       "Primal Gift",
+      "talent":     "Talent",
+      "gadget":     "Gadget",
+      "feature":    "Feature",
+      "condition":  "Condition",
+      "instrument": "Instrument"
+    },
+    "Item": {
+      "New": "New {type}"
+    },
+    "Action": {
+      "Edit":            "Edit",
+      "Delete":          "Delete",
+      "Clear":           "Clear",
+      "Add":             "Add",
+      "MarkUsage":       "Mark Usage",
+      "MarkUsageHint":   "Mark one usage dot on the weapon used.",
+      "ApplyDamage":     "Apply Damage",
+      "ApplyDamageHint": "Apply this damage to all selected tokens.",
+      "NegateWithArmour":     "Negate with Armour",
+      "NegateWithArmourHint": "Mark worn armour to negate 1s from this attack.",
+      "ShareToChat":     "Share to chat"
+    },
+    "Armour": {
+      "Basic":  "Basic Armour",
+      "Light":  "Light Armour",
+      "Heavy":  "Heavy Armour",
+      "Shield": "Shield",
+      "Helmet": "Helmet",
+      "NegateDialogTitle":     "Negate with Armour — {target}",
+      "NegatePrompt":          "You've been hit — the roll includes <strong>{ones}</strong> ones. Mark worn armour to negate.",
+      "NegateHint":            "Each mark on a piece of armour negates one 1. You may mark the same or multiple pieces any number of times.",
+      "NegateConfirm":         "Confirm Marks",
+      "NegateCancel":          "Cancel",
+      "NegateUsage":           "Usage",
+      "NegateAvailable":       "remaining",
+      "NegateMarksAria":       "Marks to apply on {name}",
+      "NegateCardTitle":       "Armour Negation",
+      "NegateOnes":            "ones",
+      "NegateNoChange":        "no tier change",
+      "NegateVerdictMiss":     "Attack fully negated — no damage taken.",
+      "NegateVerdictDeath":    "Attack still lands as a Death Blow.",
+      "NegateVerdictDamage":   "Attack lands for {damage} damage.",
+      "NegateNothingMarked":   "No armour was marked.",
+      "NegateWasted":          "{count} mark(s) wasted — nothing else to negate.",
+      "ProficiencyWarningHeadline": "No Armour Proficiency — Disadvantage on all physical tasks.",
+      "ProficiencyWarningItems":    "Non-proficient armour worn"
+    },
+    "Roll": {
+      "ToHit": "To Hit",
+      "Save":  "{attr} Save",
+      "PlayInstrument": "Play Instrument",
+      "InstrumentUsedOutHint": "This instrument was played to a fail or fumble this scene. Rest, or click the reset button, to play again.",
+      "InstrumentResetHint":   "New combat or social situation — click to allow this instrument to be played again."
+    },
+    "Save": {
+      "Crit":    "Critical Success!",
+      "Fumble":  "Fumble!",
+      "Success": "Success",
+      "Fail":    "Fail"
+    },
+    "ToHit": {
+      "ModifierDialog": {
+        "Title":    "Modify To Hit — {weapon}",
+        "Prompt":   "Adjust the number of dice for this attack with {weapon}.",
+        "AdvLabel": "Modifier",
+        "Hint":     "Positive values add extra dice to the To Hit pool. Negative values remove dice from the pool. The pool cannot drop below 1 die. Range: -3 to +3.",
+        "Roll":     "Roll",
+        "Cancel":   "Cancel"
+      }
+    },
+    "Initiative": {
+      "SaveFlavor": "Initiative — DEX save"
+    },
+    "Combat": {
+      "EndAlias":    "Combat",
+      "EndTitle":    "Combat Ends",
+      "EndReminder": "Roll usage for all weapons used."
+    },
+    "Construct": {
+      "Sketch":              "Sketch",
+      "SketchHint":          "Draw the construct.",
+      "ChangeImage":         "Click to change portrait.",
+      "Owner":               "Owner",
+      "OwnerSet":            "Set",
+      "OwnerPlaceholder":    "— select a Tinkerer —",
+      "OwnerClearHint":      "Clear the owner link.",
+      "Attacking":           "Attacking",
+      "AttackingHint":       "Constructs can only wield weapons whose TH is equal or below their own TH value. DMG is either the weapon's or the construct's DMG score — whichever is higher.",
+      "InherentAttack":      "Attack",
+      "InherentAttackHint":  "Roll the construct's inherent attack — uses its own TH as the dice pool and its DMG per die. Shift for advantage, Ctrl for disadvantage.",
+      "Surviving":           "Surviving",
+      "SavesRollHint":       "Click to roll a d20 Saves check.",
+      "HpBase":              "Base",
+      "HpCurrent":           "Current",
+      "Abilities":           "Abilities",
+      "Improvements":        "Improvements",
+      "PointsAtLevel":       "improvement points at level {level}",
+      "ImprovementHint":     "5 improvement points per level, from level 1 onward. Spend on improvements — maximum 2 points on the same improvement per level. Carried inventory slots unlock first, then stashed.",
+      "SparkleActive":       "Sparkle of Life equipped — construct active",
+      "SparkleMissing":      "Sparkle of Life not equipped — construct inert",
+      "Carried":             "Carried",
+      "CarriedHint":         "Ready to use.",
+      "Stashed":             "Stashed",
+      "StashedHint":         "Spend one action to equip.",
+      "SlotLocked":          "Locked",
+      "SlotEmpty":           "Empty",
+      "UnlockCarried":       "Unlock carried slot",
+      "UnlockCarriedHint":   "Spend an improvement point to unlock one more carried slot.",
+      "UnlockStashed":       "Unlock stashed slot",
+      "UnlockStashedHint":   "Spend an improvement point to unlock one more stashed slot. Only available once all carried slots are unlocked.",
+      "Improvement": {
+        "Locked":            "Locked",
+        "Unlocked":          "Unlocked",
+        "LockHint":          "Click to lock the Improvements tab and prevent further changes.",
+        "UnlockHint":        "Click to unlock the Improvements tab so improvements can be added or removed.",
+        "SelectLabel":       "Improvement",
+        "Add":               "Add",
+        "Remove":            "Remove",
+        "PointsAvailable":   "of {total} available ({spent} spent)",
+        "PointsSunk":        "of which {sunk} sunk in broken improvements",
+        "PurchasedLabel":    "Purchased improvements"
+      },
+      "Ability": {
+        "camouflage":   "Camouflage",
+        "climbing":     "Climbing",
+        "darkvision":   "Darkvision",
+        "frogLeaping":  "Frog Leaping",
+        "illumination": "Illumination",
+        "hovering":     "Hovering",
+        "swimming":     "Swimming",
+        "speech":       "Speech"
+      },
+      "BrokenBanner":              "Broken — awaiting rebuild",
+      "NeedsBreakDownBanner":      "HP reduced to 0 — this construct needs to be broken down.",
+      "BreakDownButton":           "Break down now",
+      "BreakDownTitle":            "Break Down — Choose an improvement to lose",
+      "BreakDownPrompt":           "{name} has been reduced to 0 HP. The construct is broken. Choose one improvement to lose.",
+      "BreakDownPickLabel":        "Improvement to lose",
+      "BreakDownHint":             "The chosen improvement is refunded from the ledger but its effect is reversed — you may re-buy it later if you have unspent points.",
+      "BreakDownConfirm":          "Break down",
+      "BreakDownDefer":            "Later",
+      "BrokenTitle":               "{name} — Broken",
+      "BrokenLostImprovement":     "Improvement lost: <strong>{improvement}</strong>.",
+      "BrokenNoImprovements":      "No improvements were on the sheet — nothing to lose beyond the break itself.",
+      "BrokenRebuildHint":         "Rebuild will take {days} days and {coins} coins.",
+      "RebuildRequirement":        "Rebuild requirements",
+      "RebuildDays":               "{days} days of work (in-fiction)",
+      "RebuildCoins":              "{coins} coins in parts and components",
+      "RebuildButton":             "Rebuild",
+      "RebuildReadyHint":          "Clicking Rebuild will deduct {coins} coins from the linked Tinkerer and restore the construct to full HP.",
+      "RebuildBlockedNoOwner":     "No linked Tinkerer. Set an owner on the Sketch card first.",
+      "RebuildBlockedNoCoins":     "The linked Tinkerer needs {needed} coins to rebuild (currently has {have}).",
+      "RebuildTitle":              "{name} — Rebuilt",
+      "RebuildBody":               "After {days} days of work, {owner} rebuilds {name}. {coins} coins spent. HP restored to {hp}/{hp}.",
+      "ReassembleTitle":           "Reassemble — Reshape the construct?",
+      "ReassembleConfirm":         "Starting a Reassemble session on <strong>{name}</strong> will PERMANENTLY drop 1 improvement point from the pool. While in reassemble mode, each improvement removed costs 100 coins from {owner} ({coins} coins on hand). Adding improvements is free (uses freed points as normal). Continue?",
+      "ReassembleConfirmYes":      "Yes — reshape",
+      "ReassembleStart":           "Reassemble",
+      "ReassembleStartHint":       "Begin a reassemble session — drops 1 improvement point permanently; each removal within the session costs 100 coins.",
+      "ReassembleFinish":          "Finish reassemble",
+      "ReassembleModeBanner":      "Reassemble mode active",
+      "ReassembleModeHint":        "Each improvement removed while in this mode costs 100 coins from the linked Tinkerer. Adding improvements uses freed points as normal.",
+      "ReassembleBlockedLocked":   "The Improvements tab must be unlocked before reassembling.",
+      "ReassembleBlockedBroken":   "This construct is broken — rebuild it before reassembling.",
+      "ReassembleBlockedNoOwner":  "No linked Tinkerer. Set an owner on the Sketch card first.",
+      "ReassembleCardTitle":       "{name} — Reassembly begun",
+      "ReassembleCardBody":        "{owner} begins reshaping the construct. 1 improvement point is permanently sunk. Reassemble mode is now active — each removal in the tab costs 100 coins."
+    },
+    "Tinkerer": {
+      "SectionLabel":               "Resourcefulness",
+      "ResourcefulnessDescription": "Post-combat usage rolls trigger on 5-6 (instead of 4-6). Non-magical items can be repaired by cannibalising materials from another item.",
+      "Resourcefulness":            "Resourcefulness (5-6)",
+      "ResourcefulnessTooltip":     "Tinkerer's Resourcefulness raises the usage threshold to 5-6.",
+      "RepairButton":               "Repair item",
+      "RepairDialogTitle":          "Repair — Cannibalise Materials",
+      "RepairPrompt":               "Pick a worn item to repair and a donor to sacrifice materials from. On a successful DEX save, the target is repaired and one usage is marked on the donor.",
+      "RepairTargetLabel":          "Repair (target):",
+      "RepairDonorLabel":           "Donor (materials from):",
+      "RepairHint":                 "Donor should share similar materials with the target — GM judgement. Magical items cannot be repaired or donate.",
+      "RepairRollButton":           "Roll DEX save & repair",
+      "RepairCancelButton":         "Cancel",
+      "RepairSaveFlavor":           "Repair attempt — DEX save",
+      "RepairCardTitle":            "Repair Attempt",
+      "RepairSuccessBody":          "Repaired <strong>{target}</strong>. <strong>{donor}</strong> loses 1 usage ({donorBefore} → {donorAfter}/{donorMax}).",
+      "RepairFailBody":             "The repair on <strong>{target}</strong> fails. No materials expended.",
+      "QuickCraftButton":            "Quick Craft",
+      "QuickCraftDialogTitle":       "Quick Craft — Cobble a Contraption",
+      "QuickCraftPrompt":            "Describe the invention and pick 3-6 items to discard as components. Then roll DEX. Items are consumed regardless of the roll's outcome.",
+      "QuickCraftInventionLabel":    "Invention",
+      "QuickCraftInventionPlaceholder": "e.g. A tripwire trap that drops a net; a smoke bomb; a spring-loaded dart launcher…",
+      "QuickCraftModifiersHeading":  "Discard count sets the modifier",
+      "QuickCraftModifier3":         "3 items → DEX with disadvantage",
+      "QuickCraftModifier4":         "4 items → DEX (normal)",
+      "QuickCraftModifier5":         "5 items → DEX with advantage",
+      "QuickCraftModifier6":         "6 items → DEX with double advantage",
+      "QuickCraftPickComponents":    "Pick components to discard",
+      "QuickCraftCountHint":         "{n} selected",
+      "QuickCraftRollButton":        "Discard & roll DEX",
+      "QuickCraftCancelButton":      "Cancel",
+      "QuickCraftSaveFlavor":        "Quick Craft — DEX save",
+      "QuickCraftCardTitle":         "Quick Craft",
+      "QuickCraftComponentsLabel":   "Components discarded ({n})",
+      "QuickCraftSuccessBody":       "<strong>Success.</strong> The invention works as declared.",
+      "QuickCraftFailBody":          "<strong>Fail.</strong> The contraption fizzles — components wasted, no effect.",
+      "QuickCraftFumbleBody":        "<strong>Fumble.</strong> The invention backfires on the party — GM adjudicates the consequences.",
+      "FixConstructButton":          "Fix Construct",
+      "FixConstructDialogTitle":     "Fix Construct — {name}",
+      "FixConstructPrompt":          "Fix {name}? Currently at {cur}/{max} HP. Choose one method.",
+      "FixConstructMarkHeading":     "Option A — Spend a turn, mark 2 items",
+      "FixConstructMarkHint":        "Mark usage on two non-magical items (from either sheet), then roll a DEX save. Success → +2 HP. Fail → items are still marked, but no HP repaired.",
+      "FixConstructMarkItem1":       "Item 1",
+      "FixConstructMarkItem2":       "Item 2",
+      "FixConstructMarkBlocked":     "You need at least two items with usage headroom to use this method.",
+      "FixConstructMarkAction":      "Mark 2 & Roll DEX (+2 HP)",
+      "FixConstructMarkMethod":      "Mark method — 2 items expended",
+      "FixConstructMarkSuccess":     "HP restored: {before} → {after}/{max}.",
+      "FixConstructMarkFail":        "The save failed. Materials were consumed but no HP was restored.",
+      "FixConstructDiscardHeading":  "Option B — Discard 1 item",
+      "FixConstructDiscardHint":     "Discard one non-magical item to instantly restore +4 HP. No save required.",
+      "FixConstructDiscardItem":    "Item to discard",
+      "FixConstructDiscardBlocked":  "No non-magical items available to discard.",
+      "FixConstructDiscardAction":   "Discard (+4 HP)",
+      "FixConstructDiscardMethod":   "Discard method — 1 item destroyed",
+      "FixConstructDiscardSuccess":  "HP restored: {before} → {after}/{max}.",
+      "FixConstructDiscarded":       "discarded",
+      "FixConstructCardTitle":       "Fix Construct — {name}",
+      "FixConstructSaveFlavor":      "Fix Construct — DEX save",
+      "FixConstructPickTitle":       "Which construct?",
+      "FixConstructPickPrompt":      "You own more than one construct. Which one are you fixing?",
+      "FixConstructPickLabel":       "Construct",
+      "GadgetRecoveryTitle":         "Gadget Belt — Materials recovered!",
+      "GadgetRecoveryRestored":      "{belt}: usage {before} → {after}/{max}.",
+      "GadgetRecoveryClean":         "Triplet on a hit, but {belt} has no usage marks to remove.",
+      "GadgetRecoveryMissing":       "Triplet on a hit, but no Gadget Belt is on this sheet."
+    },
+    "Warrior": {
+      "IronFistLabel":        "Iron Fist",
+      "IronFistFlavor":       "Bare-handed martial arts strike.",
+      "IronFistHint":         "Iron Fist — bare-handed attack from the Martial Artist Basic talent. Shift = +1 die, Ctrl = -1 die, Alt = modifier dialog.",
+      "WeatheredLabel":       "Special Skills",
+      "WeatheredButton":      "Weathered:",
+      "WeatheredAvailable":   "Available",
+      "WeatheredUnavailable": "Unavailable",
+      "FeatCheckboxLabel":    "Extraordinary Feat",
+      "FeatCheckboxHint":     "Tick to route this attack through the Extraordinary Feat mechanic — attack + STR/DEX save (auto-detected from weapon type), with the outcome verdict posted to chat.",
+      "FeatButtonHint":       "Extraordinary Feat — declare a narrative consequence, then roll attack + STR/DEX save. Shift = save advantage, Ctrl = save disadvantage.",
+      "FeatCardTitle":        "{name} — Extraordinary Feat",
+      "FeatAttackFlavor":     "Extraordinary Feat — attack",
+      "FeatSaveFlavor":       "Extraordinary Feat — {attr} save",
+      "FeatRollAttack":       "Attack",
+      "FeatRollSave":         "save",
+      "FeatDamageApply":      "The feat works. Apply damage from the attack card above and resolve the narrative consequence.",
+      "FeatDamageNoApply":    "The feat backfires. The attack fails entirely — do NOT apply damage from the attack card, even if the attack roll would have hit normally.",
+      "FeatFumbleGuidance":   "Standard attack fumble effects still apply (as shown on the attack card). On top of that, the GM narrates an additional consequence tied to the failed feat.",
+      "FeatVerdict": {
+        "success": "Feat works! Attack hits with narrative consequence.",
+        "fail":    "Attack fails entirely.",
+        "fumble":  "FUMBLE — standard treatment plus GM-narrated consequence."
+      },
+      "FeatAttackTier": {
+        "deathBlow": "Death Blow (3+ ones)",
+        "major":     "Major hit (2 ones)",
+        "minor":     "Minor hit (1 one)",
+        "fail":      "Miss",
+        "fumble":    "Fumble (2+ sixes)"
+      },
+      "FeatSaveOutcome": {
+        "crit":    "Critical (natural 1)",
+        "success": "Success",
+        "fail":    "Fail",
+        "fumble":  "Fumble (natural 20)"
+      }
+    },
+    "Wizard": {
+      "SpellbookEmptyHint": "Drag spells from the Wizard Spells compendium here to build your Master Spellbook.",
+      "MasterLabel":        "Master Apprenticeship",
+      "MasterPickLabel":    "Apprenticed under",
+      "MasterChoose":       "— choose a Master —",
+      "MasterEmptyHint":    "Pick a Master to unlock their spell repertoire. Common (arcane) spells work regardless.",
+      "MasterRepertoire":   "Repertoire",
+      "MasterDragHint":     "Choose two of these spells and drag them from the Wizard Spells compendium into your spellbook.",
+      "MasterLock":         "Lock",
+      "MasterUnlock":       "Unlock",
+      "MasterLockHint":     "Lock in this Master apprenticeship. Only the GM can unlock afterwards.",
+      "MasterLockedGmOnly": "The Master apprenticeship is locked. Only the GM can unlock it.",
+      "SeededStarters":     "Wizard starter spells added: {names}.",
+      "ManaHint":                       "Current mana out of the maximum (INT + level). Restored to full on a long rest.",
+      "CastButtonHint":                 "Cast this spell — pick how much mana to spend.",
+      "CastDialogTitle":                "Cast {spell}",
+      "CastDialogManaCur":              "Current mana",
+      "CastDialogManaLabel":            "Mana to spend (dice rolled)",
+      "CastDialogWarning":              "Rolling one 6 = Drained · two 6s = Side Effect · three 6s = Glorious Death.",
+      "CastDialogCast":                 "Cast",
+      "CastDialogCancel":               "Cancel",
+      "CastCasts":                      "casts",
+      "CastManaSpent":                  "Mana spent",
+      "CastManaRemaining":              "Remaining",
+      "CastEffect":                     "Effect",
+      "CastResonanceTitle":             "Arcane Resonance",
+      "CastRiskDrainedTitle":           "One six rolled — Drained",
+      "CastRiskDrainedText":            "The wizard gains the Drained condition after casting.",
+      "CastAddDrainedHint":             "Drag the Drained condition from your compendium into your inventory to apply it.",
+      "CastRiskSideEffectTitle":        "Two sixes rolled — Side Effect",
+      "CastRiskSideEffectMissing":      "Side effect table entry missing — GM narrates.",
+      "CastRiskDeathTitle":             "Three sixes — Glorious Death",
+      "CastRiskDeathText":              "The spell resolves as described. The wizard gloriously dies afterwards.",
+      "SkillsLabel":                    "Special Skills",
+      "ReadMagicLabel":                 "Read Magic",
+      "ReadMagicHint":                  "INT save to learn a spell from an arcane source or cast from a scroll. Shift = advantage, Ctrl = disadvantage.",
+      "ReadMagicFlavor":                "Read Magic — INT save"
+    },
+    "Instrument": {
+      "CritPrompt": "CRIT! Choose any result from the Instrument Table.",
+      "EntryEmpty": "(empty entry — GM's discretion)",
+      "UsedOutBanner": "This instrument cannot be played again in the same combat or social situation.",
+      "Band": {
+        "Success": {
+          "Title": "Success band (1-4)",
+          "Sub":   "Rolled on a successful CHA save. Good for the party."
+        },
+        "Chaos": {
+          "Title": "Chaos band (5-10)",
+          "Sub":   "Rolled on a Fail (d10) or Fumble (d6+4). Chaos and randomness."
+        }
+      }
+    },
+    "Adv": {
+      "Advantage":    "Advantage",
+      "Disadvantage": "Disadvantage"
+    },
+    "Empty": {
+      "None":         "None yet.",
+      "Conditions":   "No active conditions.",
+      "NoSpells":     "No spells learned.",
+      "NoAttacks":    "No attacks defined.",
+      "NoSkills":     "No special skills defined.",
+      "NoLoose":      "No loose items. Drag items here from the inventory grid."
+    },
+    "Hint": {
+      "CombosTriggerSkills": "Combinations may trigger class skills, Legendary Weapon effects, or instrument abilities.",
+      "EffectTable": "d10 lookup table — fill the entries you want this instrument to roll on. Empty entries roll as “no effect”."
+    },
+    "Attack": {
+      "AnyHit":    "Any hit",
+      "MajorHit":  "Major Hit",
+      "DeathBlow": "Death Blow"
+    },
+    "NPC": {
+      "AttacksPerRoundHint": "This creature makes more than one attack per round — resolve each in turn."
+    },
+    "Dialog": {
+      "DeleteItemTitle": "Delete item?",
+      "DeleteItemBody":  "Permanently delete <strong>{name}</strong>? This cannot be undone."
+    },
+    "Notify": {
+      "SelectTokens": "Select at least one token to apply damage.",
+      "ZoneRejectsType": "{zone} only accepts {type} items.",
+      "ZoneRejectsMissingFlag": "{zone} slots only accept items flagged as an adornment. Tick the Adornment checkbox on the {item} item sheet first.",
+      "MultiSlotNoRoom":        "{item} takes more than one slot — not enough room at that position in the {zone} column.",
+      "MultiSlotBlocked":       "{item} would extend into a slot occupied by {blocker}.",
+      "MultiSlotBlockedLocked": "{item} would extend into a locked slot.",
+      "TwoHandedNeedsFreeHand": "{weapon} needs both hands to fire — {blocker} is in the way.",
+      "NegateArmourNotOwner":   "You don't own any of the character targets on this attack.",
+      "NoArmourToMark":         "No worn armour with unused usage dots — nothing to mark.",
+      "NotADarkSpell": "This panel only accepts dark spells.",
+      "NotAWizardSpell": "This panel only accepts wizard spells (arcane, flame, shadow, ooze, or illusion).",
+      "NotAPrimalGift":  "This panel only accepts Primal Gift items.",
+      "NotAGadget":      "This panel only accepts Gadget items.",
+      "NotADamageGadget": "This action only fires damage-category gadgets.",
+      "GadgetAlreadyUsed": "{name} has already been released today. Reset on long rest.",
+      "GadgetNoMechanic":  "{name} has no mechanical rules wired — GM narrates the effect.",
+      "JOATBardOnly":      "Jack of All Trades only applies to Bard characters.",
+      "NotAJoatItem":      "Jack of All Trades only accepts talents, gadgets, or wizard spells.",
+      "JoatSpellAlreadyUsed": "{name} has already been cast today. Reset on long rest.",
+      "NotAThievingTalent": "This panel only accepts Thieving Talent items.",
+      "InstrumentNotCarried": "{name} must be carried (in hands or on the body) to play. Move it from the satchel first.",
+      "InstrumentUsedOut":    "{name} was played to a fail or fumble. Rest, or click reset, before playing it again in this scene.",
+      "NotAPrayer": "This panel only accepts divine prayers.",
+      "NoHolySymbol": "You need to be carrying or wearing your holy symbol to cast a prayer.",
+      "LayOnHandsNoTarget": "Target a token first — Lay on Hands needs a recipient.",
+      "LayOnHandsMultipleTargets": "Multiple tokens targeted; only the first will receive Lay on Hands.",
+      "LayOnHandsNoActor": "Targeted token has no actor.",
+      "HolyRayNoTarget": "Target a token first — Holy Ray needs a recipient.",
+      "Incapacitated": "Petrified — you cannot move or take actions.",
+      "NoSigil": "Your guild sigil must be worn (in hands or body slot) to spend tokens.",
+      "NoGuildTokens": "No guild tokens remaining.",
+      "GuildTokensReset": "Guild tokens reset to {n}.",
+      "NotAGuild": "This panel only accepts guild items.",
+      "NoGuild": "Drag a guild onto your sheet first.",
+      "OpportunisticStrikeWeaponGone": "The original weapon is no longer on the sheet — can't fire the follow-up attack.",
+      "TalentNotSelected": "This talent isn't selected.",
+      "GiftNotSelected": "This primal gift isn't currently selected.",
+      "ShapeshiftAlreadyActive": "Already shifted — revert to human first.",
+      "ShapeshiftNoGifts": "The Druid has no primal gifts selected — nothing to shift into.",
+      "WeaponLockedInBeastForm": "You can't use that weapon while in beast form — use one of the beast's natural attacks.",
+      "NothingToRepair": "No worn items on the sheet to repair.",
+      "NoDonorAvailable": "No item on the sheet has spare capacity to donate materials.",
+      "RepairSameItem": "The target and donor must be different items.",
+      "QuickCraftNotEnoughItems": "Need at least 3 physical items on the sheet to Quick Craft.",
+      "QuickCraftBadCount": "Quick Craft requires 3 to 6 components — no more, no fewer.",
+      "QuickCraftNoInvention": "Describe what you're building before rolling.",
+      "ConstructWeaponTooHeavy": "This weapon's TH exceeds the construct's own TH — it can't wield it.",
+      "ConstructNoInherentAttack": "This construct has TH 0 — its inherent attack can't be rolled until TH is improved.",
+      "ConstructSlotOccupied":   "That slot is already occupied. Move or delete the current item first.",
+      "ConstructCarriedFirst":   "Unlock all carried slots before spending on stashed slots.",
+      "ImprovementLocked":         "Unlock the Improvements tab before making changes.",
+      "ImprovementNotEnoughPoints": "Not enough construct points to buy that improvement.",
+      "ImprovementMaxPerLevel":    "You can only buy the same improvement twice per level.",
+      "ImprovementAtMax":          "That improvement is already at its cap.",
+      "ImprovementNoInstance":     "The construct doesn't have that improvement to remove.",
+      "ImprovementAlreadyOwned":   "The construct already has that ability.",
+      "FixConstructNoLink":        "No construct is linked to this Tinkerer. Set the owner on the construct's sheet first.",
+      "FixConstructFullHp":        "{name} is at full HP — no repair needed.",
+      "FixConstructNoItems":       "No non-magical items are available on either sheet to spend.",
+      "FixConstructSameItem":      "The two marked items must be different.",
+      "FixConstructBroken":        "{name} is broken — repair with Rebuild, not Fix Construct.",
+      "ConstructBroken":           "This construct is broken — no actions until it's rebuilt.",
+      "RebuildNoOwner":            "No linked Tinkerer. Set an owner on the construct's Sketch card first.",
+      "RebuildNoCoins":            "{owner} needs {needed} coins to rebuild (currently has {have}).",
+      "ReassembleLocked":          "Unlock the Improvements tab before starting a reassemble session.",
+      "ReassembleBroken":          "The construct is broken — rebuild it before reassembling.",
+      "ReassembleNoOwner":         "No linked Tinkerer. Set an owner on the construct's Sketch card first.",
+      "ReassembleNoCoins":         "{owner} needs 100 coins to remove an improvement in reassemble mode (currently has {have}).",
+      "FeatWarriorOnly":           "Extraordinary Feat is a Warrior class ability.",
+      "IronFistWarriorOnly":       "Iron Fist is a Warrior class ability.",
+      "IronFistRequiresTalent":    "Iron Fist requires the Martial Artist Basic combat talent.",
+      "WizardMasterUnset":         "Choose a Master Apprenticeship before adding master-specific spells. Common (arcane) spells are always accepted.",
+      "WizardMasterMismatch":      "{spell} is from another Master's repertoire — this wizard is apprenticed under {master}.",
+      "WizardMasterUnlockGmOnly":  "Only the GM can unlock the Master Apprenticeship.",
+      "InvalidManaSpend":          "Invalid mana amount.",
+      "NoManaAvailable":           "No mana left — take a long rest to refill.",
+      "NotEnoughMana":             "Not enough mana. Available: {available}.",
+      "ReadMagicWizardOnly":       "Read Magic is a Wizard class ability.",
+      "MiracleCallSpent": "Miracle Call has already been used this session. Click Reset to start over.",
+      "MiracleCallReset": "Miracle Call is available again.",
+      "PickReligionFirst": "Pick a religion before dragging prayers onto your sheet.",
+      "PrayerWrongReligion": "{prayer} is a {prayerReligion} prayer; this character follows {actorReligion}.",
+      "AlreadyKnown":   "{name} is already in this character's known spells.",
+      "NoSpiritToCast": "Need at least 1 spirit (and 1 INT) to cast a dark spell.",
+      "NotEnoughSpirit": "Not enough spirit — only {available} available."
+    },
+    "DarkArts": {
+      "Cast": "Cast",
+      "Dialog": {
+        "Title":        "Cast Dark Spell — {spell}",
+        "SpiritCur":    "Spirit",
+        "Cap":          "Max",
+        "SpiritLabel":  "Spirit to spend",
+        "Cast":         "Cast",
+        "Cancel":       "Cancel",
+        "Warning":      "Each natural 6 brings ruin: 1 → Drained · 2 → Side Effect · 3 → retire."
+      },
+      "Drained": {
+        "Title": "Drained!",
+        "Body":  "One natural 6 — the caster gains a Drained condition (-1 INT). Apply via Conditions card."
+      },
+      "SideEffect": {
+        "Title": "Side Effect"
+      },
+      "Retire": {
+        "Title": "Retire",
+        "Body":  "Three natural 6s — the caster becomes an undead monster and is retired. The GM resolves narrative consequences."
+      }
+    },
+    "BoneWhisperer": {
+      "AnimateDead": {
+        "Label":   "Animate Dead",
+        "Hint":    "Spend spirit equal to the target level. Make an INT save to revive the target. On success, the target is raised as an undead ally for a number of watches equal to your level. On a fail, the target is raised, but acts on its own accord.",
+        "Tooltip": "Roll INT save (Shift = advantage, Ctrl = disadvantage)"
+      }
+    },
+    "Religion": {
+      "Choose": "— Choose a religion —",
+      "SelectPrompt": "Select a religion above to see your god, holy symbol, weapons, armour, and Lay on Hands fumble.",
+      "NoPrayersUntilChosen": "Your divine prayers appear here once you choose a religion."
+    },
+    "Prayer": {
+      "CastTooltip": "Cast — make a LUCK save",
+      "Success": { "Title": "Prayer Heard" },
+      "Crit":    { "Title": "Divine Favour" },
+      "Fail":    {
+        "Title": "Falters",
+        "Body":  "The prayer fails to take effect; the chance of fumbling rises by 1."
+      },
+      "Fumble":  { "Title": "God's Wrath" }
+    },
+    "LayOnHands": {
+      "Button":   "Lay on Hands",
+      "Tooltip":  "Target a token, then make a LUCK save to heal them (d6 + level).",
+      "Title":    "Lay on Hands",
+      "Target":   "Target",
+      "Healed":   "Healed",
+      "Success":  { "Title": "Touched and Healed" },
+      "Crit":     { "Title": "Divine Touch" },
+      "Fail":     {
+        "Title": "No Effect",
+        "Body":  "The touch fails to channel divine healing; fumble range rises by 1."
+      },
+      "Fumble":   { "Title": "Lay on Hands Fumble" }
+    },
+    "MiracleCall": {
+      "Button":         "Miracle Call",
+      "Tooltip":        "Once per session. Speak a wish aloud, roll d6 per word, each 6 triggers God's Wrath.",
+      "ResetTooltip":   "Reset Miracle Call (use at start of a new session).",
+      "Title":          "Miracle Call",
+      "Words":          "words",
+      "Wraths":         "God's Wrath",
+      "OncePerSession": "Once per session — reset on the sheet at session start.",
+      "Granted": {
+        "Title": "Granted",
+        "Body":  "The deity answers — the wish takes effect. The GM resolves the miracle narratively."
+      },
+      "Dialog": {
+        "Title":      "Miracle Call",
+        "Prompt":     "Speak your wish aloud — thematically appropriate for your deity. Each spoken word rolls a d6; each natural 6 triggers a God's Wrath.",
+        "WordsLabel": "Number of words spoken",
+        "Call":       "Call the Miracle",
+        "Warning":    "The miracle always occurs. The risk is in the words."
+      }
+    },
+    "CelestialAid": {
+      "Title":   "Celestial Aid",
+      "Trigger": "Full House on a To Hit roll!",
+      "Prompt":  "Your god appears, bestowing divine assistance. Choose one:",
+      "HolyRay": {
+        "Button": "Holy Ray",
+        "Title":  "Holy Ray",
+        "Picked": "Holy Ray chosen — d20 damage to one target."
+      },
+      "FullBless": {
+        "Button":   "Full Bless",
+        "Title":    "Full Bless",
+        "Prompt":   "Heal whom?",
+        "Self":     "Self",
+        "Allies":   "All allies",
+        "HealedTo": "Healed to full health:",
+        "None":     "No targets found."
+      },
+      "FullBlessSelf":   { "Picked": "Full Bless chosen — Cleric healed to full." },
+      "FullBlessAllies": { "Picked": "Full Bless chosen — all allies healed to full." },
+      "LitanyOfClarity": {
+        "Button":   "Litany of Clarity",
+        "Title":    "Litany of Clarity",
+        "Picked":   "Litany of Clarity chosen — fumble range reset to 20.",
+        "Resolved": "Fumble range reset: {previous} → {current}."
+      }
+    },
+    "Talents": {
+      "Hint":          "Cutthroats start with five talents (from their guild), gaining one more at each level. Add a talent to unlock click-to-roll its save with advantage.",
+      "RollHint":      "Click to roll a {save} save with advantage.",
+      "Flavor":        "{name} (talent — advantage)",
+      "CurrentTab":    "Current Talents",
+      "AddTab":        "Add Talent",
+      "RemoveTooltip": "Remove this talent.",
+      "AddTooltip":    "Add this talent.",
+      "NoneSelected":  "No talents yet. Drag talents from the FLAIL Cutthroat Thieving Talents compendium onto this panel.",
+      "AllSelected":   "All twelve talents have been added.",
+      "KnownLabel":    "talents",
+      "DropHint":      "Drag more talents from the FLAIL Cutthroat Thieving Talents compendium to add them. Advantage on the matching save when the action is attempted."
+    },
+    "GuildTokens": {
+      "Spend":         "Spend",
+      "SpendTooltip":  "Spend one guild token. Requires the sigil to be worn.",
+      "SpendTitle":    "Guild Token Spent",
+      "SpendBody":     "Tokens: {before} → {after} / {max}.",
+      "ResetTooltip":  "Reset tokens to level (at session start).",
+      "Recouped":      "Mark of the Guild — token recouped!",
+      "RecoupFull":    "Mark of the Guild — already at maximum tokens"
+    },
+    "Guild": {
+      "DropPrompt":    "Drag a guild here to set your affiliation.",
+      "SpendTokensTo": "Spend Guild Tokens to:",
+      "RemoveTooltip": "Remove this guild",
+      "RemoveTitle":   "Remove Guild",
+      "RemoveConfirm": "Remove {name}? You'll lose access to the guild's special actions until a new guild is dragged in."
+    },
+    "GuildAction": {
+      "ConfirmTitle":  "Spend a token: {name}",
+      "SpendCost":     "This will spend 1 guild token: {before} → {after}."
+    },
+    "OpportunisticStrike": {
+      "Title":    "Opportunistic Strike",
+      "Trigger":  "Two Pair rolled!",
+      "Button":   "Strike again",
+      "Resolved": "Follow-up attack made.",
+      "Flavor":   "Opportunistic Strike"
+    },
+    "PrimalGift": {
+      "EmptyKingdom":     "— none owned —",
+      "DropHintFilled":   "Drag more Primal Gifts from the compendium to add them. Each gift is drag-and-drop from the FLAIL Druid Primal Gifts pack.",
+      "DropHintEmpty":    "Drag Primal Gifts from the FLAIL Druid Primal Gifts compendium onto this panel to acquire them.",
+      "DurationNote":     "Note: gifts last a number of turns up to current level.",
+      "PackMentality": {
+        "Title":    "Pack Mentality",
+        "Reminder": "+1 To Hit if an ally is Nearby (add manually if so)."
+      },
+      "VipersAgility": {
+        "Title":    "Viper's Agility",
+        "Reminder": "May make a second attack this round at disadvantage.",
+        "Button":   "Second attack (disadvantage)",
+        "Resolved": "Second attack made at disadvantage.",
+        "Flavor":   "Viper's Agility — second attack"
+      },
+      "SlimySkin": {
+        "Title":   "Slimy Skin",
+        "Applied": "Target ({name}) has Slimy Skin — -1 To Hit applied."
+      },
+      "Regeneration": {
+        "Title": "Regeneration",
+        "Hint":  "Spend one round to restore 4+d4 HP.",
+        "Body":  "Rolled 4+d4 = {rolled} HP. Restored {actual}. Current HP: {newHp} / {max}."
+      },
+      "ToxicSecretion": {
+        "Title":    "Toxic Secretion",
+        "Reminder": "Took {damage} damage. If a melee attacker dealt it, they take 2 damage back."
+      }
+    },
+    "Gadget": {
+      "EmptyCategory":  "— none owned —",
+      "DropHintFilled": "Drag more gadgets from the compendium to add them. Each gadget is drag-and-drop from the FLAIL Tinkerer Gadgets pack.",
+      "DropHintEmpty":  "Drag Gadgets from the FLAIL Tinkerer Gadgets compendium onto this panel to acquire them.",
+      "ReleaseHint":     "Release this gadget — rolls damage and posts the outcome to chat.",
+      "ReleaseUsedHint": "Already released today. Reset on long rest.",
+      "Damage": {
+        "CardTitle":    "released",
+        "DamageDealt":  "Damage",
+        "BuzzsawDisk": {
+          "Label":            "d6 damage (ricochet on a 6)",
+          "TargetHint":       "Target the token first, then click Apply Damage.",
+          "Ricochet":         "Ricochet!",
+          "RicochetDetail":   "Rolled a 6 — the disk ricochets onto another random target within Nearby range. GM picks the secondary target and applies the same damage."
+        },
+        "ClockworkToy": {
+          "Label":            "d8 delayed explosion (all Nearby)",
+          "TargetHint":       "Damage goes off next round to ALL targets Nearby. Target them before applying.",
+          "Delayed":          "Delayed one round",
+          "DelayedDetail":    "The toy walks erratically this round and explodes at the start of the next round, dealing the rolled damage to every target Nearby."
+        },
+        "FireSpitter": {
+          "Label":            "d4 flame cone (up to 2 Nearby targets)",
+          "TargetHint":       "Target up to two Nearby tokens, then click Apply Damage — each takes the rolled amount."
+        },
+        "GooBlast": {
+          "Label":            "d8 delayed goo (all Nearby, next round)",
+          "TargetHint":       "Attaches to the initial target. Next round, all targets Nearby take the rolled damage.",
+          "Delayed":          "Attached — detonates next round",
+          "DelayedDetail":    "Goo latches onto the initial target. On its next round, the goo detonates and deals the rolled damage to everyone Nearby (including the carrier)."
+        },
+        "ShockBolas": {
+          "Label":            "d4 electrical (stun on a 4)",
+          "TargetHint":       "Target the token first, then click Apply Damage.",
+          "Stunned":          "Stunned!",
+          "StunnedDetail":    "Rolled a 4 — the target is stunned. GM applies the Stunned condition alongside the damage."
+        }
+      }
+    },
+    "Bard": {
+      "JOAT": {
+        "SlotHint":    "picks (one per level)",
+        "EmptyHint":   "No picks yet.",
+        "DropHint":    "Drag a Cutthroat talent, a Tinkerer gadget, or a wizard spell from its compendium onto this panel. Each pick is used once per day.",
+        "CastHint":    "Cast the spell — max dice equals your Bard level (miscasting rules apply).",
+        "MarkHint":    "Mark this pick as used today.",
+        "UnmarkHint":  "Unmark — restore this pick for today."
+      }
+    },
+    "Shapeshift": {
+      "SectionLabel":       "Shapeshift",
+      "Hint":               "Roll up to six d6s to transform into a beast. The kingdom with the most primal gifts determines the form. Duration = dice rolled (in rounds). Each 1 grants +1 To Hit; each 6 is a mutation risk resolved on revert.",
+      "PreviewSingle":      "Dominant kingdom: {kingdom}.",
+      "PreviewTied":        "Tied between:",
+      "PreviewNone":        "Select at least one primal gift to enable Shapeshift.",
+      "StartButton":        "Shapeshift",
+      "DialogTitle":        "Shapeshift — Roll d6s",
+      "DicePrompt":         "How many d6s do you want to roll?",
+      "DiceLabel":          "Dice",
+      "DiceHint":           "Choose 1 to 6 dice. Duration in rounds = number rolled. Each 1 adds +1 To Hit while shifted. Each 6 becomes a mutation risk when reverting.",
+      "RollButton":         "Roll",
+      "CancelButton":       "Cancel",
+      "RevertButton":       "Revert to human",
+      "MutationWarning":    "{sixes} mutation risk(s) will trigger a save on revert.",
+      "MutationDialogTitle": "Reverting — Mutation Saves",
+      "MutationPrompt":     "You rolled {n} six(es) during transformation. Choose one attribute for each mutation save. On a failed save, that attribute permanently loses 1 point.",
+      "MutationRow":        "Risk {n} — save on:",
+      "MutationHint":       "Saves are rolled 1d20 vs the current attribute score (roll-under). Nat 1 always passes, nat 20 always fails.",
+      "RollSavesButton":    "Roll saves and revert",
+      "CardTitle":          "Shapeshift!",
+      "TransformsInto":     "transforms into a",
+      "TieResolved":        "Kingdom tie resolved randomly among:",
+      "Duration":           "{rounds} rounds",
+      "ThBonus":            "+{bonus} To Hit",
+      "RiskCount":          "{count} mutation risk(s)",
+      "Attacks":            "Beast attacks",
+      "RevertCardTitle":    "Revert to Human",
+      "RevertsFrom":        "reverts from",
+      "MutationSaves":      "Mutation saves",
+      "SaveDetail":         "score {score}, rolled {rolled}",
+      "PermanentLosses":    "Permanent losses:",
+      "NoLosses":           "All mutation saves passed — no permanent loss.",
+      "NoRisks":            "No mutation risks — reverted cleanly.",
+      "WeaponLocked":       "Locked while shapeshifted — use a beast attack instead."
+    },
+    "Rest": {
+      "SectionLabel":       "Rest",
+      "Healed":             "Healed",
+      "HealedToFull":       "Healed to full",
+      "AlreadyFull":        "Already at full HP",
+      "NoHeal":             "No HP recovered.",
+      "ConditionsCleared":  "Conditions cleared",
+      "FumbleReset":        "Fumble range reset to 20",
+      "JackOfTradesReset":  "Jack of All Trades slots refreshed",
+      "InstrumentsReset":   "Instrument used-out flags cleared",
+      "ManaRefilled":       "Mana refilled",
+      "Short": {
+        "Button":  "Short",
+        "Title":   "Short Rest",
+        "Tooltip": "One turn resting — restore d4 HP."
+      },
+      "Long": {
+        "Button":  "Long",
+        "Title":   "Long Rest",
+        "Tooltip": "One watch eating and sleeping — restore d4+4 HP, clear Drained / Exhausted, reset Cleric fumble range and Bard JoT slots."
+      },
+      "Full": {
+        "Button":  "Full",
+        "Title":   "Full Rest",
+        "Tooltip": "A week in a safe place — restore all HP and clear most long-term conditions.",
+        "Confirm": "Take a full rest? This represents a week of in-fiction downtime. All HP will be restored and Drained / Exhausted / Injured conditions will be cleared."
+      }
+    }
+  }
+}

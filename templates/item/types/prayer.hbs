@@ -1,0 +1,11 @@
+{{!-- Prayer body --}}
+<section class="card">
+  <div class="row">
+    <label>{{localize "FLAIL.Field.Religion"}}
+      <input type="text" name="system.religion" value="{{system.religion}}" placeholder="Sheezuz, Zor'Vol, Verdant Grove…" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+  <label class="block">{{localize "FLAIL.Field.EffectFormula"}}
+    <textarea name="system.effectFormula" rows="3" placeholder="[LEVEL] adversaries…" {{#unless editable}}disabled{{/unless}}>{{system.effectFormula}}</textarea>
+  </label>
+</section>

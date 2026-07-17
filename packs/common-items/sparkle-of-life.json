@@ -1,0 +1,39 @@
+{
+  "_id": "Ui3gs64uoAeqT7Th",
+  "_key": "!items!Ui3gs64uoAeqT7Th",
+  "name": "Sparkle of Life",
+  "type": "gear",
+  "img": "systems/flail/icons/items/sparkle-of-life.png",
+  "system": {
+    "location": "unequipped",
+    "slotIndex": 0,
+    "slotsRequired": 1,
+    "twoHanded": false,
+    "usage": {
+      "max": 3,
+      "value": 0
+    },
+    "description": "<p>The Tinkerer's animating spark \u2014 fuel for constructs.</p>",
+    "cost": 0,
+    "quantity": 1,
+    "consumable": false,
+    "tag": ""
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "13",
+    "systemId": "flail",
+    "systemVersion": "0.1.0",
+    "createdTime": 1777881491611,
+    "modifiedTime": 1777881491611,
+    "lastModifiedBy": null
+  }
+}

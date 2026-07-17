@@ -1,0 +1,20 @@
+{{!-- Spell body --}}
+<section class="card">
+  <h3>{{localize "FLAIL.Section.Properties"}}</h3>
+  <div class="row">
+    <label>{{localize "FLAIL.Field.Tradition"}}
+      <select name="system.tradition" {{#unless editable}}disabled{{/unless}}>
+        <option value="arcane"    {{#if (flail-eq system.tradition 'arcane')}}selected{{/if}}>{{localize "FLAIL.Tradition.Arcane"}}</option>
+        <option value="dark"      {{#if (flail-eq system.tradition 'dark')}}selected{{/if}}>{{localize "FLAIL.Tradition.Dark"}}</option>
+        <option value="illusion"  {{#if (flail-eq system.tradition 'illusion')}}selected{{/if}}>{{localize "FLAIL.Tradition.Illusion"}}</option>
+        <option value="custom"    {{#if (flail-eq system.tradition 'custom')}}selected{{/if}}>{{localize "FLAIL.Tradition.Custom"}}</option>
+      </select>
+    </label>
+    <label>{{localize "FLAIL.Field.SuggestedDice"}}
+      <input type="number" name="system.suggestedDice" value="{{system.suggestedDice}}" min="1" max="6" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+  <label class="block">{{localize "FLAIL.Field.EffectFormula"}}
+    <textarea name="system.effectFormula" rows="3" placeholder="[DICE] x [SUM] damage to all Near…" {{#unless editable}}disabled{{/unless}}>{{system.effectFormula}}</textarea>
+  </label>
+</section>

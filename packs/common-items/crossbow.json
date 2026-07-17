@@ -1,0 +1,45 @@
+{
+  "_id": "YjAyTPDsvQEgVK9Z",
+  "_key": "!items!YjAyTPDsvQEgVK9Z",
+  "name": "Crossbow",
+  "type": "weapon",
+  "img": "systems/flail/icons/items/crossbow.png",
+  "system": {
+    "location": "unequipped",
+    "slotIndex": 0,
+    "slotsRequired": 1,
+    "twoHanded": false,
+    "usage": {
+      "max": 3,
+      "value": 0
+    },
+    "description": "<p>Ranged bow weapon. TH 5 / DMG 4.</p>",
+    "cost": 0,
+    "quantity": 1,
+    "th": 5,
+    "damage": 4,
+    "range": [
+      "near",
+      "distant"
+    ],
+    "weaponType": "missile",
+    "category": "bow"
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "13",
+    "systemId": "flail",
+    "systemVersion": "0.1.0",
+    "createdTime": 1777881491611,
+    "modifiedTime": 1777881491611,
+    "lastModifiedBy": null
+  }
+}

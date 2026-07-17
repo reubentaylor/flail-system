@@ -1,0 +1,26 @@
+{{!-- Guild body — read-only-friendly summary of the bundled guild data.
+     Most fields aren't expected to be edited by the player (they ship
+     baked into the compendium), but kept editable for GM tweaks. --}}
+<section class="card">
+  <label class="block">{{localize "FLAIL.Field.Blurb"}}
+    <input type="text" name="system.blurb" value="{{system.blurb}}" {{#unless editable}}disabled{{/unless}} />
+  </label>
+  <label class="block">{{localize "FLAIL.Field.Sigil"}}
+    <input type="text" name="system.sigil" value="{{system.sigil}}" {{#unless editable}}disabled{{/unless}} />
+  </label>
+  <div class="block">
+    <label>{{localize "FLAIL.Field.StartingTalents"}}</label>
+    <p class="muted">{{#each system.startingTalents as |t|}}{{t}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+  </div>
+  <div class="block">
+    <label>{{localize "FLAIL.Field.SpecialActions"}}</label>
+    <ol class="guild-actions-edit">
+      {{#each system.specialActions as |a|}}
+      <li>
+        <strong>{{a.name}}:</strong>
+        <span>{{a.description}}</span>
+      </li>
+      {{/each}}
+    </ol>
+  </div>
+</section>

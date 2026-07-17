@@ -1,0 +1,19 @@
+{{!-- Item sheet header — name + image + magical flag --}}
+<header class="flail-item-header">
+  <img class="item-profile" src="{{item.img}}" data-edit="img" />
+  <input type="text" name="name" value="{{item.name}}" placeholder="{{localize 'FLAIL.Field.Name'}}" {{#unless editable}}disabled{{/unless}} />
+  <span class="item-type-tag">{{localize (concat 'FLAIL.ItemType.' item.type)}}</span>
+  <label class="item-magical-check" title="{{localize 'FLAIL.Field.MagicalHint'}}">
+    <input type="checkbox" name="isMagical" {{#if isMagical}}checked{{/if}} {{#unless editable}}disabled{{/unless}} />
+    <span>{{localize "FLAIL.Field.Magical"}}</span>
+  </label>
+  {{#if (flail-eq item.type "gear")}}
+  {{!-- Adornment flag — only relevant for gear items (rings, amulets,
+       sigils, talismans, charms, etc.). Checked items become eligible
+       for the two adornment inventory slots. --}}
+  <label class="item-adornment-check" title="{{localize 'FLAIL.Field.AdornmentHint'}}">
+    <input type="checkbox" name="isAdornment" {{#if isAdornment}}checked{{/if}} {{#unless editable}}disabled{{/unless}} />
+    <span>{{localize "FLAIL.Field.Adornment"}}</span>
+  </label>
+  {{/if}}
+</header>

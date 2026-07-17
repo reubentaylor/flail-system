@@ -1,0 +1,375 @@
+<div class="construct-sheet" data-active-tab="{{activeTab}}">
+
+  {{!-- Header — name (top-left), level (top-right) --}}
+  <header class="construct-header">
+    <div class="header-title">
+      <label class="header-name-label">{{localize "FLAIL.Field.Name"}}:</label>
+      <input type="text" class="header-name-input" name="name" value="{{actor.name}}" placeholder="{{localize 'FLAIL.Field.Name'}}" {{#unless editable}}disabled{{/unless}} />
+      <span class="header-badge">{{localize "FLAIL.Sheet.Construct"}}</span>
+    </div>
+    <div class="header-level">
+      <label>{{localize "FLAIL.Field.Level"}}</label>
+      <input type="number" name="system.level" value="{{system.level}}" min="1" {{#unless editable}}disabled{{/unless}} />
+    </div>
+  </header>
+
+  <div class="construct-body">
+
+    {{!-- Broken banner + Break Down / Rebuild UI --}}
+    {{#if isBroken}}
+    <section class="construct-broken-banner">
+      <div class="broken-title">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>{{localize "FLAIL.Construct.BrokenBanner"}}</span>
+      </div>
+      <div class="broken-rebuild-card">
+        <div class="rebuild-summary">
+          <p><strong>{{localize "FLAIL.Construct.RebuildRequirement"}}:</strong></p>
+          <ul>
+            <li>{{localize "FLAIL.Construct.RebuildDays" days=rebuildDays}}</li>
+            <li>{{localize "FLAIL.Construct.RebuildCoins" coins=rebuildCost}}</li>
+          </ul>
+        </div>
+        <div class="rebuild-action">
+          {{#if canRebuild}}
+          <button type="button" class="rebuild-btn" data-action="rebuild">
+            <i class="fas fa-tools"></i> {{localize "FLAIL.Construct.RebuildButton"}}
+          </button>
+          <p class="rebuild-hint">{{localize "FLAIL.Construct.RebuildReadyHint" coins=rebuildCost}}</p>
+          {{else}}
+          <button type="button" class="rebuild-btn" disabled>
+            <i class="fas fa-tools"></i> {{localize "FLAIL.Construct.RebuildButton"}}
+          </button>
+          {{#if (flail-eq rebuildBlockedReason "noOwner")}}
+          <p class="rebuild-blocked">{{localize "FLAIL.Construct.RebuildBlockedNoOwner"}}</p>
+          {{else if (flail-eq rebuildBlockedReason "noCoins")}}
+          <p class="rebuild-blocked">{{localize "FLAIL.Construct.RebuildBlockedNoCoins" needed=rebuildCost have=ownerCoins}}</p>
+          {{/if}}
+          {{/if}}
+        </div>
+      </div>
+    </section>
+    {{else if needsBreakDown}}
+    <section class="construct-breakdown-banner">
+      <div class="broken-title">
+        <i class="fas fa-heart-broken"></i>
+        <span>{{localize "FLAIL.Construct.NeedsBreakDownBanner"}}</span>
+      </div>
+      <button type="button" class="breakdown-btn" data-action="breakDown">
+        <i class="fas fa-heart-broken"></i> {{localize "FLAIL.Construct.BreakDownButton"}}
+      </button>
+    </section>
+    {{/if}}
+
+    <div class="construct-top-row">
+
+      <section class="tabbed-card sketch-card">
+        <header class="tab-label">{{localize "FLAIL.Construct.Sketch"}}</header>
+        <img class="construct-portrait" src="{{actor.img}}" data-edit="img" title="{{localize 'FLAIL.Construct.ChangeImage'}}" />
+        <div class="construct-owner-strip">
+          <span class="owner-label">{{localize "FLAIL.Construct.Owner"}}:</span>
+          {{#if ownerName}}
+          <span class="owner-name">{{ownerName}}</span>
+          <button type="button" class="owner-clear-btn" data-action="clearOwner" title="{{localize 'FLAIL.Construct.OwnerClearHint'}}" {{#unless editable}}disabled{{/unless}}>
+            <i class="fas fa-times"></i>
+          </button>
+          {{else}}
+          <select name="owner-picker" class="owner-picker" {{#unless editable}}disabled{{/unless}}>
+            <option value="">{{localize "FLAIL.Construct.OwnerPlaceholder"}}</option>
+            {{#each tinkererOptions as |t|}}
+            <option value="{{t.uuid}}">{{t.name}}</option>
+            {{/each}}
+          </select>
+          <button type="button" class="owner-set-btn" data-action="setOwner" {{#unless editable}}disabled{{/unless}}>
+            {{localize "FLAIL.Construct.OwnerSet"}}
+          </button>
+          {{/if}}
+        </div>
+      </section>
+
+      <section class="tabbed-card attacking-card">
+        <header class="tab-label">{{localize "FLAIL.Construct.Attacking"}}</header>
+        <div class="gear-stats">
+          <div class="gear-stat">
+            <span class="gear-label">TH</span>
+            <input type="number" name="system.th" value="{{system.th}}" min="0" {{#unless editable}}disabled{{/unless}} />
+          </div>
+          <div class="gear-stat">
+            <span class="gear-label">DMG</span>
+            <input type="number" name="system.damage" value="{{system.damage}}" min="0" {{#unless editable}}disabled{{/unless}} />
+          </div>
+        </div>
+        <button type="button" class="inherent-attack-btn" data-action="rollInherentAttack" title="{{localize 'FLAIL.Construct.InherentAttackHint'}}">
+          <i class="fas fa-dice-d6"></i> {{localize "FLAIL.Construct.InherentAttack"}}
+        </button>
+      </section>
+
+      <section class="tabbed-card surviving-card">
+        <header class="tab-label">{{localize "FLAIL.Construct.Surviving"}}</header>
+        <div class="gear-stats">
+          <div class="gear-stat">
+            <span class="gear-label">DEF</span>
+            <input type="number" name="system.defence" value="{{system.defence}}" min="0" {{#unless editable}}disabled{{/unless}} />
+          </div>
+          <div class="gear-stat gear-stat-clickable" data-action="rollSave" title="{{localize 'FLAIL.Construct.SavesRollHint'}}">
+            <span class="gear-label">SAVES</span>
+            <input type="number" name="system.saves" value="{{system.saves}}" min="0" {{#unless editable}}disabled{{/unless}} />
+          </div>
+        </div>
+        <div class="stat hp construct-hp-row">
+          <label>{{localize "FLAIL.Field.HP"}}</label>
+          <button type="button" data-action="adjustHp" data-delta="-1" {{#unless editable}}disabled{{/unless}}>&minus;</button>
+          <input type="number" name="system.hp.value" value="{{system.hp.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+          <span>/</span>
+          <input type="number" name="system.hp.max" value="{{system.hp.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+          <button type="button" data-action="adjustHp" data-delta="1" {{#unless editable}}disabled{{/unless}}>+</button>
+        </div>
+      </section>
+
+    </div>
+
+    {{#if attacks.length}}
+    <section class="tabbed-card construct-attacks-card">
+      <header class="tab-label">{{localize "FLAIL.Section.Weapons"}}</header>
+      <div class="quick-weapon-list">
+        {{#each attacks as |w|}}
+        <button type="button" class="quick-weapon" data-action="rollAttack" data-item-id="{{w.id}}" title="{{localize 'FLAIL.Roll.ToHit'}}">
+          <img src="{{w.img}}" />
+          <span class="qw-name">{{w.name}}</span>
+          <span class="qw-th">{{w.system.th}}d6</span>
+          <span class="qw-dmg">DMG {{w.system.damage}}</span>
+        </button>
+        {{/each}}
+      </div>
+    </section>
+    {{/if}}
+
+    <nav class="tabs-nav construct-tabs-nav">
+      {{#each tabs as |t|}}
+      <button type="button" class="tab-btn {{#if t.active}}is-active{{/if}}" data-action="selectTab" data-tab="{{t.id}}">
+        {{localize t.label}}
+      </button>
+      {{/each}}
+    </nav>
+
+    <section class="tab-panel construct-abilities-panel" data-tab="abilities">
+      <div class="tabbed-card construct-abilities-card">
+        <header class="tab-label">{{localize "FLAIL.Construct.Abilities"}}</header>
+        <div class="construct-abilities-grid">
+          {{#each abilitiesList as |a|}}
+          <label class="construct-ability-check">
+            <input type="checkbox" name="system.abilities.{{a.key}}" {{#if a.checked}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}} />
+            <span>{{a.label}}</span>
+          </label>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel construct-inventory-panel" data-tab="inventory">
+      <div class="tabbed-card construct-inventory-card">
+        <header class="tab-label">{{localize "FLAIL.Section.Inventory"}}</header>
+        <div class="construct-inventory-zones">
+
+          <div class="construct-zone carried-zone">
+            <div class="zone-header">
+              <h4>{{localize "FLAIL.Construct.Carried"}} <span class="zone-count">{{unlockedCarried}}/{{maxCarried}}</span></h4>
+              <p class="zone-hint">{{localize "FLAIL.Construct.CarriedHint"}}</p>
+            </div>
+            <div class="construct-slot-grid">
+              {{#each carriedSlots as |slot|}}
+              <div class="construct-slot {{#if slot.locked}}is-locked{{/if}} {{#if slot.item}}is-occupied{{/if}}" data-zone="{{slot.zone}}" data-index="{{slot.index}}">
+                {{#if slot.locked}}
+                <div class="slot-empty construct-slot-locked">
+                  <i class="fas fa-lock"></i>
+                  <span class="placeholder">{{localize "FLAIL.Construct.SlotLocked"}}</span>
+                </div>
+                {{else if slot.item}}
+                <div class="slot-item" draggable="true" data-item-id="{{slot.item.id}}">
+                  <img src="{{slot.item.img}}" alt="{{slot.item.name}}" />
+                  <span class="slot-item-name">{{slot.item.name}}</span>
+                  {{#if slot.canAttack}}
+                  <button type="button" class="slot-action attack-btn" data-action="rollAttack" data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Roll.ToHit'}}">
+                    <i class="fas fa-dice-d6"></i>
+                  </button>
+                  {{/if}}
+                  {{#if slot.item.system.usage.max}}
+                  <span class="slot-usage">{{flail-pip slot.item.system.usage.value slot.item.system.usage.max slot.item.id}}</span>
+                  {{/if}}
+                  <span class="slot-meta">
+                    <button type="button" data-action="itemEdit"   data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+                    <button type="button" data-action="markUsage"  data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.MarkUsage'}}"><i class="fas fa-circle"></i></button>
+                    <button type="button" data-action="itemDelete" data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="slot-meta-delete"><i class="fas fa-trash"></i></button>
+                  </span>
+                </div>
+                {{else}}
+                <div class="slot-empty">
+                  <span class="placeholder">{{localize "FLAIL.Construct.SlotEmpty"}}</span>
+                </div>
+                {{/if}}
+              </div>
+              {{/each}}
+            </div>
+            {{#if canUnlockCarried}}
+            <button type="button" class="unlock-slot-btn" data-action="unlockCarried" title="{{localize 'FLAIL.Construct.UnlockCarriedHint'}}" {{#unless editable}}disabled{{/unless}}>
+              <i class="fas fa-key"></i> {{localize "FLAIL.Construct.UnlockCarried"}}
+            </button>
+            {{/if}}
+          </div>
+
+          <div class="construct-zone stashed-zone">
+            <div class="zone-header">
+              <h4>{{localize "FLAIL.Construct.Stashed"}} <span class="zone-count">{{unlockedStashed}}/{{maxStashed}}</span></h4>
+              <p class="zone-hint">{{localize "FLAIL.Construct.StashedHint"}}</p>
+            </div>
+            <div class="construct-slot-grid stashed-grid">
+              {{#each stashedSlots as |slot|}}
+              <div class="construct-slot {{#if slot.locked}}is-locked{{/if}} {{#if slot.item}}is-occupied{{/if}}" data-zone="{{slot.zone}}" data-index="{{slot.index}}">
+                {{#if slot.locked}}
+                <div class="slot-empty construct-slot-locked">
+                  <i class="fas fa-lock"></i>
+                  <span class="placeholder">{{localize "FLAIL.Construct.SlotLocked"}}</span>
+                </div>
+                {{else if slot.item}}
+                <div class="slot-item" draggable="true" data-item-id="{{slot.item.id}}">
+                  <img src="{{slot.item.img}}" alt="{{slot.item.name}}" />
+                  <span class="slot-item-name">{{slot.item.name}}</span>
+                  {{#if slot.item.system.usage.max}}
+                  <span class="slot-usage">{{flail-pip slot.item.system.usage.value slot.item.system.usage.max slot.item.id}}</span>
+                  {{/if}}
+                  <span class="slot-meta">
+                    <button type="button" data-action="itemEdit"   data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+                    <button type="button" data-action="markUsage"  data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.MarkUsage'}}"><i class="fas fa-circle"></i></button>
+                    <button type="button" data-action="itemDelete" data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="slot-meta-delete"><i class="fas fa-trash"></i></button>
+                  </span>
+                </div>
+                {{else}}
+                <div class="slot-empty">
+                  <span class="placeholder">{{localize "FLAIL.Construct.SlotEmpty"}}</span>
+                </div>
+                {{/if}}
+              </div>
+              {{/each}}
+            </div>
+            {{#if canUnlockStashed}}
+            <button type="button" class="unlock-slot-btn" data-action="unlockStashed" title="{{localize 'FLAIL.Construct.UnlockStashedHint'}}" {{#unless editable}}disabled{{/unless}}>
+              <i class="fas fa-key"></i> {{localize "FLAIL.Construct.UnlockStashed"}}
+            </button>
+            {{/if}}
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel construct-improvements-panel" data-tab="improvements">
+      <div class="tabbed-card construct-improvements-card">
+        <header class="tab-label improvements-tab-header">
+          <span>{{localize "FLAIL.Construct.Improvements"}}</span>
+          <button type="button" class="improvements-lock-btn {{#if improvementsLocked}}is-locked{{else}}is-unlocked{{/if}}"
+                  data-action="toggleImprovementLock"
+                  title="{{#if improvementsLocked}}{{localize 'FLAIL.Construct.Improvement.UnlockHint'}}{{else}}{{localize 'FLAIL.Construct.Improvement.LockHint'}}{{/if}}">
+            {{#if improvementsLocked}}
+            <i class="fas fa-lock"></i> {{localize "FLAIL.Construct.Improvement.Locked"}}
+            {{else}}
+            <i class="fas fa-lock-open"></i> {{localize "FLAIL.Construct.Improvement.Unlocked"}}
+            {{/if}}
+          </button>
+        </header>
+
+        <div class="improvements-row">
+          <div class="improvement-pool">
+            <strong>{{availablePoints}}</strong>
+            <span>{{localize "FLAIL.Construct.Improvement.PointsAvailable" total=improvementPointsTotal spent=spentPoints}}</span>
+            {{#if sunkPoints}}
+            <span class="points-sunk">{{localize "FLAIL.Construct.Improvement.PointsSunk" sunk=sunkPoints}}</span>
+            {{/if}}
+          </div>
+          <div class="sparkle-status {{#if hasSparkle}}sparkle-active{{else}}sparkle-inactive{{/if}}">
+            {{#if hasSparkle}}
+            <i class="fas fa-star"></i>
+            <span>{{localize "FLAIL.Construct.SparkleActive"}}</span>
+            {{else}}
+            <i class="fas fa-star-half-alt"></i>
+            <span>{{localize "FLAIL.Construct.SparkleMissing"}}</span>
+            {{/if}}
+          </div>
+        </div>
+
+        <div class="improvement-picker-row">
+          <label class="picker-label" for="construct-improvement-picker">{{localize "FLAIL.Construct.Improvement.SelectLabel"}}:</label>
+          <select id="construct-improvement-picker" name="improvement-picker" {{#if improvementsLocked}}disabled{{/if}}>
+            {{#each improvementOptions as |opt|}}
+            <option value="{{opt.key}}">
+              {{opt.label}} ({{opt.cost}} pt{{#unless (flail-eq opt.cost 1)}}s{{/unless}})
+              {{#if opt.maxReached}}— MAX{{else if opt.atLevelCap}}— 2/level{{/if}}
+            </option>
+            {{/each}}
+          </select>
+          <button type="button" class="picker-btn picker-add" data-action="addImprovement" {{#if improvementsLocked}}disabled{{/if}}>
+            <i class="fas fa-plus"></i> {{localize "FLAIL.Construct.Improvement.Add"}}
+          </button>
+          <button type="button" class="picker-btn picker-remove" data-action="removeImprovement" {{#if improvementsLocked}}disabled{{/if}}>
+            <i class="fas fa-minus"></i> {{localize "FLAIL.Construct.Improvement.Remove"}}
+          </button>
+        </div>
+
+        <p class="improvement-hint">{{localize "FLAIL.Construct.ImprovementHint"}}</p>
+
+        {{!-- Reassemble banner (active mode) --}}
+        {{#if reassembleMode}}
+        <div class="reassemble-banner">
+          <div class="reassemble-title">
+            <i class="fas fa-screwdriver-wrench"></i>
+            <span>{{localize "FLAIL.Construct.ReassembleModeBanner"}}</span>
+          </div>
+          <p class="reassemble-hint">{{localize "FLAIL.Construct.ReassembleModeHint"}}</p>
+          <button type="button" class="reassemble-finish-btn" data-action="finishReassemble">
+            <i class="fas fa-check"></i> {{localize "FLAIL.Construct.ReassembleFinish"}}
+          </button>
+        </div>
+        {{else}}
+        {{!-- Start Reassemble button — only shown when not in mode --}}
+        <div class="reassemble-start-row">
+          {{#if canStartReassemble}}
+          <button type="button" class="reassemble-start-btn" data-action="startReassemble" title="{{localize 'FLAIL.Construct.ReassembleStartHint'}}">
+            <i class="fas fa-screwdriver-wrench"></i> {{localize "FLAIL.Construct.ReassembleStart"}}
+          </button>
+          {{else}}
+          <button type="button" class="reassemble-start-btn" disabled title="{{localize 'FLAIL.Construct.ReassembleStartHint'}}">
+            <i class="fas fa-screwdriver-wrench"></i> {{localize "FLAIL.Construct.ReassembleStart"}}
+          </button>
+          {{#if (flail-eq reassembleBlockedReason "locked")}}
+          <p class="reassemble-blocked">{{localize "FLAIL.Construct.ReassembleBlockedLocked"}}</p>
+          {{else if (flail-eq reassembleBlockedReason "broken")}}
+          <p class="reassemble-blocked">{{localize "FLAIL.Construct.ReassembleBlockedBroken"}}</p>
+          {{else if (flail-eq reassembleBlockedReason "noOwner")}}
+          <p class="reassemble-blocked">{{localize "FLAIL.Construct.ReassembleBlockedNoOwner"}}</p>
+          {{/if}}
+          {{/if}}
+        </div>
+        {{/if}}
+
+        {{#if purchasedImprovements.length}}
+        <div class="purchased-list">
+          <h4>{{localize "FLAIL.Construct.Improvement.PurchasedLabel"}}</h4>
+          <ul>
+            {{#each purchasedImprovements as |p|}}
+            <li>
+              <span class="purchased-name">{{p.label}}</span>
+              {{#if (flail-eq p.count 1)}}
+              <span class="purchased-count">Level {{p.firstLevel}}</span>
+              {{else}}
+              <span class="purchased-count">×{{p.count}} (Levels {{p.levelsJoined}})</span>
+              {{/if}}
+              <span class="purchased-cost">{{p.totalCost}} pt{{#unless (flail-eq p.totalCost 1)}}s{{/unless}}</span>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
+        {{/if}}
+      </div>
+    </section>
+
+  </div>
+</div>

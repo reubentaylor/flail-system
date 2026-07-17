@@ -1,0 +1,40 @@
+{{!-- Spells tab — Wizard / Bone Whisperer / multi-class casters --}}
+<section class="tab-pane {{#if (flail-eq tabGroups.primary 'spells')}}active{{/if}}" data-tab="spells">
+  <section class="card">
+    <header>
+      <h3>{{localize "FLAIL.Section.Spellbook"}}</h3>
+      <button type="button" class="add-btn" data-action="itemCreate" data-item-type="spell">+</button>
+    </header>
+    {{#if items.spells.length}}
+    <table class="spell-table">
+      <thead>
+        <tr>
+          <th>{{localize "FLAIL.Field.Name"}}</th>
+          <th>{{localize "FLAIL.Field.Tradition"}}</th>
+          <th>{{localize "FLAIL.Field.SuggestedDice"}}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {{#each items.spells as |spell|}}
+        <tr data-item-id="{{spell.id}}" draggable="true">
+          <td class="name">
+            <img src="{{spell.img}}" />
+            <span>{{spell.name}}</span>
+          </td>
+          <td>{{spell.system.tradition}}</td>
+          <td>{{spell.system.suggestedDice}}</td>
+          <td class="actions">
+            <button type="button" data-action="itemEdit"   data-item-id="{{spell.id}}"><i class="fas fa-edit"></i></button>
+            <button type="button" data-action="itemToChat" data-item-id="{{spell.id}}"><i class="fas fa-comment"></i></button>
+            <button type="button" data-action="itemDelete" data-item-id="{{spell.id}}"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      {{/each}}
+      </tbody>
+    </table>
+    {{else}}
+    <p class="empty">{{localize "FLAIL.Empty.NoSpells"}}</p>
+    {{/if}}
+  </section>
+</section>

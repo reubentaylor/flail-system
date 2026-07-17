@@ -1,0 +1,39 @@
+{{!-- Features tab — talents, gadgets, primal gifts, prayers, instruments, generic features --}}
+<section class="tab-pane {{#if (flail-eq tabGroups.primary 'features')}}active{{/if}}" data-tab="features">
+
+  {{#*inline "featureList"}}
+    <section class="card feature-section">
+      <header>
+        <h3>{{label}}</h3>
+        <button type="button" class="add-btn" data-action="itemCreate" data-item-type="{{createType}}">+</button>
+      </header>
+      {{#if list.length}}
+      <ul class="feature-list">
+        {{#each list as |item|}}
+        <li class="feature-row" data-item-id="{{item.id}}" draggable="true">
+          <img src="{{item.img}}" />
+          <div class="feature-body">
+            <header><strong>{{item.name}}</strong></header>
+            <div class="feature-desc">{{{item.system.description}}}</div>
+          </div>
+          <div class="feature-actions">
+            <button type="button" data-action="itemEdit" data-item-id="{{item.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+            <button type="button" data-action="itemToChat" data-item-id="{{item.id}}" title="{{localize 'FLAIL.Action.ShareToChat'}}"><i class="fas fa-comment"></i></button>
+            <button type="button" data-action="itemDelete" data-item-id="{{item.id}}" title="{{localize 'FLAIL.Action.Delete'}}"><i class="fas fa-trash"></i></button>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+      {{else}}
+      <p class="empty">{{localize "FLAIL.Empty.None"}}</p>
+      {{/if}}
+    </section>
+  {{/inline}}
+
+  {{> featureList list=items.features    label=(localize "FLAIL.Section.Features")    createType="feature" }}
+  {{> featureList list=items.talents     label=(localize "FLAIL.Section.Talents")     createType="talent" }}
+  {{> featureList list=items.gadgets     label=(localize "FLAIL.Section.Gadgets")     createType="gadget" }}
+  {{> featureList list=items.gifts       label=(localize "FLAIL.Section.Gifts")       createType="gift" }}
+  {{> featureList list=items.prayers     label=(localize "FLAIL.Section.Prayers")     createType="prayer" }}
+  {{> featureList list=items.instruments label=(localize "FLAIL.Section.Instruments") createType="instrument" }}
+</section>

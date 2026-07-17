@@ -1,0 +1,21 @@
+{{!--
+  Notes tab — biography + personal notes + adventure log rich-text
+  editors. All three span the full width of the sheet and stack
+  vertically. Adventure Log is intended for session-by-session play
+  notes; Notes for miscellaneous character notes; Biography for
+  fixed backstory.
+--}}
+<section class="tab-panel notes-panel" data-tab="notes">
+  <section class="tabbed-card">
+    <header class="tab-label">{{localize "FLAIL.Field.Biography"}}</header>
+    {{editor system.biography target="system.biography" button=true editable=editable engine="prosemirror"}}
+  </section>
+  <section class="tabbed-card">
+    <header class="tab-label">{{localize "FLAIL.Field.Notes"}}</header>
+    {{editor system.notes target="system.notes" button=true editable=editable engine="prosemirror"}}
+  </section>
+  <section class="tabbed-card adventure-log-card">
+    <header class="tab-label">{{localize "FLAIL.Field.AdventureLog"}}</header>
+    {{editor system.adventureLog target="system.adventureLog" button=true editable=editable engine="prosemirror"}}
+  </section>
+</section>

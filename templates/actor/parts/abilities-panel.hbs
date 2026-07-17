@@ -1,0 +1,54 @@
+{{!--
+  Abilities tab — Special Skills (+ class tracker), Attributes strip,
+  a bottom row that holds the Level/HP/Coins/Reputation vitals 2×2 on
+  the left with the Quick Attacks panel on its right, and a Rest bar
+  at the foot.
+--}}
+<section class="tab-panel abilities-panel" data-tab="abilities">
+  {{#if armourProficiencyViolated}}
+  {{!-- Armour proficiency warning. Fires when at least one worn
+       body-armour item's armourType isn't in the class's proficient
+       list. This is a visual reminder — no roll adjustments happen
+       automatically. --}}
+  <div class="armour-proficiency-warning">
+    <i class="fas fa-triangle-exclamation"></i>
+    <div class="apw-body">
+      <p class="apw-headline">{{localize "FLAIL.Armour.ProficiencyWarningHeadline"}}</p>
+      <p class="apw-detail">
+        {{localize "FLAIL.Armour.ProficiencyWarningItems"}}:
+        {{#each armourProficiencyViolators as |v|}}
+          <strong>{{v.name}}</strong>{{#unless @last}}, {{/unless}}
+        {{/each}}
+      </p>
+    </div>
+  </div>
+  {{/if}}
+  {{> "systems/flail/templates/actor/parts/skills-row.hbs"}}
+  {{> "systems/flail/templates/actor/parts/attributes.hbs"}}
+  <div class="abilities-bottom-row">
+    {{> "systems/flail/templates/actor/parts/vitals.hbs"}}
+    {{> "systems/flail/templates/actor/parts/quick-attacks.hbs"}}
+  </div>
+
+  {{!-- Rest bar — three buttons for short / long / full rest. Each
+       routes through resolveRest, which heals, clears appropriate
+       conditions, and posts a chat card. Full Rest confirms first. --}}
+  <div class="rest-bar">
+    <header class="rest-bar-label">{{localize "FLAIL.Rest.SectionLabel"}}</header>
+    <button type="button" class="rest-btn rest-short" data-action="restShort"
+            title="{{localize 'FLAIL.Rest.Short.Tooltip'}}" {{#unless editable}}disabled{{/unless}}>
+      <i class="fas fa-mug-hot"></i>
+      <span>{{localize "FLAIL.Rest.Short.Button"}}</span>
+    </button>
+    <button type="button" class="rest-btn rest-long" data-action="restLong"
+            title="{{localize 'FLAIL.Rest.Long.Tooltip'}}" {{#unless editable}}disabled{{/unless}}>
+      <i class="fas fa-moon"></i>
+      <span>{{localize "FLAIL.Rest.Long.Button"}}</span>
+    </button>
+    <button type="button" class="rest-btn rest-full" data-action="restFull"
+            title="{{localize 'FLAIL.Rest.Full.Tooltip'}}" {{#unless editable}}disabled{{/unless}}>
+      <i class="fas fa-house"></i>
+      <span>{{localize "FLAIL.Rest.Full.Button"}}</span>
+    </button>
+  </div>
+</section>

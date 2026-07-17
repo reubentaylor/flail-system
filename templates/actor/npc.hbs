@@ -1,0 +1,123 @@
+{{!-- NPC sheet template --}}
+<form class="flail-npc-sheet">
+
+  <header class="npc-header">
+    <img class="profile" src="{{actor.img}}" data-edit="img" />
+    <div class="meta">
+      <input type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'FLAIL.Field.Name'}}" {{#unless editable}}disabled{{/unless}} />
+      <div class="row">
+        <label>{{localize "FLAIL.Field.Level"}} <input type="number" name="system.level" value="{{system.level}}" min="1" {{#unless editable}}disabled{{/unless}} /></label>
+        <label>{{localize "FLAIL.Field.Type"}} <input type="text" name="system.creatureType" value="{{system.creatureType}}" {{#unless editable}}disabled{{/unless}} /></label>
+        <label>{{localize "FLAIL.Field.Movement"}}
+          <select name="system.movement" {{#unless editable}}disabled{{/unless}}>
+            <option value="S" {{#if (flail-eq system.movement "S")}}selected{{/if}}>S</option>
+            <option value="A" {{#if (flail-eq system.movement "A")}}selected{{/if}}>A</option>
+            <option value="F" {{#if (flail-eq system.movement "F")}}selected{{/if}}>F</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <section class="stat-strip">
+    <div class="stat hp">
+      <label>{{localize "FLAIL.Field.HP"}}</label>
+      <button type="button" data-action="adjustHp" data-delta="-1">-</button>
+      <input type="number" name="system.hp.value" value="{{system.hp.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      <span>/</span>
+      <input type="number" name="system.hp.max" value="{{system.hp.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      <button type="button" data-action="adjustHp" data-delta="1">+</button>
+    </div>
+    <div class="stat">
+      <button type="button" data-action="rollSave">{{localize "FLAIL.Field.Saves"}}</button>
+      <input type="number" name="system.saves" value="{{system.saves}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </div>
+    <div class="stat">
+      <label>{{localize "FLAIL.Field.Defence"}}</label>
+      <input type="number" name="system.defence" value="{{system.defence}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </div>
+    <div class="stat">
+      <button type="button" data-action="rollMorale">{{localize "FLAIL.Field.Morale"}}</button>
+      <input type="number" name="system.morale" value="{{system.morale}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </div>
+    {{#if system.mana.max}}
+    <div class="stat">
+      <label>{{localize "FLAIL.Field.Mana"}}</label>
+      <input type="number" name="system.mana.value" value="{{system.mana.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      <span>/</span>
+      <input type="number" name="system.mana.max" value="{{system.mana.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </div>
+    {{/if}}
+  </section>
+
+  {{!-- Special rules card — bordered box showing actor-level "Special:"
+       text (Roc: two attacks per round, Phoenix: reawakens on death,
+       swarms: TH = current HP, etc). Only rendered when populated so
+       ordinary NPCs don't get an empty box. --}}
+  {{#if system.specialRules}}
+  <section class="card npc-special-rules">
+    <header>
+      <i class="fas fa-star-of-life"></i>
+      <h3>{{localize "FLAIL.Section.SpecialRules"}}</h3>
+    </header>
+    <div class="npc-special-body">{{{system.specialRules}}}</div>
+  </section>
+  {{/if}}
+
+  <section class="card attacks">
+    <header>
+      <h3>{{localize "FLAIL.Section.Attacks"}}</h3>
+      {{#if (flail-gt system.attacksPerRound 1)}}
+      <span class="attacks-per-round-badge" title="{{localize 'FLAIL.NPC.AttacksPerRoundHint'}}">
+        <i class="fas fa-repeat"></i> {{system.attacksPerRound}}/round
+      </span>
+      {{/if}}
+      <button type="button" class="add-btn" data-action="itemCreate" data-item-type="weapon">+</button>
+    </header>
+    {{#if attacks.length}}
+    <ul class="attack-list">
+    {{#each attacks as |w|}}
+      <li class="attack-row" data-item-id="{{w.id}}">
+        <button type="button" class="attack-btn" data-action="rollAttack" data-item-id="{{w.id}}" title="{{localize 'FLAIL.Roll.ToHit'}}">
+          <img src="{{w.img}}" /><span class="aname">{{w.name}}</span>
+          <span class="ath">TH {{w.system.th}}</span>
+          <span class="admg">DMG {{w.system.damage}}</span>
+        </button>
+        <div class="attack-meta">
+          <button type="button" data-action="itemEdit" data-item-id="{{w.id}}"><i class="fas fa-edit"></i></button>
+          <button type="button" data-action="itemDelete" data-item-id="{{w.id}}"><i class="fas fa-trash"></i></button>
+        </div>
+        {{!-- Attack trigger clauses — surfaced verbatim from the
+             bestiary line so the GM can see them without opening the
+             weapon sheet. Each is optional; blank ones don't render. --}}
+        {{#if w.system.anyHit}}
+        <div class="attack-trigger trigger-any">
+          <span class="tk">{{localize "FLAIL.Attack.AnyHit"}}:</span> {{w.system.anyHit}}
+        </div>
+        {{/if}}
+        {{#if w.system.majorHit}}
+        <div class="attack-trigger trigger-major">
+          <span class="tk">{{localize "FLAIL.Attack.MajorHit"}}:</span> {{w.system.majorHit}}
+        </div>
+        {{/if}}
+        {{#if w.system.deathBlow}}
+        <div class="attack-trigger trigger-death">
+          <span class="tk">{{localize "FLAIL.Attack.DeathBlow"}}:</span> {{w.system.deathBlow}}
+        </div>
+        {{/if}}
+        {{#if w.system.description}}
+        <div class="attack-desc">{{{w.system.description}}}</div>
+        {{/if}}
+      </li>
+    {{/each}}
+    </ul>
+    {{else}}
+    <p class="empty">{{localize "FLAIL.Empty.NoAttacks"}}</p>
+    {{/if}}
+  </section>
+
+  <section class="card description-card">
+    <header><h3>{{localize "FLAIL.Field.Description"}}</h3></header>
+    {{editor system.description target="system.description" button=true editable=editable engine="prosemirror"}}
+  </section>
+</form>

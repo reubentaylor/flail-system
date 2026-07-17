@@ -1,0 +1,59 @@
+{{!--
+  Main tab — at-a-glance summary of the most-used info during play:
+    * Equipped weapons (clickable to attack)
+    * Class features
+    * Active conditions
+--}}
+<section class="tab-pane {{#if (flail-eq tabGroups.primary 'main')}}active{{/if}}" data-tab="main">
+
+  {{!-- Quick weapons --}}
+  <section class="card weapons-quick">
+    <header><h3>{{localize "FLAIL.Section.Weapons"}}</h3></header>
+    <div class="quick-weapon-list">
+      {{#each actor.items as |item|}}
+        {{#if (flail-eq item.type "weapon")}}
+          {{#if (flail-includes (array "hands" "body") item.system.location)}}
+          <button type="button" class="quick-weapon" data-action="rollAttack" data-item-id="{{item.id}}" title="{{localize 'FLAIL.Roll.ToHit'}} ({{item.name}})">
+            <img src="{{item.img}}" />
+            <span class="qw-name">{{item.name}}</span>
+            <span class="qw-th">{{item.system.th}}d6</span>
+            <span class="qw-dmg">d{{item.system.damage}}</span>
+          </button>
+          {{/if}}
+        {{/if}}
+      {{/each}}
+    </div>
+  </section>
+
+  {{!-- Active conditions --}}
+  <section class="card conditions-card">
+    <header><h3>{{localize "FLAIL.Section.Conditions"}}</h3></header>
+    <div class="condition-list">
+      {{#if items.conditions.length}}
+        {{#each items.conditions as |c|}}
+        <div class="condition-row" data-item-id="{{c.id}}">
+          <img src="{{c.img}}" />
+          <span class="cond-name">{{c.name}}</span>
+          <span class="cond-clear">{{localize (concat 'FLAIL.Clear.' c.system.clearRequirement)}}</span>
+          <button type="button" data-action="itemDelete" data-item-id="{{c.id}}" title="{{localize 'FLAIL.Action.Clear'}}"><i class="fas fa-times"></i></button>
+        </div>
+        {{/each}}
+      {{else}}
+        <p class="empty">{{localize "FLAIL.Empty.Conditions"}}</p>
+      {{/if}}
+    </div>
+  </section>
+
+  {{!-- Class summary --}}
+  <section class="card class-summary">
+    <header><h3>{{classLabel}}</h3></header>
+    <p class="backstory">{{system.backstory}}</p>
+    {{#if items.features.length}}
+    <ul class="feature-list">
+      {{#each items.features as |f|}}
+      <li><strong>{{f.name}}.</strong> {{{f.system.description}}}</li>
+      {{/each}}
+    </ul>
+    {{/if}}
+  </section>
+</section>

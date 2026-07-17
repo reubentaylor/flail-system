@@ -1,0 +1,66 @@
+{{!--
+  Lay on Hands chat card.
+  Shows: actor + target, LUCK save roll, outcome, heal payload (success/crit
+  only), and religion-specific fumble text on a fumble.
+--}}
+<div class="flail-card cast-card prayer-card lay-on-hands-card outcome-{{outcome}}">
+
+  <header class="card-header">
+    <img class="actor-img" src="{{actor.img}}" />
+    <span class="actor-name">{{actor.name}}</span>
+    <h3>
+      <i class="fas fa-hand-holding-medical"></i>
+      {{localize "FLAIL.LayOnHands.Title"}}
+    </h3>
+  </header>
+
+  <div class="cast-meta">
+    <span class="meta-chip"><i class="fas fa-user"></i> {{localize "FLAIL.LayOnHands.Target"}}: <strong>{{target.name}}</strong></span>
+    <span class="meta-chip"><i class="fas fa-dice-d20"></i> LUCK save: <strong>{{result}}</strong> vs {{luck}}</span>
+    <span class="meta-chip">Fumble ≥ {{threshold}}</span>
+    {{#if thresholdDropped}}
+    <span class="meta-chip threshold-drop">↓ now {{newThreshold}}</span>
+    {{/if}}
+  </div>
+
+  {{!-- Outcome banner --}}
+  {{#if (flail-eq outcome "success")}}
+  <div class="side-effect-banner prayer-success">
+    <i class="fas fa-heart"></i>
+    <span class="se-title">{{localize "FLAIL.LayOnHands.Success.Title"}}</span>
+  </div>
+  {{else if (flail-eq outcome "crit")}}
+  <div class="side-effect-banner prayer-crit">
+    <i class="fas fa-star"></i>
+    <span class="se-title">{{localize "FLAIL.LayOnHands.Crit.Title"}}</span>
+  </div>
+  {{else if (flail-eq outcome "fail")}}
+  <div class="side-effect-banner prayer-fail">
+    <i class="fas fa-exclamation"></i>
+    <span class="se-title">{{localize "FLAIL.LayOnHands.Fail.Title"}}</span>
+    <span class="se-text">{{localize "FLAIL.LayOnHands.Fail.Body"}}</span>
+  </div>
+  {{else if (flail-eq outcome "fumble")}}
+  <div class="side-effect-banner prayer-fumble">
+    <header>
+      <i class="fas fa-skull-crossbones"></i>
+      <span class="se-title">{{localize "FLAIL.LayOnHands.Fumble.Title"}}</span>
+      <span class="se-roll">{{religionLabel}}</span>
+    </header>
+    <div class="se-entry">{{fumbleText}}</div>
+  </div>
+  {{/if}}
+
+  {{!-- Heal payload (success / crit only) --}}
+  {{#if heal}}
+  <div class="cast-description heal-payload">
+    <strong>{{localize "FLAIL.LayOnHands.Healed"}}:</strong>
+    {{heal.amount}} hp ({{heal.formula}})
+    — {{target.name}}: {{heal.hpBefore}} → {{heal.hpAfter}}
+  </div>
+  {{/if}}
+
+  <footer class="cast-footer">
+    <span class="prayer-religion">Cleric level {{level}}</span>
+  </footer>
+</div>

@@ -1,0 +1,12 @@
+{{!--
+  Inventory tab — the inventory grid plus all the surrounding inventory chrome:
+  zone legend, items list (quick attacks + per-category lists), conditions strip,
+  and the loose / unequipped tray.
+--}}
+<section class="tab-panel inventory-panel" data-tab="inventory">
+  {{> "systems/flail/templates/actor/parts/main-row.hbs"}}
+  {{> "systems/flail/templates/actor/parts/legend.hbs"}}
+  {{> "systems/flail/templates/actor/parts/items-and-skills.hbs"}}
+  {{> "systems/flail/templates/actor/parts/conditions-strip.hbs"}}
+  {{> "systems/flail/templates/actor/parts/loose-items.hbs"}}
+</section>

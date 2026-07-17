@@ -1,0 +1,283 @@
+{{!--
+  Attack roll chat card. Shows:
+    * The actor + weapon used
+    * The dice rolled (visual d6 faces, 1s and 6s highlighted)
+    * The hit tier (Fail / Minor / Major / Death Blow / Fumble) with damage
+    * Every combination triggered (pair, triplet, full house, sequence, ...)
+    * Apply-damage / mark-usage buttons
+--}}
+<div class="flail-card attack-card tier-{{tier.key}}">
+
+  <header class="card-header">
+    {{#if actor}}
+      <img class="actor-img" src="{{actor.img}}" />
+      <span class="actor-name">{{actor.name}}</span>
+    {{/if}}
+    <h3 class="weapon-name">{{label}}</h3>
+    {{#if advantage}}<span class="adv-tag {{advantage}}">{{flail-cap advantage}}</span>{{/if}}
+  </header>
+
+  {{#if flavor}}<p class="flavor">{{flavor}}</p>{{/if}}
+
+  {{!-- Dice display --}}
+  <div class="dice-tray">
+    <span class="pool-label">{{pool}}d6</span>
+    {{#each dice as |d|}}
+      <span class="die {{#if (flail-eq d 1)}}is-one{{/if}} {{#if (flail-eq d 6)}}is-six{{/if}}">{{d}}</span>
+    {{/each}}
+  </div>
+
+  {{!-- Tier banner --}}
+  <div class="tier-banner tier-{{tier.key}}">
+    <i class="fas {{tier.icon}}"></i>
+    <span class="tier-label">{{tier.label}}</span>
+    {{#if (flail-eq tier.key "minor")}}<span class="dmg">{{damageDealt}} {{localize "FLAIL.Field.Damage"}}</span>{{/if}}
+    {{#if (flail-eq tier.key "major")}}<span class="dmg">{{damageDealt}} {{localize "FLAIL.Field.Damage"}} (2× {{weaponDamage}})</span>{{/if}}
+    {{#if (flail-eq tier.key "deathBlow")}}<span class="dmg">{{localize "FLAIL.Hit.DeathBlowDesc"}}</span>{{/if}}
+    {{#if (flail-eq tier.key "fumble")}}<span class="dmg">{{localize "FLAIL.Hit.FumbleDesc"}}</span>{{/if}}
+  </div>
+
+  {{!-- Warrior — Fine Cuts (Blade Freak Basic): sequence of 3+ on a hit --}}
+  {{#if fineCuts}}
+  <div class="talent-banner talent-fine-cuts">
+    <header>
+      <i class="fas fa-cut"></i>
+      <span class="title">Fine Cuts</span>
+      <span class="trigger">Blade Freak — sequence rolled on a hit</span>
+    </header>
+    <div class="talent-bonus">
+      <span class="sequence">{{#each fineCuts.sequence as |d|}}<span class="seq-die">{{d}}</span>{{/each}}</span>
+      <span class="arrow">→</span>
+      <span class="value">+{{fineCuts.bonus}} {{localize "FLAIL.Field.Damage"}}</span>
+    </div>
+    <p class="talent-note">Rulebook reminder: applies to one-handed weapons only.</p>
+  </div>
+  {{/if}}
+
+  {{!-- Warrior — Raw Force (Brawler Mauler Basic): triplet on a hit --}}
+  {{#if rawForce}}
+  <div class="talent-banner talent-raw-force">
+    <header>
+      <i class="fas fa-hammer"></i>
+      <span class="title">Raw Force</span>
+      <span class="trigger">Brawler Mauler — triplet on a hit</span>
+    </header>
+    <div class="talent-bonus">
+      <span class="triplet-dice"><span class="trip-die">{{rawForce.face}}</span><span class="trip-die">{{rawForce.face}}</span><span class="trip-die">{{rawForce.face}}</span></span>
+      <span class="arrow">→</span>
+      <span class="value">+{{rawForce.bonus}} {{localize "FLAIL.Field.Damage"}}</span>
+    </div>
+    <p class="talent-note">Rulebook reminder: applies to two-handed weapons only.</p>
+  </div>
+  {{/if}}
+
+  {{!-- Warrior — Precision Mark (Archer Master Basic): two pair on a hit --}}
+  {{#if precisionMark}}
+  <div class="talent-banner talent-precision-mark">
+    <header>
+      <i class="fas fa-crosshairs"></i>
+      <span class="title">Precision Mark</span>
+      <span class="trigger">Archer Master — two pair on a hit</span>
+    </header>
+    {{#if precisionMark.markedTargets.length}}
+    <p class="talent-mark-note">
+      Marked: <strong>{{join precisionMark.markedTargets ", "}}</strong> — next attack against them gains +2 dice.
+    </p>
+    {{else}}
+    <p class="talent-mark-note talent-mark-notarget">
+      No target was selected — the mark had no one to attach to.
+    </p>
+    {{/if}}
+    <p class="talent-note">Rulebook reminder: applies to bows only.</p>
+  </div>
+  {{/if}}
+
+  {{!-- Witness Me! — Bard special skill triggers on a hit + triple --}}
+  {{#if witnessMe}}
+  <div class="witness-me-banner">
+    <header>
+      <i class="fas fa-bullhorn"></i>
+      <span class="title">{{localize "FLAIL.Effect.WitnessMe.Name"}}!</span>
+      <span class="trigger">{{localize "FLAIL.Effect.WitnessMe.Trigger"}}</span>
+    </header>
+    <div class="witness-bonus">
+      <span class="formula">{{witnessMe.bonusFormula}}</span>
+      <span class="arrow">→</span>
+      <span class="value">+{{witnessMe.bonusDamage}} {{localize "FLAIL.Field.Damage"}}</span>
+    </div>
+    <p class="ally-buff">
+      <i class="fas fa-dice-d6"></i>
+      {{localize "FLAIL.Effect.WitnessMe.AllyBuff"}}
+    </p>
+  </div>
+  {{/if}}
+
+  {{!-- Celestial Aid — Cleric Full House trigger. Three choices: --}}
+  {{#if celestialAid}}
+  <div class="celestial-aid-banner">
+    <header>
+      <i class="fas fa-sun"></i>
+      <span class="title">{{localize "FLAIL.CelestialAid.Title"}}</span>
+      <span class="trigger">{{localize "FLAIL.CelestialAid.Trigger"}}</span>
+    </header>
+    {{#if celestialAid.chosen}}
+      {{!-- Already chosen — display the resolved effect --}}
+      <div class="ca-resolved ca-resolved-{{celestialAid.chosen}}">
+        {{#if (flail-eq celestialAid.chosen "holyRay")}}
+        <strong>{{localize "FLAIL.CelestialAid.HolyRay.Picked"}}</strong>
+        {{else if (flail-eq celestialAid.chosen "fullBlessSelf")}}
+        <strong>{{localize "FLAIL.CelestialAid.FullBlessSelf.Picked"}}</strong>
+        {{else if (flail-eq celestialAid.chosen "fullBlessAllies")}}
+        <strong>{{localize "FLAIL.CelestialAid.FullBlessAllies.Picked"}}</strong>
+        {{else if (flail-eq celestialAid.chosen "litanyOfClarity")}}
+        <strong>{{localize "FLAIL.CelestialAid.LitanyOfClarity.Picked"}}</strong>
+        {{/if}}
+      </div>
+    {{else}}
+      <p class="ca-prompt">{{localize "FLAIL.CelestialAid.Prompt"}}</p>
+      <div class="ca-choices">
+        <button type="button" data-flail-action="celestialAidHolyRay" class="ca-btn ca-btn-holy">
+          <i class="fas fa-bolt"></i>
+          <span>{{localize "FLAIL.CelestialAid.HolyRay.Button"}}</span>
+        </button>
+        <button type="button" data-flail-action="celestialAidFullBless" class="ca-btn ca-btn-bless">
+          <i class="fas fa-heart"></i>
+          <span>{{localize "FLAIL.CelestialAid.FullBless.Button"}}</span>
+        </button>
+        <button type="button" data-flail-action="celestialAidLitany" class="ca-btn ca-btn-litany">
+          <i class="fas fa-feather"></i>
+          <span>{{localize "FLAIL.CelestialAid.LitanyOfClarity.Button"}}</span>
+        </button>
+      </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- Mark of the Guild — Cutthroat token recoup on crit / Death Blow --}}
+  {{#if guildRecoup}}
+  <div class="guild-recoup-banner {{#if guildRecoup.full}}guild-recoup-full{{/if}}">
+    <i class="fas fa-coins"></i>
+    {{#if guildRecoup.full}}
+    <span class="title">{{localize "FLAIL.GuildTokens.RecoupFull"}}</span>
+    <span class="detail">{{guildRecoup.after}} / {{guildRecoup.max}}</span>
+    {{else}}
+    <span class="title">{{localize "FLAIL.GuildTokens.Recouped"}}</span>
+    <span class="detail">{{guildRecoup.before}} → {{guildRecoup.after}} / {{guildRecoup.max}}</span>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- Opportunistic Strike — Cutthroat Two Pair → immediate new attack --}}
+  {{#if opportunisticStrike}}
+  <div class="opportunistic-strike-banner">
+    <header>
+      <i class="fas fa-bolt"></i>
+      <span class="title">{{localize "FLAIL.OpportunisticStrike.Title"}}</span>
+      <span class="trigger">{{localize "FLAIL.OpportunisticStrike.Trigger"}}</span>
+    </header>
+    {{#if opportunisticStrike.resolved}}
+    <div class="os-resolved">
+      <strong>{{localize "FLAIL.OpportunisticStrike.Resolved"}}</strong>
+    </div>
+    {{else}}
+    <button type="button" data-flail-action="opportunisticStrike" class="os-btn">
+      <i class="fas fa-bolt"></i>
+      <span>{{localize "FLAIL.OpportunisticStrike.Button"}}</span>
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- Pack Mentality — Druid Mammal gift, reminder only --}}
+  {{#if packMentality}}
+  <div class="gift-banner gift-pack-mentality">
+    <i class="fas fa-paw"></i>
+    <span class="title">{{localize "FLAIL.PrimalGift.PackMentality.Title"}}</span>
+    <span class="note">{{localize "FLAIL.PrimalGift.PackMentality.Reminder"}}</span>
+  </div>
+  {{/if}}
+
+  {{!-- Slimy Skin — target has the Druid Amphibian gift, -1 already applied --}}
+  {{#if slimySkinTarget}}
+  <div class="gift-banner gift-slimy-skin">
+    <i class="fas fa-tint"></i>
+    <span class="title">{{localize "FLAIL.PrimalGift.SlimySkin.Title"}}</span>
+    <span class="note">{{localize "FLAIL.PrimalGift.SlimySkin.Applied" name=slimySkinTarget.name}}</span>
+  </div>
+  {{/if}}
+
+  {{!-- Gadget Belt Recovery — Tinkerer triplet + hit auto-removes a mark of usage --}}
+  {{#if gadgetBeltRecovery}}
+  <div class="gadget-recovery-banner {{#if gadgetBeltRecovery.clean}}gadget-recovery-empty{{/if}}{{#if gadgetBeltRecovery.missing}} gadget-recovery-empty{{/if}}">
+    <i class="fas fa-toolbox"></i>
+    <span class="title">{{localize "FLAIL.Tinkerer.GadgetRecoveryTitle"}}</span>
+    {{#if gadgetBeltRecovery.missing}}
+    <span class="note">{{localize "FLAIL.Tinkerer.GadgetRecoveryMissing"}}</span>
+    {{else if gadgetBeltRecovery.clean}}
+    <span class="note">{{localize "FLAIL.Tinkerer.GadgetRecoveryClean" belt=gadgetBeltRecovery.beltName}}</span>
+    {{else}}
+    <span class="note">{{localize "FLAIL.Tinkerer.GadgetRecoveryRestored" belt=gadgetBeltRecovery.beltName before=gadgetBeltRecovery.before after=gadgetBeltRecovery.after max=gadgetBeltRecovery.max}}</span>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- Viper's Agility — Druid Reptile gift, offer second attack at disadvantage --}}
+  {{#if vipersAgility}}
+  <div class="gift-banner gift-vipers-agility">
+    <header>
+      <i class="fas fa-forward"></i>
+      <span class="title">{{localize "FLAIL.PrimalGift.VipersAgility.Title"}}</span>
+      <span class="note">{{localize "FLAIL.PrimalGift.VipersAgility.Reminder"}}</span>
+    </header>
+    {{#if vipersAgility.resolved}}
+    <div class="va-resolved">
+      <strong>{{localize "FLAIL.PrimalGift.VipersAgility.Resolved"}}</strong>
+    </div>
+    {{else}}
+    <button type="button" data-flail-action="vipersAgility" class="va-btn">
+      <i class="fas fa-forward"></i>
+      <span>{{localize "FLAIL.PrimalGift.VipersAgility.Button"}}</span>
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- Combinations --}}
+  {{#if combos.length}}
+  <div class="combos">
+    <h4>{{localize "FLAIL.Section.Combinations"}}</h4>
+    <ul class="combo-list">
+      {{#each combos as |c|}}
+      <li class="combo combo-{{c.key}}">
+        <span class="combo-label">{{c.label}}</span>
+        <span class="combo-dice">
+          {{#each c.dice as |d|}}<span class="combo-die">{{d}}</span>{{/each}}
+        </span>
+      </li>
+      {{/each}}
+    </ul>
+    <p class="combo-hint">{{localize "FLAIL.Hint.CombosTriggerSkills"}}</p>
+  </div>
+  {{/if}}
+
+  {{!-- Action buttons --}}
+  <footer class="card-actions">
+    {{#if damageDealt}}
+    <button type="button" data-flail-action="applyDamage" data-amount="{{damageDealt}}" title="{{localize 'FLAIL.Action.ApplyDamageHint'}}">
+      <i class="fas fa-heart-broken"></i> {{localize "FLAIL.Action.ApplyDamage"}} ({{damageDealt}})
+    </button>
+    {{/if}}
+    {{#if armourNegate}}
+    {{!-- Only useful to the target's owner — a render-time hook hides
+         it for everyone else via `.flail-owner-hidden`. --}}
+    <button type="button" data-flail-action="negateWithArmour" class="flail-armour-negate-btn" title="{{localize 'FLAIL.Action.NegateWithArmourHint'}}">
+      <i class="fas fa-shield-halved"></i> {{localize "FLAIL.Action.NegateWithArmour"}}
+    </button>
+    {{/if}}
+    {{#if weaponId}}
+    <button type="button" data-flail-action="markWeaponUsage" title="{{localize 'FLAIL.Action.MarkUsageHint'}}">
+      <i class="fas fa-circle"></i> {{localize "FLAIL.Action.MarkUsage"}}
+    </button>
+    {{/if}}
+  </footer>
+</div>

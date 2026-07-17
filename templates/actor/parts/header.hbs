@@ -1,0 +1,70 @@
+{{!-- Header: name, class, level, HP, attributes, reputation --}}
+<header class="flail-header">
+  <div class="header-top">
+    <img class="profile" src="{{actor.img}}" data-edit="img" />
+    <div class="header-meta">
+      <input type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'FLAIL.Field.Name'}}" {{#unless editable}}disabled{{/unless}} />
+      <div class="header-meta-row">
+        <label>{{localize "FLAIL.Field.Class"}}
+          <select name="system.class" {{#unless editable}}disabled{{/unless}}>
+            {{#each config.classes as |cls key|}}
+            <option value="{{key}}" {{#if (flail-eq key ../system.class)}}selected{{/if}}>{{localize cls.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label>{{localize "FLAIL.Field.Level"}}
+          <input type="number" name="system.level" value="{{system.level}}" min="1" max="6" {{#unless editable}}disabled{{/unless}} />
+        </label>
+        <label>{{localize "FLAIL.Field.Coins"}}
+          <input type="number" name="system.coins" value="{{system.coins}}" min="0" {{#unless editable}}disabled{{/unless}} />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  {{!-- Attributes --}}
+  <div class="attribute-strip">
+    {{#each attributeList as |attr|}}
+    <div class="attribute" data-attribute="{{attr.key}}">
+      <button type="button" class="attribute-roll" data-action="rollSave" data-attribute="{{attr.key}}" title="{{attr.label}}">
+        <div class="attr-abbr">{{attr.abbr}}</div>
+        <div class="attr-current {{#if attr.modified}}modified{{/if}}">{{attr.current}}</div>
+        <div class="attr-base">{{attr.base}}</div>
+      </button>
+    </div>
+    {{/each}}
+  </div>
+
+  {{!-- HP, Resource, Reputation --}}
+  <div class="vitals-strip">
+    <div class="vital hp">
+      <label>{{localize "FLAIL.Field.HP"}}</label>
+      <button type="button" class="hp-adj" data-action="adjustHp" data-delta="-1">-</button>
+      <input type="number" name="system.hp.value" value="{{system.hp.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      <span class="sep">/</span>
+      <input type="number" name="system.hp.max" value="{{system.hp.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      <button type="button" class="hp-adj" data-action="adjustHp" data-delta="1">+</button>
+    </div>
+
+    {{#if resourceVisible}}
+    <div class="vital resource">
+      <label>{{resourceLabel}}</label>
+      <button type="button" data-action="adjustResource" data-delta="-1">-</button>
+      <input type="number" name="system.resource.value" value="{{system.resource.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      <span class="sep">/</span>
+      <input type="number" name="system.resource.max" value="{{system.resource.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      <button type="button" data-action="adjustResource" data-delta="1">+</button>
+    </div>
+    {{/if}}
+
+    <div class="vital reputation">
+      <label>{{localize "FLAIL.Field.Reputation"}}</label>
+      <div class="rep-track">
+        {{#each reputationTrack as |dot|}}
+        <span class="rep-dot {{#if dot.filled}}filled{{/if}} {{#if (flail-eq dot.value 0)}}zero{{/if}}" title="{{dot.value}}"></span>
+        {{/each}}
+      </div>
+      <input type="number" name="system.reputation" value="{{system.reputation}}" min="-6" max="6" {{#unless editable}}disabled{{/unless}} />
+    </div>
+  </div>
+</header>
