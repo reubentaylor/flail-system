@@ -1,0 +1,49 @@
+{{!-- Save roll chat card. Roll-under d20 vs attribute. --}}
+<div class="flail-card save-card outcome-{{outcome}}">
+  <header class="card-header">
+    <img class="actor-img" src="{{actor.img}}" />
+    <span class="actor-name">{{actor.name}}</span>
+    <h3>{{label}}</h3>
+    {{#if (flail-eq advantage 1)}}<span class="adv-tag advantage">{{localize "FLAIL.Adv.Advantage"}}</span>{{/if}}
+    {{#if (flail-eq advantage -1)}}<span class="adv-tag disadvantage">{{localize "FLAIL.Adv.Disadvantage"}}</span>{{/if}}
+  </header>
+
+  {{#if flavor}}<p class="flavor">{{flavor}}</p>{{/if}}
+
+  <div class="save-tray">
+    <span class="formula">{{formula}}</span>
+    <span class="rolls">
+      {{#each rolls as |r|}}
+      <span class="d20 {{#if r.discarded}}discarded{{/if}}">{{r.result}}</span>
+      {{/each}}
+    </span>
+    <span class="vs">vs</span>
+    <span class="target">{{attrLabel}} {{attrValue}}</span>
+  </div>
+
+  <div class="outcome-banner outcome-{{outcome}}">
+    {{#if (flail-eq outcome "crit")}}
+      <i class="fas fa-star"></i> {{localize "FLAIL.Save.Crit"}}
+    {{else if (flail-eq outcome "fumble")}}
+      <i class="fas fa-skull"></i> {{localize "FLAIL.Save.Fumble"}}
+    {{else if (flail-eq outcome "success")}}
+      <i class="fas fa-check"></i> {{localize "FLAIL.Save.Success"}} ({{result}} ≤ {{attrValue}})
+    {{else}}
+      <i class="fas fa-times"></i> {{localize "FLAIL.Save.Fail"}} ({{result}} > {{attrValue}})
+    {{/if}}
+  </div>
+
+  {{!-- Mark of the Guild — Cutthroat token recoup on a critical save --}}
+  {{#if guildRecoup}}
+  <div class="guild-recoup-banner {{#if guildRecoup.full}}guild-recoup-full{{/if}}">
+    <i class="fas fa-coins"></i>
+    {{#if guildRecoup.full}}
+    <span class="title">{{localize "FLAIL.GuildTokens.RecoupFull"}}</span>
+    <span class="detail">{{guildRecoup.after}} / {{guildRecoup.max}}</span>
+    {{else}}
+    <span class="title">{{localize "FLAIL.GuildTokens.Recouped"}}</span>
+    <span class="detail">{{guildRecoup.before}} → {{guildRecoup.after}} / {{guildRecoup.max}}</span>
+    {{/if}}
+  </div>
+  {{/if}}
+</div>

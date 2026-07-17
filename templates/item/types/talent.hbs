@@ -1,0 +1,18 @@
+{{!-- Talent body — Cutthroat thieving talents (and similar advantage-on-action skills). --}}
+<section class="card">
+  <div class="row">
+    <label>{{localize "FLAIL.Field.Action"}}
+      <input type="text" name="system.action" value="{{system.action}}" placeholder="acrobatics, pickLock, sneakSilently…" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.GrantsAdvOn"}}
+      <select name="system.attribute" {{#unless editable}}disabled{{/unless}}>
+        <option value=""    {{#if (flail-eq system.attribute '')}}selected{{/if}}>—</option>
+        <option value="str" {{#if (flail-eq system.attribute 'str')}}selected{{/if}}>STR</option>
+        <option value="dex" {{#if (flail-eq system.attribute 'dex')}}selected{{/if}}>DEX</option>
+        <option value="cha" {{#if (flail-eq system.attribute 'cha')}}selected{{/if}}>CHA</option>
+        <option value="int" {{#if (flail-eq system.attribute 'int')}}selected{{/if}}>INT</option>
+        <option value="luck" {{#if (flail-eq system.attribute 'luck')}}selected{{/if}}>LUCK</option>
+      </select>
+    </label>
+  </div>
+</section>

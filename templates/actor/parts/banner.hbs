@@ -1,0 +1,51 @@
+{{!--
+  Top banner. Portrait on the left, then class title + character name +
+  background dropdown, then FLAIL mark and class select on the right.
+  The portrait extends from the top-left corner down to the tabs bar.
+--}}
+<header class="char-banner">
+  <div class="banner-row">
+    <div class="banner-portrait" title="{{localize 'FLAIL.Field.PortraitHint'}}">
+      <img
+        class="portrait-img"
+        src="{{actor.img}}"
+        alt="{{actor.name}}"
+        data-action="editPortrait"
+      />
+    </div>
+    <div class="banner-left">
+      <h1 class="class-title">{{classLabel}}</h1>
+      <input
+        type="text"
+        name="name"
+        class="char-name"
+        value="{{actor.name}}"
+        placeholder="name"
+        {{#unless editable}}disabled{{/unless}}
+      />
+      <div class="char-background">
+        <select
+          name="system.background"
+          class="char-background-select"
+          {{#unless editable}}disabled{{/unless}}
+        >
+          <option value="">{{localize "FLAIL.Placeholder.Background"}}</option>
+          {{#each backgroundOptions as |opt|}}
+          <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{opt.key}}. {{opt.label}}</option>
+          {{/each}}
+        </select>
+        {{#if currentBackgroundPerk}}
+        <p class="char-background-perk">{{currentBackgroundPerk}}</p>
+        {{/if}}
+      </div>
+    </div>
+    <div class="banner-right">
+      <span class="flail-mark">FLAIL<span class="bang">!</span></span>
+      <select name="system.class" class="class-select" {{#unless editable}}disabled{{/unless}}>
+        {{#each config.classes as |cls key|}}
+        <option value="{{key}}" {{#if (flail-eq key ../classKey)}}selected{{/if}}>{{localize cls.label}}</option>
+        {{/each}}
+      </select>
+    </div>
+  </div>
+</header>

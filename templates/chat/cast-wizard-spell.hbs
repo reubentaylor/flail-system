@@ -1,0 +1,99 @@
+<div class="flail-chat-card wizard-cast-card">
+  <header class="flail-chat-header">
+    <img src="{{spell.img}}" alt="" class="wizard-cast-spell-img" />
+    <div class="wizard-cast-header-text">
+      <span class="wizard-cast-actor">{{actor.name}}</span>
+      <span class="wizard-cast-title">{{localize "FLAIL.Wizard.CastCasts"}} {{spell.name}}</span>
+    </div>
+    <span class="wizard-cast-tradition wizard-cast-tradition-{{spell.tradition}}">{{spell.tradition}}</span>
+  </header>
+
+  <div class="flail-chat-body">
+    <div class="wizard-cast-mana-row">
+      <span class="wizard-cast-mana-label">{{localize "FLAIL.Wizard.CastManaSpent"}}:</span>
+      <span class="wizard-cast-mana-value">{{mana}}</span>
+      <span class="wizard-cast-mana-remaining">({{localize "FLAIL.Wizard.CastManaRemaining"}}: {{manaRemaining}}/{{manaMax}})</span>
+    </div>
+
+    <div class="wizard-cast-dice-row">
+      <span class="wizard-cast-dice-label">{{mana}}d6:</span>
+      <span class="wizard-cast-dice">
+        {{#each dice as |d|}}
+        <span class="wizard-cast-die{{#if (flail-eq d 6)}} wizard-cast-die-six{{/if}}">{{d}}</span>
+        {{/each}}
+      </span>
+      <span class="wizard-cast-dice-sum">SUM = <strong>{{sum}}</strong></span>
+    </div>
+
+    <div class="wizard-cast-effect">
+      <p class="wizard-cast-effect-label">{{localize "FLAIL.Wizard.CastEffect"}}:</p>
+      <div class="wizard-cast-effect-text">{{{spell.description}}}</div>
+    </div>
+
+    {{!-- Arcane Resonance — Wizard special skill. Fires whenever the
+         cast pool contains one or more pairs (exactly 2 of a kind).
+         Shows above the risk banner so recouped mana is announced
+         before Drained / Side Effect / Glorious Death outcomes. --}}
+    {{#if arcaneResonance}}
+    <div class="wizard-cast-resonance">
+      <header>
+        <i class="fas fa-flask"></i>
+        <span>{{localize "FLAIL.Wizard.CastResonanceTitle"}}</span>
+        <span class="wizard-cast-resonance-total">+{{arcaneResonance.recouped}} {{localize "FLAIL.Class.Mana"}}</span>
+      </header>
+      <ul class="wizard-cast-resonance-list">
+        {{#each arcaneResonance.pairs as |face|}}
+        <li>
+          <span class="resonance-die">{{face}}</span>
+          <span class="resonance-die">{{face}}</span>
+          <span class="resonance-arrow">→</span>
+          <span class="resonance-recoup">+{{face}} {{localize "FLAIL.Class.Mana"}}</span>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+    {{/if}}
+
+    {{#if sideEffect}}
+      {{#if (flail-eq sideEffect.kind "drained")}}
+      <div class="wizard-cast-risk wizard-cast-risk-drained">
+        <header>
+          <i class="fas fa-droplet-slash"></i>
+          <span>{{localize "FLAIL.Wizard.CastRiskDrainedTitle"}}</span>
+        </header>
+        <p>{{localize "FLAIL.Wizard.CastRiskDrainedText"}}</p>
+        <p class="wizard-cast-drained-hint">
+          <i class="fas fa-hand-pointer"></i>
+          {{localize "FLAIL.Wizard.CastAddDrainedHint"}}
+        </p>
+      </div>
+      {{/if}}
+
+      {{#if (flail-eq sideEffect.kind "table")}}
+      <div class="wizard-cast-risk wizard-cast-risk-side-effect">
+        <header>
+          <i class="fas fa-triangle-exclamation"></i>
+          <span>{{localize "FLAIL.Wizard.CastRiskSideEffectTitle"}}</span>
+          <span class="wizard-cast-table-roll">d10 = {{sideEffect.result}}</span>
+        </header>
+        {{#if sideEffect.entry}}
+        <p class="wizard-cast-side-effect-name"><strong>{{sideEffect.entry.name}}</strong></p>
+        <p class="wizard-cast-side-effect-desc">{{sideEffect.entry.desc}}</p>
+        {{else}}
+        <p><em>{{localize "FLAIL.Wizard.CastRiskSideEffectMissing"}}</em></p>
+        {{/if}}
+      </div>
+      {{/if}}
+
+      {{#if (flail-eq sideEffect.kind "death")}}
+      <div class="wizard-cast-risk wizard-cast-risk-death">
+        <header>
+          <i class="fas fa-skull"></i>
+          <span>{{localize "FLAIL.Wizard.CastRiskDeathTitle"}}</span>
+        </header>
+        <p>{{localize "FLAIL.Wizard.CastRiskDeathText"}}</p>
+      </div>
+      {{/if}}
+    {{/if}}
+  </div>
+</div>

@@ -1,0 +1,92 @@
+# Automated release workflow for the FLAIL Foundry VTT system.
+#
+# Trigger: pushing a tag matching v*.*.* (e.g. v0.1.0, v1.2.3).
+#
+# What it does:
+#   1. Reads the version number from the tag (strips the leading `v`).
+#   2. Rewrites system.json so its `version` field matches the tag.
+#   3. Builds flail.zip with a top-level `flail/` folder (the layout
+#      Foundry expects when it installs from a manifest).
+#   4. Publishes a GitHub Release named for the tag, with both
+#      system.json and flail.zip attached as assets.
+#
+# Foundry's installer reads the `manifest` URL, then follows the
+# `download` URL inside that manifest to fetch the zip.
+#
+# Usage:
+#   git tag v0.1.0
+#   git push --tags
+# Then watch the Actions tab — a release appears when it finishes.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building version $VERSION"
+
+      - name: Sync system.json version to tag
+        run: |
+          # Update the version field to match the tag. jq is preinstalled
+          # on ubuntu-latest runners.
+          jq --arg v "${{ steps.version.outputs.version }}" \
+             '.version = $v' system.json > system.json.new
+          mv system.json.new system.json
+          echo "--- system.json version ---"
+          jq -r '.version' system.json
+
+      - name: Build zip
+        run: |
+          # Foundry expects the zip to contain a top-level folder named
+          # after the system id (`flail`). rsync the working tree into
+          # a fresh flail/ dir, excluding VCS + build artefacts, then zip.
+          mkdir -p flail
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='flail' \
+            --exclude='flail.zip' \
+            --exclude='*.log' \
+            ./ flail/
+          zip -rq flail.zip flail
+          echo "--- zip contents (top level) ---"
+          unzip -l flail.zip | head -20
+          echo "--- zip size ---"
+          ls -lh flail.zip
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "FLAIL ${{ github.ref_name }}"
+          tag_name: ${{ github.ref_name }}
+          body: |
+            FLAIL Foundry VTT system release ${{ github.ref_name }}.
+
+            **Manifest URL** (paste into Foundry → Configuration → Install System):
+
+            ```
+            https://github.com/reubentaylor/flail-system/releases/latest/download/system.json
+            ```
+
+            Existing installations will pick this update up automatically via the manifest.
+          files: |
+            system.json
+            flail.zip
+          fail_on_unmatched_files: true
+          make_latest: 'true'

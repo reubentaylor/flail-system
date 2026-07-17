@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<rect x="6" y="6" width="244" height="244" rx="8" fill="#c8302e" stroke="#000000" stroke-width="6"/>
+<text x="128.0" y="62" font-family="Impact, Bebas Neue, sans-serif" font-size="32" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="2">PERSISTENT</text>
+<text x="128.0" y="102" font-family="Impact, Bebas Neue, sans-serif" font-size="32" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="2">INJURY</text>
+<line x1="24" y1="134" x2="232" y2="134" stroke="#000000" stroke-width="2.5"/>
+<text x="128.0" y="172" font-family="Georgia, serif" font-size="24" font-weight="700" fill="#000000" text-anchor="middle">-1 STR and DEX</text>
+<text x="128.0" y="216" font-family="Georgia, serif" font-size="18" font-style="italic" fill="#000000" text-anchor="middle">Clear: only by magic</text>
+<text x="128.0" y="238" font-family="Georgia, serif" font-size="18" font-style="italic" fill="#000000" text-anchor="middle">or miracle</text>
+</svg>

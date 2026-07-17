@@ -1,0 +1,18 @@
+{{!--
+  Class fundamentals reference card — Max HP, Weapon Specialty, Main Item,
+  Armour Proficiency, Starting Gear. Strings come from the rules PDF and
+  are resolved on the sheet as ctx.classDetails (an array of {label, value}).
+  Same markup for every class; class-specific branches in class-extras.hbs
+  decide where to slot it (top of panel, top-left of a side-by-side row, etc.).
+--}}
+<section class="tabbed-card class-details-card">
+  <header class="tab-label">{{localize "FLAIL.Section.ClassDetails"}}</header>
+  <dl class="class-details-list">
+    {{#each classDetails as |row|}}
+    <div class="class-detail-row">
+      <dt>{{row.label}}</dt>
+      <dd>{{row.value}}</dd>
+    </div>
+    {{/each}}
+  </dl>
+</section>

@@ -1,0 +1,37 @@
+{{!--
+  Quick-attack panel. One button per weapon in the hands zone (off-hand
+  or main hand) — same restriction as the inventory cell red-square.
+  Renders nothing when nothing is wielded.
+--}}
+{{#if showQuickAttacksCard}}
+<div class="tabbed-card weapons-card quick-attacks-card">
+  <header class="tab-label">{{localize "FLAIL.Section.Weapons"}}</header>
+  <div class="quick-weapon-list">
+    {{#each equippedWeapons as |w|}}
+    <button type="button"
+            class="quick-weapon{{#if w.disabled}} quick-weapon-disabled{{/if}}{{#if w.isBeastAttack}} quick-weapon-beast{{/if}}"
+            data-action="rollAttack"
+            data-item-id="{{w.id}}"
+            title="{{#if w.disabled}}{{localize 'FLAIL.Shapeshift.WeaponLocked'}}{{else}}{{localize 'FLAIL.Roll.ToHit'}}{{/if}}"
+            {{#if w.disabled}}disabled aria-disabled="true"{{/if}}>
+      {{#if w.disabled}}<i class="fas fa-lock qw-lock"></i>{{/if}}
+      <img src="{{w.img}}" />
+      <span class="qw-name">{{w.name}}</span>
+      <span class="qw-th">{{w.system.th}}d6</span>
+      <span class="qw-dmg">DMG {{w.system.damage}}</span>
+    </button>
+    {{/each}}
+    {{#if ironFist}}
+    <button type="button"
+            class="quick-weapon iron-fist-attack"
+            data-action="rollIronFistAttack"
+            title="{{localize 'FLAIL.Warrior.IronFistHint'}}">
+      <i class="fas fa-hand-fist iron-fist-icon"></i>
+      <span class="qw-name">{{localize 'FLAIL.Warrior.IronFistLabel'}}</span>
+      <span class="qw-th">{{ironFist.th}}d6</span>
+      <span class="qw-dmg">DMG {{ironFist.dmg}}</span>
+    </button>
+    {{/if}}
+  </div>
+</div>
+{{/if}}

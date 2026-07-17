@@ -1,0 +1,69 @@
+{{!--
+  Divine prayer cast chat card.
+  Shows: actor + prayer name, LUCK save roll, outcome, prayer effect text
+  (with [LEVEL] substituted), and on a fumble the rolled God's Wrath entry.
+--}}
+<div class="flail-card cast-card prayer-card outcome-{{outcome}}">
+
+  <header class="card-header">
+    <img class="actor-img" src="{{actor.img}}" />
+    <span class="actor-name">{{actor.name}}</span>
+    <h3>
+      <i class="fas fa-hands-praying"></i>
+      {{prayer.name}}
+    </h3>
+  </header>
+
+  <div class="cast-meta">
+    <span class="meta-chip"><i class="fas fa-dice-d20"></i> LUCK save: <strong>{{result}}</strong> vs {{luck}}</span>
+    <span class="meta-chip">Fumble ≥ {{threshold}}</span>
+    {{#if thresholdDropped}}
+    <span class="meta-chip threshold-drop">↓ now {{newThreshold}}</span>
+    {{/if}}
+  </div>
+
+  {{!-- Outcome banner --}}
+  {{#if (flail-eq outcome "success")}}
+  <div class="side-effect-banner prayer-success">
+    <i class="fas fa-check"></i>
+    <span class="se-title">{{localize "FLAIL.Prayer.Success.Title"}}</span>
+  </div>
+  {{else if (flail-eq outcome "crit")}}
+  <div class="side-effect-banner prayer-crit">
+    <i class="fas fa-star"></i>
+    <span class="se-title">{{localize "FLAIL.Prayer.Crit.Title"}}</span>
+  </div>
+  {{else if (flail-eq outcome "fail")}}
+  <div class="side-effect-banner prayer-fail">
+    <i class="fas fa-exclamation"></i>
+    <span class="se-title">{{localize "FLAIL.Prayer.Fail.Title"}}</span>
+    <span class="se-text">{{localize "FLAIL.Prayer.Fail.Body"}}</span>
+  </div>
+  {{else if (flail-eq outcome "fumble")}}
+  <div class="side-effect-banner prayer-fumble">
+    <header>
+      <i class="fas fa-skull-crossbones"></i>
+      <span class="se-title">{{localize "FLAIL.Prayer.Fumble.Title"}}</span>
+      <span class="se-roll">d10 → {{wrath.roll}}</span>
+    </header>
+    {{#if wrath}}
+    <div class="se-entry">
+      <strong>{{wrath.roll}}. {{wrath.name}}:</strong>
+      {{wrath.text}}
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- Prayer description (only on success or crit — failure means the
+       prayer never took effect, so showing the text would mislead) --}}
+  {{#if (flail-eq outcome "success")}}
+  <div class="cast-description">{{{prayer.description}}}</div>
+  {{else if (flail-eq outcome "crit")}}
+  <div class="cast-description">{{{prayer.description}}}</div>
+  {{/if}}
+
+  <footer class="cast-footer">
+    <span class="prayer-religion">{{prayer.religionLabel}} · level {{level}}</span>
+  </footer>
+</div>

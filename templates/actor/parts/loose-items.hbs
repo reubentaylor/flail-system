@@ -1,0 +1,31 @@
+{{!-- Loose / unequipped items — drop target for things not in a slot. --}}
+<section class="tabbed-card loose-items-card">
+  <header class="tab-label">{{localize "FLAIL.Inventory.Unequipped"}}</header>
+  <div class="loose-actions">
+    <button type="button" data-action="itemCreate" data-item-type="weapon">+ {{localize "FLAIL.ItemType.weapon"}}</button>
+    <button type="button" data-action="itemCreate" data-item-type="armour">+ {{localize "FLAIL.ItemType.armour"}}</button>
+    <button type="button" data-action="itemCreate" data-item-type="gear">+ {{localize "FLAIL.ItemType.gear"}}</button>
+    <button type="button" data-action="itemCreate" data-item-type="condition">+ {{localize "FLAIL.ItemType.condition"}}</button>
+  </div>
+  <div class="item-list inventory-zone" data-zone="unequipped">
+    {{#if looseItems.length}}
+      {{#each looseItems as |item|}}
+      <div class="item-row" draggable="true" data-item-id="{{item.id}}">
+        <img src="{{item.img}}" />
+        <span class="name">{{item.name}}</span>
+        <span class="type">{{localize (concat "FLAIL.ItemType." item.type)}}</span>
+        {{#if item.system.usage.max}}
+        <span class="usage">{{flail-pip item.system.usage.value item.system.usage.max item.id}}</span>
+        {{/if}}
+        <span class="row-actions">
+          <button type="button" data-action="itemEdit" data-item-id="{{item.id}}" title="Edit"><i class="fas fa-edit"></i></button>
+          <button type="button" data-action="itemToChat" data-item-id="{{item.id}}" title="Show"><i class="fas fa-comment"></i></button>
+          <button type="button" data-action="itemDelete" data-item-id="{{item.id}}" title="Delete"><i class="fas fa-trash"></i></button>
+        </span>
+      </div>
+      {{/each}}
+    {{else}}
+      <p class="empty">{{localize "FLAIL.Empty.NoLoose"}}</p>
+    {{/if}}
+  </div>
+</section>

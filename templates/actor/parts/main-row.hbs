@@ -1,0 +1,52 @@
+{{!--
+  Inventory grid — 5 columns × 4 rows, mirroring the printed FLAIL
+  character sheet:
+    Col 1 rows 3–4: Rings ×2
+    Col 2 rows 3–4: Off-hand (slot 1) / Main hand (slot 2)
+    Col 3 rows 1–4: Body ×4
+    Cols 4–5 rows 1–4: Satchel ×8 (row-major). Last two slots are
+                       STR-locked — STR 10 lives at col 4 row 4,
+                       STR 12 at col 5 row 4.
+  Cols 1–2 rows 1–2 used to hold the vitals 2×2; vitals now live on
+  the Abilities tab, so those cells are blank placeholders preserving
+  the 5×4 visual frame from the printed sheet.
+--}}
+<section class="main-row">
+  <div class="inventory-block inventory-block--5col">
+
+    {{!-- Top-left placeholder cells (cols 1–2, rows 1–2) --}}
+    <div class="inventory-slot is-placeholder" style="grid-column: 1; grid-row: 1;"></div>
+    <div class="inventory-slot is-placeholder" style="grid-column: 2; grid-row: 1;"></div>
+    <div class="inventory-slot is-placeholder" style="grid-column: 1; grid-row: 2;"></div>
+    <div class="inventory-slot is-placeholder" style="grid-column: 2; grid-row: 2;"></div>
+
+    {{!-- Rings — col 1 rows 3–4 --}}
+    <div class="inv-col adornment-col inventory-zone" data-zone="adornment">
+      {{#each inventory.adornment.slots as |slot|}}
+      {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="adornment" }}
+      {{/each}}
+    </div>
+
+    {{!-- Hands — col 2 rows 3–4 (off-hand row 3, main hand row 4) --}}
+    <div class="inv-col hands-col inventory-zone" data-zone="hands">
+      {{#each inventory.hands.slots as |slot|}}
+      {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="hands" }}
+      {{/each}}
+    </div>
+
+    {{!-- Body — col 3, rows 1–4 --}}
+    <div class="inv-col body-col inventory-zone" data-zone="body">
+      {{#each inventory.body.slots as |slot|}}
+      {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="body" }}
+      {{/each}}
+    </div>
+
+    {{!-- Satchel — cols 4–5 rows 1–4. Row-major across the two columns;
+         locked slots (indices 6 & 7) land on the bottom row. --}}
+    <div class="inv-col satchel-col inventory-zone" data-zone="satchel">
+      {{#each inventory.satchel.slots as |slot|}}
+      {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="satchel" }}
+      {{/each}}
+    </div>
+  </div>
+</section>

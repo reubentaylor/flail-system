@@ -1,0 +1,89 @@
+{{!--
+  Instrument body — Bard. Holds a d10 effect table plus a tagline.
+
+  The table renders as seven conceptual rows matching the FLAIL v0.2
+  rulebook layout (1, 2, 3, 4, 5-6, 7-8, 9-10). Range rows (5-6, 7-8,
+  9-10) write to the FIRST index of their range on submit — the item
+  sheet's `_prepareSubmitData` hook copies each range's canonical
+  index across to its pair (5→6, 7→8, 9→10).
+
+  Rows 1-4 are tinted green ("success band" — rolled on a Success via
+  d4). Rows 5-10 are tinted red ("chaos band" — rolled on Fail via
+  d10 or on Fumble via d6+4). This makes the rulebook constraint
+  visible: "entries 5-10 can only be rolled if the Bard fails the
+  CHA save to play the instrument."
+--}}
+<section class="card">
+  <h3>{{localize "FLAIL.Section.Usage"}}</h3>
+  <div class="row">
+    <label>{{localize "FLAIL.Field.UsageMax"}}
+      <input type="number" name="system.usage.max" value="{{system.usage.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.UsageValue"}}
+      <input type="number" name="system.usage.value" value="{{system.usage.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+</section>
+
+<section class="card instrument-tagline-card">
+  <label class="form-full">
+    <span class="label-text">{{localize "FLAIL.Field.Tagline"}}</span>
+    <input type="text"
+           name="system.tagline"
+           value="{{system.tagline}}"
+           placeholder="{{localize 'FLAIL.Placeholder.Tagline'}}"
+           {{#unless editable}}disabled{{/unless}} />
+  </label>
+  <p class="hint">{{localize "FLAIL.Hint.Tagline"}}</p>
+</section>
+
+<section class="card instrument-effect-editor">
+  <h3>{{localize "FLAIL.Section.EffectTable"}}</h3>
+  <p class="hint">{{localize "FLAIL.Hint.EffectTableBanded"}}</p>
+
+  <div class="band band-success">
+    <header class="band-header">
+      <i class="fas fa-leaf"></i>
+      <span class="band-title">{{localize "FLAIL.Instrument.Band.Success.Title"}}</span>
+      <span class="band-sub">{{localize "FLAIL.Instrument.Band.Success.Sub"}}</span>
+    </header>
+    {{#each (flail-range 1 4) as |n|}}
+    <div class="etable-row etable-row-success">
+      <span class="etable-index">{{n}}</span>
+      <textarea rows="2"
+                name="system.effectTable.{{n}}"
+                placeholder="{{localize 'FLAIL.Placeholder.EffectEntry'}}"
+                {{#unless ../editable}}disabled{{/unless}}>{{lookup ../system.effectTable n}}</textarea>
+    </div>
+    {{/each}}
+  </div>
+
+  <div class="band band-chaos">
+    <header class="band-header">
+      <i class="fas fa-fire"></i>
+      <span class="band-title">{{localize "FLAIL.Instrument.Band.Chaos.Title"}}</span>
+      <span class="band-sub">{{localize "FLAIL.Instrument.Band.Chaos.Sub"}}</span>
+    </header>
+    <div class="etable-row etable-row-chaos">
+      <span class="etable-index etable-index-range">5-6</span>
+      <textarea rows="2"
+                name="system.effectTable.5"
+                placeholder="{{localize 'FLAIL.Placeholder.EffectEntry'}}"
+                {{#unless editable}}disabled{{/unless}}>{{lookup system.effectTable 5}}</textarea>
+    </div>
+    <div class="etable-row etable-row-chaos">
+      <span class="etable-index etable-index-range">7-8</span>
+      <textarea rows="2"
+                name="system.effectTable.7"
+                placeholder="{{localize 'FLAIL.Placeholder.EffectEntry'}}"
+                {{#unless editable}}disabled{{/unless}}>{{lookup system.effectTable 7}}</textarea>
+    </div>
+    <div class="etable-row etable-row-chaos">
+      <span class="etable-index etable-index-range">9-10</span>
+      <textarea rows="2"
+                name="system.effectTable.9"
+                placeholder="{{localize 'FLAIL.Placeholder.EffectEntry'}}"
+                {{#unless editable}}disabled{{/unless}}>{{lookup system.effectTable 9}}</textarea>
+    </div>
+  </div>
+</section>

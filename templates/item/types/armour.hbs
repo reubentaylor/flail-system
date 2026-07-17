@@ -1,0 +1,34 @@
+{{!-- Armour body --}}
+<section class="card">
+  <h3>{{localize "FLAIL.Section.Stats"}}</h3>
+  <div class="row">
+    <label>{{localize "FLAIL.Field.ArmourType"}}
+      <select name="system.armourType" {{#unless editable}}disabled{{/unless}}>
+        {{#each config.armourTypes as |a key|}}
+        <option value="{{key}}" {{#if (flail-eq key ../system.armourType)}}selected{{/if}}>{{localize a.label}}</option>
+        {{/each}}
+      </select>
+    </label>
+    <label>{{localize "FLAIL.Field.Defence"}}
+      <input type="number" name="system.defence" value="{{system.defence}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.SlotsRequired"}}
+      <input type="number" name="system.slotsRequired" value="{{system.slotsRequired}}" min="1" max="2" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+</section>
+
+<section class="card">
+  <h3>{{localize "FLAIL.Section.Usage"}}</h3>
+  <div class="row">
+    <label>{{localize "FLAIL.Field.UsageMax"}}
+      <input type="number" name="system.usage.max" value="{{system.usage.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.UsageValue"}}
+      <input type="number" name="system.usage.value" value="{{system.usage.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.Cost"}}
+      <input type="number" name="system.cost" value="{{system.cost}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+</section>

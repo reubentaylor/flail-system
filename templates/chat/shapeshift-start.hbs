@@ -1,0 +1,63 @@
+<div class="flail-chat-card shapeshift-start-card">
+  <header class="flail-chat-header shapeshift-header">
+    <i class="fas fa-paw"></i>
+    <span>{{localize "FLAIL.Shapeshift.CardTitle"}}</span>
+  </header>
+  <div class="flail-chat-body">
+    <p class="shift-beast-line">
+      <strong>{{actor.name}}</strong> {{localize "FLAIL.Shapeshift.TransformsInto"}}
+      <strong class="beast-name">{{beast.name}}</strong>
+      <span class="beast-kingdom">({{kingdomLabel}})</span>
+    </p>
+    <p class="beast-tagline"><em>"{{beast.tagline}}"</em></p>
+
+    {{#if tiedKingdoms}}
+    <p class="shift-tie-note">
+      {{localize "FLAIL.Shapeshift.TieResolved"}}
+      {{#each tiedKingdoms}}<span class="tie-name">{{this}}</span>{{/each}}
+    </p>
+    {{/if}}
+
+    <div class="shift-dice-row">
+      {{#each results}}
+      <span class="shift-die shift-die-{{this}}">{{this}}</span>
+      {{/each}}
+    </div>
+
+    <div class="shift-summary">
+      <span class="shift-badge shift-duration">
+        <i class="fas fa-hourglass-half"></i>
+        {{localize "FLAIL.Shapeshift.Duration" rounds=diceRolled}}
+      </span>
+      <span class="shift-badge shift-th">
+        <i class="fas fa-plus-circle"></i>
+        {{localize "FLAIL.Shapeshift.ThBonus" bonus=onesCount}}
+      </span>
+      {{#if sixesCount}}
+      <span class="shift-badge shift-risk">
+        <i class="fas fa-triangle-exclamation"></i>
+        {{localize "FLAIL.Shapeshift.RiskCount" count=sixesCount}}
+      </span>
+      {{/if}}
+    </div>
+
+    <div class="beast-stats-row">
+      <span class="stat"><strong>HP</strong> {{beast.hp}}</span>
+      <span class="stat"><strong>Defence</strong> {{beast.defence}}</span>
+      <span class="stat"><strong>Mov</strong> {{beast.mov}}</span>
+    </div>
+
+    <div class="beast-attacks">
+      <h4>{{localize "FLAIL.Shapeshift.Attacks"}}</h4>
+      {{#each beast.attacks}}
+      <div class="beast-attack">
+        <div class="attack-header">
+          <strong>{{name}}</strong>
+          <span class="attack-stats">TH {{th}} · DMG {{dmg}}</span>
+        </div>
+        <p class="attack-special">{{special}}</p>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</div>

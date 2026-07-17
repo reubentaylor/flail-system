@@ -1,0 +1,21 @@
+{{!-- Active conditions strip --}}
+<section class="tabbed-card conditions-strip-card">
+  <header class="tab-label">{{localize "FLAIL.Section.Conditions"}}</header>
+  {{#if items.conditions.length}}
+  <div class="condition-strip">
+    {{#each items.conditions as |c|}}
+    <div class="condition-card" data-item-id="{{c.id}}" title="{{c.name}}">
+      <span class="cond-name">{{c.name}}</span>
+      <span class="cond-clear">{{localize "FLAIL.Field.Clear"}}: {{localize (concat 'FLAIL.Clear.' c.system.clearRequirement)}}</span>
+      <button type="button" data-action="itemEdit" data-item-id="{{c.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+      <button type="button" data-action="itemDelete" data-item-id="{{c.id}}" title="{{localize 'FLAIL.Action.Clear'}}"><i class="fas fa-times"></i></button>
+    </div>
+    {{/each}}
+  </div>
+  {{else}}
+  <p class="empty">{{localize "FLAIL.Empty.Conditions"}}</p>
+  {{/if}}
+  <button type="button" class="add-row" data-action="itemCreate" data-item-type="condition">
+    + {{localize "FLAIL.Action.Add"}}
+  </button>
+</section>

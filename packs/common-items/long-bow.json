@@ -1,0 +1,45 @@
+{
+  "_id": "U1fot5aQBbn1HeET",
+  "_key": "!items!U1fot5aQBbn1HeET",
+  "name": "Long Bow",
+  "type": "weapon",
+  "img": "systems/flail/icons/items/long-bow.png",
+  "system": {
+    "location": "unequipped",
+    "slotIndex": 0,
+    "slotsRequired": 2,
+    "twoHanded": true,
+    "usage": {
+      "max": 3,
+      "value": 0
+    },
+    "description": "<p>Two-handed bow weapon. TH 6 / DMG 4.</p>",
+    "cost": 0,
+    "quantity": 1,
+    "th": 6,
+    "damage": 4,
+    "range": [
+      "near",
+      "distant"
+    ],
+    "weaponType": "missile",
+    "category": "bow"
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "13",
+    "systemId": "flail",
+    "systemVersion": "0.1.0",
+    "createdTime": 1777881491611,
+    "modifiedTime": 1777881491611,
+    "lastModifiedBy": null
+  }
+}

@@ -1,0 +1,9 @@
+{{!-- Item sheet body — pulls in the type-specific partial. --}}
+<section class="flail-item-body">
+  {{> (lookup this 'bodyPartial') }}
+
+  <section class="card description-card">
+    <header><h3>{{localize "FLAIL.Field.Description"}}</h3></header>
+    {{editor system.description target="system.description" button=true editable=editable engine="prosemirror"}}
+  </section>
+</section>

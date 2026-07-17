@@ -1,0 +1,88 @@
+{{!--
+  Instrument-play chat card.
+  Steps shown:
+    1. Header (actor + instrument)
+    2. CHA save tray (d20 result vs CHA)
+    3. Outcome banner (crit / success / fail / fumble)
+    4. Conditional follow-up: either the player-choose-any prompt (crit)
+       or the table-lookup roll + matched effect entry.
+--}}
+<div class="flail-card instrument-card outcome-{{outcome}}">
+  <header class="card-header">
+    <img class="actor-img" src="{{actor.img}}" />
+    <span class="actor-name">{{actor.name}}</span>
+    <h3>
+      <i class="fas fa-music"></i>
+      {{localize "FLAIL.Roll.PlayInstrument"}}: {{instrument.name}}
+    </h3>
+    {{#if (flail-eq advantage 1)}}<span class="adv-tag advantage">{{localize "FLAIL.Adv.Advantage"}}</span>{{/if}}
+    {{#if (flail-eq advantage -1)}}<span class="adv-tag disadvantage">{{localize "FLAIL.Adv.Disadvantage"}}</span>{{/if}}
+  </header>
+
+  <div class="save-tray">
+    <span class="formula">{{saveFormula}}</span>
+    <span class="rolls">
+      {{#each saveDice as |r|}}
+      <span class="d20 {{#if r.discarded}}discarded{{/if}}">{{r.result}}</span>
+      {{/each}}
+    </span>
+    <span class="vs">vs</span>
+    <span class="target">{{attrLabel}} {{attrValue}}</span>
+  </div>
+
+  <div class="outcome-banner outcome-{{outcome}}">
+    {{#if (flail-eq outcome "crit")}}
+      <i class="fas fa-star"></i> {{localize "FLAIL.Save.Crit"}}
+    {{else if (flail-eq outcome "fumble")}}
+      <i class="fas fa-skull"></i> {{localize "FLAIL.Save.Fumble"}} ({{saveResult}})
+    {{else if (flail-eq outcome "success")}}
+      <i class="fas fa-check"></i> {{localize "FLAIL.Save.Success"}} ({{saveResult}} ≤ {{attrValue}})
+    {{else}}
+      <i class="fas fa-times"></i> {{localize "FLAIL.Save.Fail"}} ({{saveResult}} > {{attrValue}})
+    {{/if}}
+  </div>
+
+  {{#if (flail-eq outcome "crit")}}
+    {{!-- Crit — no follow-up roll. Player picks any entry. --}}
+    <div class="instrument-result instrument-crit">
+      <p class="instrument-prompt">
+        <strong>{{localize "FLAIL.Instrument.CritPrompt"}}</strong>
+      </p>
+      <ol class="instrument-table">
+        {{#each instrument.effectTable as |entry idx|}}
+        {{#unless (flail-eq idx 0)}}
+        <li>
+          <span class="entry-num">{{idx}}.</span>
+          <span class="entry-text">{{#if entry}}{{entry}}{{else}}<em>—</em>{{/if}}</span>
+        </li>
+        {{/unless}}
+        {{/each}}
+      </ol>
+    </div>
+  {{else}}
+    {{!-- Non-crit — show follow-up roll and the matched table entry. --}}
+    <div class="instrument-result instrument-lookup outcome-{{outcome}}">
+      <div class="lookup-tray">
+        <span class="formula">{{lookupFormula}}</span>
+        <span class="arrow">→</span>
+        <span class="lookup-result">{{lookupResult}}</span>
+      </div>
+      <div class="entry-box entry-box-{{entryBand}}">
+        <span class="entry-num">{{entryIndex}}.</span>
+        <span class="entry-text">
+          {{#if entryText}}
+            {{entryText}}
+          {{else}}
+            <em>{{localize "FLAIL.Instrument.EntryEmpty"}}</em>
+          {{/if}}
+        </span>
+      </div>
+    </div>
+  {{/if}}
+  {{#if usedOut}}
+  <div class="instrument-used-out">
+    <i class="fas fa-ban"></i>
+    <span>{{localize "FLAIL.Instrument.UsedOutBanner"}}</span>
+  </div>
+  {{/if}}
+</div>

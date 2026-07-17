@@ -1,0 +1,19 @@
+{{!-- Gadget body — Tinkerer gadgets. --}}
+<section class="card">
+  <div class="row">
+    <label>{{localize "FLAIL.Field.GadgetType"}}
+      <input type="text" name="system.gadgetType" value="{{system.gadgetType}}" placeholder="explosive, trap, contraption…" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+</section>
+<section class="card">
+  <h3>{{localize "FLAIL.Section.Usage"}}</h3>
+  <div class="row">
+    <label>{{localize "FLAIL.Field.UsageMax"}}
+      <input type="number" name="system.usage.max" value="{{system.usage.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.UsageValue"}}
+      <input type="number" name="system.usage.value" value="{{system.usage.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+</section>

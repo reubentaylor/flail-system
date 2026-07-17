@@ -1,0 +1,50 @@
+{
+  "_id": "c5dRdltEyPlioUo8",
+  "_key": "!items!c5dRdltEyPlioUo8",
+  "name": "Tin Whistle",
+  "type": "instrument",
+  "img": "systems/flail/icons/items/tin-whistle.png",
+  "system": {
+    "location": "unequipped",
+    "slotIndex": 0,
+    "slotsRequired": 1,
+    "twoHanded": false,
+    "usage": {
+      "max": 3,
+      "value": 0
+    },
+    "description": "<p>Bard instrument. Roll d10 on its effect table when played.</p>",
+    "cost": 0,
+    "quantity": 1,
+    "effectTable": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "13",
+    "systemId": "flail",
+    "systemVersion": "0.1.0",
+    "createdTime": 1777881491611,
+    "modifiedTime": 1777881491611,
+    "lastModifiedBy": null
+  }
+}

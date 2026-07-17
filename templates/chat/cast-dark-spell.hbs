@@ -1,0 +1,72 @@
+{{!--
+  Dark spell cast chat card.
+  Shows: actor + spell name, spirit spent, dice with 6s highlighted,
+  [DICE]/[SUM] formula substituted on the spell's effect text, and any
+  side-effect that triggered (Drained / Side-Effects table / Retire).
+--}}
+<div class="flail-card cast-card sixes-{{sixCount}}">
+
+  <header class="card-header">
+    <img class="actor-img" src="{{actor.img}}" />
+    <span class="actor-name">{{actor.name}}</span>
+    <h3>
+      <i class="fas fa-skull"></i>
+      {{spell.name}}
+    </h3>
+  </header>
+
+  <div class="cast-meta">
+    <span class="meta-chip"><i class="fas fa-fire"></i> {{spirit}} spirit spent</span>
+    <span class="meta-chip">[DICE] = {{spirit}}</span>
+    <span class="meta-chip">[SUM] = {{sum}}</span>
+  </div>
+
+  {{!-- Dice display — 6s highlighted in red so the side-effect trigger is obvious --}}
+  <div class="dice-tray">
+    {{#each dice as |d|}}
+      <span class="die {{#if (flail-eq d 1)}}is-one{{/if}} {{#if (flail-eq d 6)}}is-six{{/if}}">{{d}}</span>
+    {{/each}}
+  </div>
+
+  {{!-- Spell description (HTML — already sanitised on the data model) --}}
+  {{#if spell.description}}
+  <div class="cast-description">
+    {{{spell.description}}}
+  </div>
+  {{/if}}
+
+  {{!-- Side effect banner --}}
+  {{#if sideEffect}}
+    {{#if (flail-eq sideEffect.kind "drained")}}
+    <div class="side-effect-banner side-effect-drained">
+      <i class="fas fa-tint-slash"></i>
+      <span class="se-title">{{localize "FLAIL.DarkArts.Drained.Title"}}</span>
+      <span class="se-text">{{localize "FLAIL.DarkArts.Drained.Body"}}</span>
+    </div>
+    {{else if (flail-eq sideEffect.kind "table")}}
+    <div class="side-effect-banner side-effect-table">
+      <header>
+        <i class="fas fa-dice-d10"></i>
+        <span class="se-title">{{localize "FLAIL.DarkArts.SideEffect.Title"}}</span>
+        <span class="se-roll">d10 → {{sideEffect.result}}</span>
+      </header>
+      {{#if sideEffect.entry}}
+      <div class="se-entry">
+        <strong>{{sideEffect.result}}. {{sideEffect.entry.name}}:</strong>
+        {{sideEffect.entry.text}}
+      </div>
+      {{/if}}
+    </div>
+    {{else if (flail-eq sideEffect.kind "retire")}}
+    <div class="side-effect-banner side-effect-retire">
+      <i class="fas fa-skull-crossbones"></i>
+      <span class="se-title">{{localize "FLAIL.DarkArts.Retire.Title"}}</span>
+      <span class="se-text">{{localize "FLAIL.DarkArts.Retire.Body"}}</span>
+    </div>
+    {{/if}}
+  {{/if}}
+
+  <footer class="cast-footer">
+    <span class="spirit-remaining">{{localize "FLAIL.Field.Spirit"}}: {{spiritRemaining}}</span>
+  </footer>
+</div>

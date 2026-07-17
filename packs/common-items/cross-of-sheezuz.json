@@ -1,0 +1,39 @@
+{
+  "_id": "s6V9FT0B6OUxL5pb",
+  "_key": "!items!s6V9FT0B6OUxL5pb",
+  "name": "Cross of Sheezuz",
+  "type": "gear",
+  "img": "systems/flail/icons/items/cross-of-sheezuz.png",
+  "system": {
+    "location": "unequipped",
+    "slotIndex": 0,
+    "slotsRequired": 1,
+    "twoHanded": false,
+    "usage": {
+      "max": 3,
+      "value": 0
+    },
+    "description": "<p>Cleric holy symbol of the dead god Sheezuz.</p>",
+    "cost": 0,
+    "quantity": 1,
+    "consumable": false,
+    "tag": "holySymbol"
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "13",
+    "systemId": "flail",
+    "systemVersion": "0.1.0",
+    "createdTime": 1777881491611,
+    "modifiedTime": 1777881491611,
+    "lastModifiedBy": null
+  }
+}

@@ -1,0 +1,73 @@
+{{!--
+  Vitals 2×2 — Level (top-left) | HP (top-right) / Coins (bottom-left) | Reputation (bottom-right).
+  Standalone block now lives on the Abilities tab (extracted from the inventory grid
+  when the sheet was tabbed).
+--}}
+<section class="vitals-section">
+  <div class="vitals-block">
+
+    {{!-- Level (top-left) --}}
+    <div class="vitals-card level-card">
+      <header class="card-tab">{{localize "FLAIL.Field.Level"}}</header>
+      <select name="system.level" class="level-select" {{#unless editable}}disabled{{/unless}}>
+        <option value="1" {{#if (flail-eq system.level 1)}}selected{{/if}}>1</option>
+        <option value="2" {{#if (flail-eq system.level 2)}}selected{{/if}}>2</option>
+        <option value="3" {{#if (flail-eq system.level 3)}}selected{{/if}}>3</option>
+        <option value="4" {{#if (flail-eq system.level 4)}}selected{{/if}}>4</option>
+        <option value="5" {{#if (flail-eq system.level 5)}}selected{{/if}}>5</option>
+        <option value="6" {{#if (flail-eq system.level 6)}}selected{{/if}}>R</option>
+      </select>
+    </div>
+
+    {{!-- HP (top-right) --}}
+    <div class="vitals-card hp-card">
+      <i class="fas fa-heart heart-icon" aria-hidden="true"></i>
+      <span class="hp-label">HP</span>
+      <div class="hp-values">
+        <input type="number" name="system.hp.value" value="{{system.hp.value}}"
+               min="0" class="hp-current"
+               title="{{localize 'FLAIL.Field.Current'}}"
+               {{#unless editable}}disabled{{/unless}} />
+        <span class="hp-slash">/</span>
+        <input type="number" name="system.hp.max" value="{{system.hp.max}}"
+               min="0" class="hp-max"
+               title="{{localize 'FLAIL.Field.Base'}}"
+               {{#unless editable}}disabled{{/unless}} />
+      </div>
+      <div class="hp-buttons">
+        <button type="button" data-action="adjustHp" data-delta="-1" title="Take 1 damage">−</button>
+        <button type="button" data-action="adjustHp" data-delta="1"  title="Heal 1">+</button>
+      </div>
+      {{#if system.defence}}
+      {{!-- Defence badge — only rendered when derived defence > 0.
+           Sourced from armour, Crocodile Skin, or an active shapeshift
+           beast form. Tooltip explains it's a flat damage reduction. --}}
+      <div class="defence-badge" title="{{localize 'FLAIL.Field.DefenceHint'}}">
+        <i class="fas fa-shield-halved"></i>
+        <span class="defence-label">{{localize "FLAIL.Field.Defence"}}</span>
+        <span class="defence-value">{{system.defence}}</span>
+      </div>
+      {{/if}}
+    </div>
+
+    {{!-- Coins (bottom-left) --}}
+    <div class="vitals-card coins-card">
+      <i class="fas fa-coins coins-icon" aria-hidden="true"></i>
+      <span class="coins-label">{{localize "FLAIL.Field.Coins"}}</span>
+      <input type="number" name="system.coins" value="{{system.coins}}"
+             min="0" class="coins-current"
+             {{#unless editable}}disabled{{/unless}} />
+      <span class="coins-max">Max {{system.maxCoins}}</span>
+    </div>
+
+    {{!-- Reputation (bottom-right) --}}
+    <div class="vitals-card reputation-card">
+      <header class="card-tab">{{localize "FLAIL.Field.Reputation"}}</header>
+      <select name="system.reputation" class="rep-select" {{#unless editable}}disabled{{/unless}}>
+        {{#each reputationOptions as |opt|}}
+        <option value="{{opt.value}}" {{#if opt.selected}}selected{{/if}}>{{opt.display}}</option>
+        {{/each}}
+      </select>
+    </div>
+  </div>
+</section>

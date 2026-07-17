@@ -1,0 +1,14 @@
+{{!-- Biography & notes — collapsible at the bottom of the sheet --}}
+<details class="biography-details">
+  <summary>{{localize "FLAIL.Section.Notes"}}</summary>
+  <div class="biography-content">
+    <section class="tabbed-card">
+      <header class="tab-label">{{localize "FLAIL.Field.Biography"}}</header>
+      {{editor system.biography target="system.biography" button=true editable=editable engine="prosemirror"}}
+    </section>
+    <section class="tabbed-card">
+      <header class="tab-label">{{localize "FLAIL.Field.Notes"}}</header>
+      {{editor system.notes target="system.notes" button=true editable=editable engine="prosemirror"}}
+    </section>
+  </div>
+</details>

@@ -1,0 +1,39 @@
+{
+  "_id": "dwyzAieEJXgSVRGZ",
+  "_key": "!items!dwyzAieEJXgSVRGZ",
+  "name": "Map",
+  "type": "gear",
+  "img": "systems/flail/icons/items/map.png",
+  "system": {
+    "location": "unequipped",
+    "slotIndex": 0,
+    "slotsRequired": 1,
+    "twoHanded": false,
+    "usage": {
+      "max": 3,
+      "value": 0
+    },
+    "description": "<p>A map of somewhere.</p>",
+    "cost": 0,
+    "quantity": 1,
+    "consumable": false,
+    "tag": ""
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "13",
+    "systemId": "flail",
+    "systemVersion": "0.1.0",
+    "createdTime": 1777881491611,
+    "modifiedTime": 1777881491611,
+    "lastModifiedBy": null
+  }
+}

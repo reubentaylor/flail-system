@@ -1,0 +1,19 @@
+{{!-- Primal Gift body --}}
+<section class="card">
+  <div class="row">
+    <label>{{localize "FLAIL.Field.Kingdom"}}
+      <select name="system.kingdom" {{#unless editable}}disabled{{/unless}}>
+        <option value="mammal"     {{#if (flail-eq system.kingdom 'mammal')}}selected{{/if}}>{{localize "FLAIL.Kingdom.Mammal"}}</option>
+        <option value="reptile"    {{#if (flail-eq system.kingdom 'reptile')}}selected{{/if}}>{{localize "FLAIL.Kingdom.Reptile"}}</option>
+        <option value="bird"       {{#if (flail-eq system.kingdom 'bird')}}selected{{/if}}>{{localize "FLAIL.Kingdom.Bird"}}</option>
+        <option value="amphibian"  {{#if (flail-eq system.kingdom 'amphibian')}}selected{{/if}}>{{localize "FLAIL.Kingdom.Amphibian"}}</option>
+        <option value="fish"       {{#if (flail-eq system.kingdom 'fish')}}selected{{/if}}>{{localize "FLAIL.Kingdom.Fish"}}</option>
+        <option value="insect"     {{#if (flail-eq system.kingdom 'insect')}}selected{{/if}}>{{localize "FLAIL.Kingdom.Insect"}}</option>
+      </select>
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="system.used" {{#if system.used}}checked{{/if}} {{#unless editable}}disabled{{/unless}} />
+      {{localize "FLAIL.Field.UsedToday"}}
+    </label>
+  </div>
+</section>

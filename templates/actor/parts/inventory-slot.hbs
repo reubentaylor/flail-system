@@ -1,0 +1,128 @@
+{{!--
+  One inventory slot. Inputs: slot {index, locked, requiresStr, item, secondary}, zone.
+
+  Each zone has its own placeholder content when the slot is empty:
+    adornment → "ring, amulet, sigil, talisman, or charm"
+    hands     → "Off-hand 1" / "Main hand 2"
+    body      → "Body 3" through "Body 6"
+    satchel   → "Unlocks at STR 10" / "Unlocks at STR 12"
+--}}
+<div
+  class="inventory-slot zone-{{zone}} {{#if slot.locked}}is-locked{{/if}} {{#if slot.secondary}}is-secondary{{/if}} {{#if slot.spansTwo}}spans-two{{/if}} {{#if slot.item}}is-occupied{{/if}}"
+  data-slot-index="{{slot.index}}"
+  data-zone="{{zone}}"
+  {{#if slot.requiresStr}}title="{{localize 'FLAIL.Inventory.UnlocksAt'}} STR {{slot.requiresStr}}"{{/if}}
+>
+  {{#if slot.item}}
+    {{!-- Occupied: render item.
+         Layout: img + name + attack-btn on the top row, usage pips
+         pinned bottom-left, hover meta (edit / mark / delete) bottom-right. --}}
+    <div class="slot-item" draggable="true" data-item-id="{{slot.item.id}}">
+      <img src="{{slot.item.img}}" alt="{{slot.item.name}}" />
+      <span class="slot-item-name">{{slot.item.name}}</span>
+      {{#if (flail-eq slot.item.type "weapon")}}
+        {{#if (flail-eq zone "hands")}}
+        {{!-- Attack roll is only available from the hands zone — you have
+             to be wielding the weapon (offhand or main hand) to swing it. --}}
+        <button type="button" class="slot-action attack-btn" data-action="rollAttack" data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Roll.ToHit'}}">
+          <i class="fas fa-dice-d6"></i>
+        </button>
+        {{/if}}
+      {{/if}}
+      {{#if (flail-eq slot.item.type "instrument")}}
+        {{#if (flail-eq zone "instruments")}}
+        {{!-- Play is only available from the dedicated instrument zone:
+             CHA save, then table lookup based on the outcome. When
+             the instrument was played to a fail/fumble in this scene
+             (`flags.flail.usedOut` set), the play button is disabled
+             with a "used out" tooltip and a small refresh button
+             appears next to it so the Bard can manually reset when
+             a new combat or social scene begins. Any rest also
+             clears the flag automatically. --}}
+        {{#if slot.item.flags.flail.usedOut}}
+        <button type="button" class="slot-action play-btn is-used-out" disabled title="{{localize 'FLAIL.Roll.InstrumentUsedOutHint'}}">
+          <i class="fas fa-ban"></i>
+        </button>
+        <button type="button" class="slot-action reset-btn" data-action="resetInstrumentUsedOut" data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Roll.InstrumentResetHint'}}">
+          <i class="fas fa-rotate-left"></i>
+        </button>
+        {{else}}
+        <button type="button" class="slot-action play-btn" data-action="rollInstrument" data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Roll.PlayInstrument'}}">
+          <i class="fas fa-music"></i>
+        </button>
+        {{/if}}
+        {{/if}}
+      {{/if}}
+      {{#if slot.item.system.usage.max}}
+      <span class="slot-usage">{{flail-pip slot.item.system.usage.value slot.item.system.usage.max slot.item.id}}</span>
+      {{/if}}
+      <span class="slot-meta">
+        <button type="button" data-action="itemEdit"   data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+        <button type="button" data-action="markUsage"  data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.MarkUsage'}}"><i class="fas fa-circle"></i></button>
+        <button type="button" data-action="itemDelete" data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="slot-meta-delete"><i class="fas fa-trash"></i></button>
+      </span>
+    </div>
+
+  {{else if slot.secondary}}
+    {{!-- Secondary: claimed by a 2-handed/2-slot neighbour. Empty
+         inline content — CSS hides the whole slot via .is-secondary so
+         the primary slot above visually spans across both cells. --}}
+
+  {{else}}
+    {{!-- Empty: zone-specific placeholder --}}
+    {{#if (flail-eq zone "adornment")}}
+      <div class="slot-empty adornment-empty">
+        <i class="fas fa-ring"></i>
+        <span class="placeholder">ring, amulet, sigil,<br>talisman, or charm</span>
+      </div>
+
+    {{else if (flail-eq zone "hands")}}
+      <div class="slot-empty hand-empty">
+        <span class="hand-name">
+          {{#if (flail-eq slot.index 0)}}{{localize "FLAIL.Inventory.OffHand"}}{{else}}{{localize "FLAIL.Inventory.MainHand"}}{{/if}}
+        </span>
+        <span class="hand-num">{{add slot.index 1}}</span>
+      </div>
+
+    {{else if (flail-eq zone "body")}}
+      <div class="slot-empty body-empty">
+        <span class="body-name">{{localize "FLAIL.Inventory.BodySlot"}}</span>
+        <span class="body-num">{{add slot.index 3}}</span>
+      </div>
+
+    {{else if (flail-eq zone "satchel")}}
+      {{#if slot.requiresStr}}
+      <div class="slot-empty satchel-empty satchel-locked">
+        {{#if slot.locked}}<i class="fas fa-lock"></i>{{/if}}
+        <span class="satchel-text">
+          {{localize "FLAIL.Inventory.UnlocksAt"}}<br>
+          <strong>STR {{slot.requiresStr}}</strong>
+        </span>
+      </div>
+      {{else}}
+      <div class="slot-empty satchel-empty">
+        <span class="satchel-num">{{add slot.index 1}}</span>
+      </div>
+      {{/if}}
+
+    {{else if (flail-eq zone "instruments")}}
+      {{#if slot.requiresLevel}}
+      <div class="slot-empty instrument-empty instrument-locked">
+        {{#if slot.locked}}<i class="fas fa-lock"></i>{{/if}}
+        <span class="instrument-text">
+          {{localize "FLAIL.Inventory.UnlocksAtLevel"}}<br>
+          <strong>{{slot.requiresLevel}}</strong>
+        </span>
+      </div>
+      {{else}}
+      <div class="slot-empty instrument-empty">
+        <i class="fas fa-music"></i>
+        <span class="instrument-num">{{add slot.index 1}}</span>
+      </div>
+      {{/if}}
+
+    {{else}}
+      <span class="slot-index">{{add slot.index 1}}</span>
+    {{/if}}
+  {{/if}}
+</div>

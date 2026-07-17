@@ -1,0 +1,57 @@
+{{!--
+  Generic class items panel. Lists everything by category.
+  (The Quick Attacks panel that used to sit at the top has moved to the
+  Abilities tab, beside the vitals.)
+--}}
+<section class="items-and-skills">
+
+  {{#*inline "itemList"}}
+    {{#if list.length}}
+    <div class="tabbed-card items-card">
+      <header class="tab-label">{{label}}</header>
+      <ul class="feature-list">
+        {{#each list as |item|}}
+        <li class="feature-row" data-item-id="{{item.id}}" draggable="true">
+          <img src="{{item.img}}" />
+          <div class="feature-body">
+            <header><strong>{{item.name}}</strong></header>
+            {{#if item.system.description}}<div class="feature-desc">{{{item.system.description}}}</div>{{/if}}
+          </div>
+          <div class="feature-actions">
+            <button type="button" data-action="itemEdit" data-item-id="{{item.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+            <button type="button" data-action="itemToChat" data-item-id="{{item.id}}" title="{{localize 'FLAIL.Action.ShareToChat'}}"><i class="fas fa-comment"></i></button>
+            <button type="button" data-action="itemDelete" data-item-id="{{item.id}}" title="{{localize 'FLAIL.Action.Delete'}}"><i class="fas fa-trash"></i></button>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+      <button type="button" class="add-row" data-action="itemCreate" data-item-type="{{createType}}">
+        + {{localize "FLAIL.Action.Add"}}
+      </button>
+    </div>
+    {{else}}
+    <div class="tabbed-card items-card empty-card">
+      <header class="tab-label">{{label}}</header>
+      <p class="empty">{{localize "FLAIL.Empty.None"}}</p>
+      <button type="button" class="add-row" data-action="itemCreate" data-item-type="{{createType}}">
+        + {{localize "FLAIL.Action.Add"}}
+      </button>
+    </div>
+    {{/if}}
+  {{/inline}}
+
+  {{!-- Talents — Cutthroat thieving talents, Warrior combat talent items, generic --}}
+  {{> itemList list=items.talents     label=(localize "FLAIL.Section.Talents")     createType="talent" }}
+  {{!-- Gadgets — Tinkerer --}}
+  {{> itemList list=items.gadgets     label=(localize "FLAIL.Section.Gadgets")     createType="gadget" }}
+  {{!-- Primal Gifts — Druid --}}
+  {{> itemList list=items.gifts       label=(localize "FLAIL.Section.Gifts")       createType="gift" }}
+  {{!-- Spells — Wizard / Bone Whisperer --}}
+  {{> itemList list=items.spells      label=(localize "FLAIL.Section.Spellbook")   createType="spell" }}
+  {{!-- Prayers — Cleric --}}
+  {{> itemList list=items.prayers     label=(localize "FLAIL.Section.Prayers")     createType="prayer" }}
+  {{!-- Instruments — Bard --}}
+  {{> itemList list=items.instruments label=(localize "FLAIL.Section.Instruments") createType="instrument" }}
+  {{!-- Generic features — racial traits, GM-defined extras --}}
+  {{> itemList list=items.features    label=(localize "FLAIL.Section.Features")    createType="feature" }}
+</section>

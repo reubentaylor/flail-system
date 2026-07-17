@@ -1,0 +1,79 @@
+<div class="flail-chat-card armour-negation-card">
+  <header class="flail-chat-header">
+    <img class="an-target-img" src="{{target.img}}" alt="" />
+    <div class="an-header-text">
+      <span class="an-target-name">{{target.name}}</span>
+      <span class="an-title">{{localize "FLAIL.Armour.NegateCardTitle"}}</span>
+    </div>
+  </header>
+
+  <div class="flail-chat-body">
+    {{#if marks.length}}
+    <ul class="an-marks-list">
+      {{#each marks as |m|}}
+      <li class="an-mark-row">
+        <img src="{{m.img}}" alt="" />
+        <span class="an-mark-name">{{m.name}}</span>
+        <span class="an-mark-count">×{{m.count}}</span>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="an-no-marks"><em>{{localize "FLAIL.Armour.NegateNothingMarked"}}</em></p>
+    {{/if}}
+
+    <div class="an-outcome">
+      <p class="an-outcome-ones">
+        <strong>{{originalOnes}}</strong>
+        {{localize "FLAIL.Armour.NegateOnes"}}
+        →
+        <strong>{{newOnes}}</strong>
+        {{localize "FLAIL.Armour.NegateOnes"}}
+      </p>
+      {{#if tierChanged}}
+      <p class="an-outcome-tier">
+        <span class="an-tier an-tier-original">{{originalTierLabel}}</span>
+        →
+        <span class="an-tier an-tier-new an-tier-new-{{newTier}}">{{newTierLabel}}</span>
+      </p>
+      {{else}}
+      <p class="an-outcome-tier an-tier-unchanged">
+        <span class="an-tier">{{originalTierLabel}}</span>
+        <em>({{localize "FLAIL.Armour.NegateNoChange"}})</em>
+      </p>
+      {{/if}}
+
+      {{#if wasFullyNegated}}
+      <div class="an-verdict an-verdict-miss">
+        <i class="fas fa-shield-check"></i>
+        <span>{{localize "FLAIL.Armour.NegateVerdictMiss"}}</span>
+      </div>
+      {{else if wasDeathBlow}}
+      <div class="an-verdict an-verdict-death">
+        <i class="fas fa-skull"></i>
+        <span>{{localize "FLAIL.Armour.NegateVerdictDeath"}}</span>
+      </div>
+      {{else if newDamage}}
+      <div class="an-verdict an-verdict-hit">
+        <i class="fas fa-heart-broken"></i>
+        <span>{{verdictDamageLabel}}</span>
+      </div>
+      {{/if}}
+    </div>
+
+    {{#if wastedMarks}}
+    <p class="an-wasted">
+      <i class="fas fa-triangle-exclamation"></i>
+      {{wastedLabel}}
+    </p>
+    {{/if}}
+  </div>
+
+  {{#if newDamage}}
+  <footer class="card-actions">
+    <button type="button" data-flail-action="applyDamage" data-amount="{{newDamage}}" title="{{localize 'FLAIL.Action.ApplyDamageHint'}}">
+      <i class="fas fa-heart-broken"></i> {{localize "FLAIL.Action.ApplyDamage"}} ({{newDamage}})
+    </button>
+  </footer>
+  {{/if}}
+</div>

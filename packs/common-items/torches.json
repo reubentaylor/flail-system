@@ -1,0 +1,39 @@
+{
+  "_id": "4ArgdbmowrcJZWdx",
+  "_key": "!items!4ArgdbmowrcJZWdx",
+  "name": "Torches",
+  "type": "gear",
+  "img": "systems/flail/icons/items/torches.png",
+  "system": {
+    "location": "unequipped",
+    "slotIndex": 0,
+    "slotsRequired": 1,
+    "twoHanded": false,
+    "usage": {
+      "max": 3,
+      "value": 0
+    },
+    "description": "<p>Bundle of pitch torches.</p>",
+    "cost": 0,
+    "quantity": 1,
+    "consumable": true,
+    "tag": "lightSource"
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "coreVersion": "13",
+    "systemId": "flail",
+    "systemVersion": "0.1.0",
+    "createdTime": 1777881491611,
+    "modifiedTime": 1777881491611,
+    "lastModifiedBy": null
+  }
+}

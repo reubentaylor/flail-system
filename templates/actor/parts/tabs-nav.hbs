@@ -1,0 +1,11 @@
+{{!-- Three-tab nav bar — Abilities | Inventory | Class --}}
+<nav class="tabs-nav" data-group="primary">
+  {{#each tabs as |tab|}}
+  <button type="button"
+          class="tab-btn {{#if tab.active}}is-active{{/if}}"
+          data-action="selectTab"
+          data-tab="{{tab.id}}">
+    {{localize tab.label}}
+  </button>
+  {{/each}}
+</nav>

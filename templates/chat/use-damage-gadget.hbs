@@ -1,0 +1,54 @@
+<div class="flail-chat-card damage-gadget-card">
+  <header class="flail-chat-header">
+    <img class="dg-gadget-img" src="{{gadget.img}}" alt="" />
+    <div class="dg-header-text">
+      <span class="dg-actor">{{actor.name}}</span>
+      <span class="dg-title">{{localize "FLAIL.Gadget.Damage.CardTitle"}} {{gadget.name}}</span>
+    </div>
+  </header>
+
+  <div class="flail-chat-body">
+    {{#if mechanic.targetHint}}
+    <p class="dg-target-hint">
+      <i class="fas fa-crosshairs"></i>
+      {{mechanic.targetHint}}
+    </p>
+    {{/if}}
+
+    <div class="dg-roll-row">
+      <span class="dg-formula">{{mechanic.formula}}</span>
+      <span class="dg-dice">
+        {{#each dice as |d|}}
+        <span class="dg-die">{{d}}</span>
+        {{/each}}
+      </span>
+      <span class="dg-total">= <strong>{{total}}</strong></span>
+    </div>
+
+    <div class="dg-damage-row">
+      <i class="fas fa-heart-broken"></i>
+      <span class="dg-damage-label">{{localize "FLAIL.Gadget.Damage.DamageDealt"}}:</span>
+      <span class="dg-damage-amount">{{damage}}</span>
+    </div>
+
+    {{#if triggered}}
+    <div class="dg-triggered dg-triggered-{{triggered.key}}">
+      <header>
+        {{#if (flail-eq triggered.key "ricochet")}}<i class="fas fa-bolt"></i>{{/if}}
+        {{#if (flail-eq triggered.key "stunned")}}<i class="fas fa-hand-sparkles"></i>{{/if}}
+        {{#if (flail-eq triggered.key "delayed")}}<i class="fas fa-hourglass-half"></i>{{/if}}
+        <span>{{triggered.label}}</span>
+      </header>
+      <p>{{triggered.detail}}</p>
+    </div>
+    {{/if}}
+  </div>
+
+  {{#if hasDamage}}
+  <footer class="card-actions">
+    <button type="button" data-flail-action="applyDamage" data-amount="{{damage}}" title="{{localize 'FLAIL.Action.ApplyDamageHint'}}">
+      <i class="fas fa-heart-broken"></i> {{localize "FLAIL.Action.ApplyDamage"}} ({{damage}})
+    </button>
+  </footer>
+  {{/if}}
+</div>

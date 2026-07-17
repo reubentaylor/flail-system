@@ -1,0 +1,21 @@
+{{!-- Feature body — generic class skills, racial traits, etc. --}}
+<section class="card">
+  <div class="row">
+    <label>{{localize "FLAIL.Field.FeatureType"}}
+      <select name="system.featureType" {{#unless editable}}disabled{{/unless}}>
+        <option value="class"      {{#if (flail-eq system.featureType 'class')}}selected{{/if}}>{{localize "FLAIL.FeatureType.Class"}}</option>
+        <option value="race"       {{#if (flail-eq system.featureType 'race')}}selected{{/if}}>{{localize "FLAIL.FeatureType.Race"}}</option>
+        <option value="background" {{#if (flail-eq system.featureType 'background')}}selected{{/if}}>{{localize "FLAIL.FeatureType.Background"}}</option>
+        <option value="other"      {{#if (flail-eq system.featureType 'other')}}selected{{/if}}>{{localize "FLAIL.FeatureType.Other"}}</option>
+      </select>
+    </label>
+    <label>{{localize "FLAIL.Field.Class"}}
+      <select name="system.classKey" {{#unless editable}}disabled{{/unless}}>
+        <option value="" {{#if (flail-eq system.classKey '')}}selected{{/if}}>—</option>
+        {{#each config.classes as |cls key|}}
+        <option value="{{key}}" {{#if (flail-eq key ../system.classKey)}}selected{{/if}}>{{localize cls.label}}</option>
+        {{/each}}
+      </select>
+    </label>
+  </div>
+</section>
