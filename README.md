@@ -40,6 +40,9 @@ Alt+Click to modify a roll
 
 Foundry VTT implementation by Reuben Taylor. All thoughts and suggestions welcome — open an issue or pull request.
 
+Flail Rules are available free(!): https://www.backerkit.com/c/projects/games-omnivorous/flail-an-old-school-fantasy-brawler
+Please support Andre Novoa and his amazing work by subscribing to his Patreon: https://www.patreon.com/cw/GamesOmnivorous
+
 ## Development
 
 Every version bump follows this flow:
