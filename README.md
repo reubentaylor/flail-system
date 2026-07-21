@@ -1,4 +1,4 @@
-# FLAIL! Foundry VTT System
+# UNOFFICIAL FLAIL! Foundry VTT System
 
 An unofficial Foundry VTT implementation of **FLAIL!**, the old-school fantasy brawler by Andre Novoa.
 
