@@ -36,7 +36,7 @@
     <legend>{{localize "FLAIL.Field.Range"}}</legend>
     {{#each config.weaponRange as |r key|}}
     <label class="checkbox">
-      <input type="checkbox" name="system.range" value="{{key}}" {{#if (flail-includes ../system.range key)}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}} />
+      <input type="checkbox" data-range="{{key}}" {{#if (flail-includes ../system.range key)}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}} />
       {{localize r.label}}
     </label>
     {{/each}}

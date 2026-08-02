@@ -40,6 +40,90 @@ export class FlailNpcSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /* -------------------------------------------- */
 
+  _onRender(context, options) {
+    super._onRender?.(context, options);
+    const root = this.element;
+    if (!root) return;
+
+    // Editor pencil click — Foundry v13's HandlebarsApplicationMixin does
+    // NOT auto-wire the {{editor}} helper's edit button for HTMLField
+    // editors on ApplicationV2 sheets, so we activate the ProseMirror
+    // editor ourselves. Same fix as the character sheet's Notes tab.
+    root.querySelectorAll(".editor a.editor-edit, .editor button.editor-edit").forEach(btn => {
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        await this.#activateEditor(btn);
+      });
+    });
+  }
+
+  /**
+   * Activate a ProseMirror editor in place of an {{editor}} helper's
+   * view mode. Copied from the character sheet — same DOM shape, same
+   * fix. Save writes back to the actor and a follow-up re-render
+   * restores view mode.
+   */
+  async #activateEditor(btn) {
+    const editorEl = btn.closest(".editor");
+    if (!editorEl) return;
+    const contentEl = editorEl.querySelector("[data-edit], [name]");
+    if (!contentEl) return;
+    const field = contentEl.dataset.edit ?? contentEl.getAttribute("name");
+    if (!field) return;
+    if (editorEl.classList.contains("prosemirror-editing")) return;
+
+    const currentValue = foundry.utils.getProperty(this.document, field) ?? "";
+
+    // Foundry v13 exposes the ProseMirror module as a global.
+    const PM = globalThis.ProseMirror ?? foundry?.prosemirror;
+    if (!PM?.ProseMirrorEditor) {
+      // Fallback: temporary contenteditable + submit-on-blur, so text
+      // can still be entered even if ProseMirror is unreachable.
+      contentEl.setAttribute("contenteditable", "true");
+      contentEl.style.outline = "2px solid var(--flail-rule, #b58b3e)";
+      contentEl.focus();
+      const original = contentEl.innerHTML;
+      const stop = async (save) => {
+        contentEl.setAttribute("contenteditable", "false");
+        contentEl.style.outline = "";
+        if (save) await this.document.update({ [field]: contentEl.innerHTML });
+        else contentEl.innerHTML = original;
+        this.render(false);
+      };
+      contentEl.addEventListener("blur", () => stop(true), { once: true });
+      contentEl.addEventListener("keydown", ev => {
+        if (ev.key === "Escape") { ev.preventDefault(); stop(false); }
+      });
+      return;
+    }
+
+    editorEl.classList.add("prosemirror-editing");
+
+    try {
+      const schema = PM.defaultSchema;
+      const menu = PM.ProseMirrorMenu.build(schema, {
+        destroyOnSave: true,
+        onSave: async () => {
+          setTimeout(() => this.render(false), 100);
+        }
+      });
+      const keyMaps = PM.ProseMirrorKeyMaps.build(schema, { onSave: () => {} });
+
+      await PM.ProseMirrorEditor.create(contentEl, currentValue, {
+        document:  this.document,
+        fieldName: field,
+        plugins:   { menu, keyMaps }
+      });
+    } catch (err) {
+      console.error("FLAIL | Failed to activate ProseMirror editor", err);
+      editorEl.classList.remove("prosemirror-editing");
+      ui.notifications?.error("Editor failed to open — see console.");
+    }
+  }
+
+  /* -------------------------------------------- */
+
   static async #onRollSave(event, target) {
     // NPCs have a single Saves value — roll d20 vs that.
     const actor = this.actor;

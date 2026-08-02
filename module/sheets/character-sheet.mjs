@@ -931,6 +931,60 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     // panel without a full re-render.
     root.dataset.activeTab = this._activeTab;
 
+    // Scroll enforcement — set inline styles on the actual DOM elements
+    // rather than relying on CSS. Foundry's HandlebarsApplicationMixin +
+    // ApplicationV2 sometimes structures the sheet's DOM in ways that CSS
+    // rules targeting `.window-content > form` miss (extra wrappers, or
+    // parts rendered without a form wrapper at all). By walking the DOM
+    // here we can apply the flex/overflow chain to whatever elements are
+    // actually present, and the active tab-panel always ends up as a
+    // properly-bounded scroll region.
+    const windowContent = root.querySelector(".window-content");
+    if (windowContent) {
+      windowContent.style.overflow = "hidden";
+      windowContent.style.display = "flex";
+      windowContent.style.flexDirection = "column";
+      windowContent.style.minHeight = "0";
+    }
+    // The parts might be wrapped in a <form>, or might be direct children
+    // of window-content. Walk down until we find a container that has the
+    // tab-panels as children — that's the flex parent we need to constrain.
+    let flexParent = root.querySelector("form") ?? windowContent;
+    if (flexParent) {
+      flexParent.style.display = "flex";
+      flexParent.style.flexDirection = "column";
+      flexParent.style.height = "100%";
+      flexParent.style.minHeight = "0";
+      flexParent.style.overflow = "hidden";
+    }
+    // Every tab-panel is a potential scroll region. Active one gets
+    // flex:1 (fills available space) + overflow-y:auto (scrolls when
+    // content exceeds the space). Inactive panels stay display:none via
+    // CSS. Any wrappers between form and tab-panel get flex passthroughs.
+    const panels = root.querySelectorAll(".tab-panel");
+    for (const panel of panels) {
+      if (panel.dataset.tab === this._activeTab) {
+        panel.style.flex = "1 1 auto";
+        panel.style.minHeight = "0";
+        panel.style.overflowY = "auto";
+        panel.style.overflowX = "hidden";
+        // Walk up to the flex parent, marking any wrapper divs
+        // between it and the panel as flex passthroughs so height
+        // constraints propagate cleanly.
+        let node = panel.parentElement;
+        while (node && node !== flexParent && node !== windowContent) {
+          node.style.display = "flex";
+          node.style.flexDirection = "column";
+          node.style.flex = "1 1 auto";
+          node.style.minHeight = "0";
+          node = node.parentElement;
+        }
+      } else {
+        panel.style.flex = "";
+        panel.style.overflowY = "";
+      }
+    }
+
     // Same mirror trick for the Cutthroat talents card's two-tab nav.
     const talentsCard = root.querySelector(".talents-card");
     if (talentsCard) talentsCard.dataset.activeTalentTab = this._activeTalentTab;
@@ -3535,6 +3589,33 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     root.dataset.activeTab = tab;
     for (const btn of root.querySelectorAll(".tabs-nav .tab-btn")) {
       btn.classList.toggle("is-active", btn.dataset.tab === tab);
+    }
+
+    // Re-apply the scroll enforcement to the newly-active panel — same
+    // walk-up logic used in _onRender. Without this, switching tabs
+    // would leave the previously-active panel with the flex/overflow
+    // styles and the new one un-styled.
+    const windowContent = root.querySelector(".window-content");
+    const flexParent = root.querySelector("form") ?? windowContent;
+    const panels = root.querySelectorAll(".tab-panel");
+    for (const panel of panels) {
+      if (panel.dataset.tab === tab) {
+        panel.style.flex = "1 1 auto";
+        panel.style.minHeight = "0";
+        panel.style.overflowY = "auto";
+        panel.style.overflowX = "hidden";
+        let node = panel.parentElement;
+        while (node && node !== flexParent && node !== windowContent) {
+          node.style.display = "flex";
+          node.style.flexDirection = "column";
+          node.style.flex = "1 1 auto";
+          node.style.minHeight = "0";
+          node = node.parentElement;
+        }
+      } else {
+        panel.style.flex = "";
+        panel.style.overflowY = "";
+      }
     }
   }
 

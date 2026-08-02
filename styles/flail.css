@@ -31,22 +31,25 @@
   font-family: "Signika", "Roboto", system-ui, sans-serif;
   color: var(--flail-ink);
 }
-/* Scroll the outer window-content rather than the form, so the entire
-   sheet (tabs, panels, class-specific bodies) can be scrolled at any
-   window size. Same pattern used by item sheets — the form inside
-   flows at its intrinsic height and window-content clips-with-scroll
-   when the user shrinks the window. */
+/* Scroll strategy — the form fills window-content, the banner and tabs
+   nav sit fixed at the top, and the active tab-panel becomes the scroll
+   region. When the window is resized, banner and tabs-nav keep their
+   sizes; the tab-panel shrinks to fill the remaining space and gets its
+   own vertical scrollbar the moment content exceeds visible height.
+   This is more robust than scrolling window-content because it doesn't
+   depend on Foundry's flex-container defaults playing nicely with an
+   intrinsic-height form. */
 .flail.sheet.actor.character .window-content {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 .flail.sheet.actor.character form {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.6rem 0.85rem 0.85rem;
-  height: auto;
-  overflow: visible;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -113,10 +116,18 @@
 .flail.sheet[data-active-tab="class"]     .tab-panel[data-tab="class"],
 .flail.sheet[data-active-tab="notes"]     .tab-panel[data-tab="notes"] {
   display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 /* Default (no data-active-tab attribute set yet) — show Abilities. */
 .flail.sheet:not([data-active-tab]) .tab-panel[data-tab="abilities"] {
   display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .flail.sheet .banner-row {
   display: grid;
@@ -5103,15 +5114,16 @@
    sheets — .construct-sheet flows at its intrinsic size and the
    outer window-content scrolls when the window is shrunk. */
 .flail.sheet.construct .window-content {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 .flail.sheet.construct .construct-sheet {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   padding: 0.6rem 0.8rem;
-  height: auto;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   background: var(--flail-paper);
   color: var(--flail-ink);
 }
@@ -5707,10 +5719,18 @@
 .flail.sheet.construct .construct-sheet[data-active-tab="inventory"]    .tab-panel[data-tab="inventory"],
 .flail.sheet.construct .construct-sheet[data-active-tab="improvements"] .tab-panel[data-tab="improvements"] {
   display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 /* Default (no data-active-tab yet) — show Abilities. */
 .flail.sheet.construct .construct-sheet:not([data-active-tab]) .tab-panel[data-tab="abilities"] {
   display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ============================================================

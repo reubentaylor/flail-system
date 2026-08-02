@@ -1,5 +1,11 @@
-{{!-- NPC sheet template --}}
-<form class="flail-npc-sheet">
+{{!-- NPC sheet template.
+     NOTE: no outer <form> here. Foundry v13's ApplicationV2 with
+     HandlebarsApplicationMixin already wraps the entire sheet in its
+     own <form> element. A nested inner <form> silently breaks
+     submitOnChange: browsers assign input `name`s to the innermost
+     form, so the outer Foundry submit handler never sees the changed
+     fields and nothing persists. --}}
+<div class="flail-npc-sheet">
 
   <header class="npc-header">
     <img class="profile" src="{{actor.img}}" data-edit="img" />
@@ -120,4 +126,4 @@
     <header><h3>{{localize "FLAIL.Field.Description"}}</h3></header>
     {{editor system.description target="system.description" button=true editable=editable engine="prosemirror"}}
   </section>
-</form>
+</div>
