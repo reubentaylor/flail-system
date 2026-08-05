@@ -40,7 +40,15 @@ export class FlailWeaponModel extends FlailItemBaseModel {
       // corresponding dice pattern comes up.
       deathBlow: new fields.StringField({ required: false, blank: true, initial: "" }),
       majorHit:  new fields.StringField({ required: false, blank: true, initial: "" }),
-      anyHit:    new fields.StringField({ required: false, blank: true, initial: "" })
+      anyHit:    new fields.StringField({ required: false, blank: true, initial: "" }),
+      // Special attack feature — free-form rich text describing any
+      // unusual mechanic the weapon has beyond its base TH/DMG (e.g.
+      // "Cleave on natural triplet", "Poisoned — Death Blow trigger
+      // adds -1 STR", "Reach: may target adjacent tokens Nearby+1").
+      // Rendered as its own section on the weapon sheet with a
+      // ProseMirror editor. Nothing automated — this is GM/player
+      // reference text.
+      specialFeature: new fields.HTMLField({ required: false, blank: true, initial: "" })
     };
   }
 }

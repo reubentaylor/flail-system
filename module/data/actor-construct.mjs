@@ -30,10 +30,15 @@ export class FlailConstructModel extends foundry.abstract.TypeDataModel {
       // Surviving — Defence and HP start at 0; Saves starts at 6.
       defence: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
       saves:   new fields.NumberField({ integer: true, min: 0, initial: 6 }),
+      // FLAIL v1 rulebook (p.34) — Constructs start with 2 HP baseline
+      // before any +2 HP improvements are purchased. Max stays at 20
+      // (2 baseline + 9 × +2 improvements). Existing constructs from
+      // v0.2 worlds keep their current HP; only newly-created ones
+      // gain the 2 HP baseline.
       hp: new fields.SchemaField({
-        base:  new fields.NumberField({ integer: true, min: 0, initial: 0 }),
-        value: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
-        max:   new fields.NumberField({ integer: true, min: 0, initial: 0 })
+        base:  new fields.NumberField({ integer: true, min: 0, initial: 2 }),
+        value: new fields.NumberField({ integer: true, min: 0, initial: 2 }),
+        max:   new fields.NumberField({ integer: true, min: 0, initial: 2 })
       }),
 
       // Abilities — booleans, purchased with improvement points.

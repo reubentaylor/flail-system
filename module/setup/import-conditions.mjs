@@ -13,8 +13,10 @@ import { CONDITIONS } from "./conditions-data.mjs";
  *       (parchment-card layout matching the printed rulebook cards).
  *   3 — restyled icons: red background, black text, larger fonts for
  *       better legibility at small sizes.
+ *   4 — FLAIL v1 rulebook (p.47): Starved condition rewritten to
+ *       accumulate one extra per day instead of one per two days.
  */
-export const CONDITIONS_VERSION = 3;
+export const CONDITIONS_VERSION = 4;
 
 const VERSION_SETTING = "conditionsVersion";
 const PACK_NAME = "flail-conditions";

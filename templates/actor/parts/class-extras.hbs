@@ -221,6 +221,10 @@
       <label class="full">Name
         <input type="text" name="system.undeadPuppet.name" value="{{system.undeadPuppet.name}}" {{#unless editable}}disabled{{/unless}} />
       </label>
+      <p class="puppet-attack-hint">
+        <i class="fas fa-circle-info"></i>
+        {{localize "FLAIL.BoneWhisperer.PuppetAttackHint"}}
+      </p>
       <label>HP
         <input type="number" name="system.undeadPuppet.hp" value="{{system.undeadPuppet.hp}}" min="0" {{#unless editable}}disabled{{/unless}} />
       </label>
@@ -585,6 +589,12 @@
       {{jackOfAllTradesCount}} / {{jackOfAllTradesLevel}}
       <span class="joat-slot-hint">{{localize "FLAIL.Bard.JOAT.SlotHint"}}</span>
     </p>
+    {{#if bardSetBonus}}
+    <p class="joat-set-bonus">
+      <i class="fas fa-star"></i>
+      {{localize "FLAIL.Bard.JOAT.SetBonusActive" setName=bardSetBonus.setName}}
+    </p>
+    {{/if}}
     {{#if jackOfAllTradesItems.length}}
       <ul class="joat-list">
       {{#each jackOfAllTradesItems as |j|}}

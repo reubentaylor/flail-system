@@ -2387,6 +2387,54 @@
   color: #000;
 }
 
+/* Item sheet editors — Description and Special Attack Feature both use
+   ProseMirror. Force text to pure black so both fields stay legible
+   in dark theme (where the default ink colour cascades to a low-contrast
+   grey against the parchment card background). Applies to view mode
+   and active-editing mode. */
+.flail.sheet.item .editor,
+.flail.sheet.item .editor-content,
+.flail.sheet.item .editor-content * {
+  color: #000;
+}
+
+/* Item sheet body text — force ALL headings, labels, legends,
+   paragraph text, and card content to pure black regardless of
+   theme. Foundry's dark theme applies its own colours to these
+   elements at a specificity that beats our .flail.sheet.item base
+   colour, so we override explicitly here. Covers every element
+   type used in weapon/gear/spell/prayer/gift/talent/gadget/feature/
+   condition/instrument/guild bodies. */
+.flail.sheet.item .flail-item-body,
+.flail.sheet.item .flail-item-body h1,
+.flail.sheet.item .flail-item-body h2,
+.flail.sheet.item .flail-item-body h3,
+.flail.sheet.item .flail-item-body h4,
+.flail.sheet.item .flail-item-body h5,
+.flail.sheet.item .flail-item-body h6,
+.flail.sheet.item .flail-item-body label,
+.flail.sheet.item .flail-item-body legend,
+.flail.sheet.item .flail-item-body p,
+.flail.sheet.item .flail-item-body span,
+.flail.sheet.item .flail-item-body .card,
+.flail.sheet.item .flail-item-body .card * {
+  color: #000;
+}
+/* Section headers on item bodies were rendering at Foundry's default
+   h3 size (~1.5rem), which felt oversized against the card padding.
+   Bring them down to the same scale used by the character sheet's
+   section labels. Small caps + letter-spacing keeps them visually
+   distinct without dominating the card. */
+.flail.sheet.item .flail-item-body h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0.2rem 0 0.4rem 0;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid var(--flail-rule, #b58b3e);
+}
+
 /* ============================================================
    GENERIC inputs / forms inside the sheet
    ============================================================ */
@@ -2648,6 +2696,11 @@
   height: 48px;
   border: 2px solid var(--flail-rule);
   cursor: pointer;
+  transition: box-shadow 120ms ease-in-out, transform 120ms ease-in-out;
+}
+.flail.sheet .flail-item-header .item-profile:hover {
+  box-shadow: 0 0 0 2px rgba(181, 139, 62, 0.55);
+  transform: scale(1.03);
 }
 .flail.sheet .flail-item-header input[name="name"] {
   flex: 1;
@@ -9034,4 +9087,111 @@
 .flail.sheet.item .guild-sigil-hint i {
   color: var(--flail-rule, #b58b3e);
   margin-right: 0.35rem;
+}
+
+/* -------------------------------------------- */
+/*  Bard JOAT set-bonus badge (v1 rulebook)     */
+/* -------------------------------------------- */
+
+.flail.sheet .jack-card .joat-set-bonus {
+  margin: 0.3rem 0 0.5rem 0;
+  padding: 0.3rem 0.5rem;
+  background: rgba(181, 139, 62, 0.12);
+  border-left: 3px solid var(--flail-rule, #b58b3e);
+  border-radius: 0 3px 3px 0;
+  font-size: 0.85em;
+  color: #6a4d0e;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.flail.sheet .jack-card .joat-set-bonus i.fa-star {
+  color: #d4a943;
+  margin-right: 0.35rem;
+}
+
+/* -------------------------------------------- */
+/*  Bone Whisperer — undead puppet attack hint  */
+/* -------------------------------------------- */
+
+.flail.sheet .undead-puppet-card .puppet-attack-hint {
+  margin: 0.15rem 0 0.5rem 0;
+  padding: 0.35rem 0.5rem;
+  background: rgba(181, 139, 62, 0.08);
+  border-left: 3px solid var(--flail-rule, #b58b3e);
+  border-radius: 0 3px 3px 0;
+  font-size: 0.8em;
+  color: #6a4d0e;
+  line-height: 1.35;
+  font-style: italic;
+}
+.flail.sheet .undead-puppet-card .puppet-attack-hint i {
+  color: var(--flail-rule, #b58b3e);
+  margin-right: 0.35rem;
+  font-style: normal;
+}
+
+/* -------------------------------------------- */
+/*  Attack chat card — special feature reminder */
+/* -------------------------------------------- */
+
+.flail-card.attack-card .special-feature-reminder {
+  margin: 0.5rem 0.5rem 0.4rem 0.5rem;
+  padding: 0.4rem 0.55rem;
+  background: rgba(181, 139, 62, 0.08);
+  border-left: 3px solid var(--flail-rule, #b58b3e);
+  border-radius: 0 3px 3px 0;
+  font-size: 0.85em;
+  color: #6a4d0e;
+}
+.flail-card.attack-card .special-feature-reminder header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.2rem;
+}
+.flail-card.attack-card .special-feature-reminder header i {
+  color: var(--flail-rule, #b58b3e);
+}
+.flail-card.attack-card .special-feature-reminder header .title {
+  font-family: "Modesto Condensed", "Cinzel", "Signika", serif;
+  font-weight: 600;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6a4d0e;
+}
+.flail-card.attack-card .special-feature-reminder .feature-body {
+  color: #2b1e0a;
+  line-height: 1.35;
+}
+.flail-card.attack-card .special-feature-reminder .feature-body p {
+  margin: 0.2rem 0;
+}
+
+/* Special Attack Feature block on NPC weapon rows — same layout as
+   the attack-trigger blocks (indented under the name, sits to the
+   left of the delete icon), but styled in ochre so it reads as a
+   general reference note rather than a hit-tier trigger. */
+.flail.sheet .attack-special-feature {
+  margin: 0.15rem 0 0 3rem;
+  padding: 0.15rem 0.45rem;
+  border-left: 2px solid var(--flail-rule, #b58b3e);
+  border-radius: 0 3px 3px 0;
+  font-size: 0.82em;
+  line-height: 1.35;
+  background: rgba(181, 139, 62, 0.08);
+  color: #5a3c10;
+}
+.flail.sheet .attack-special-feature .tk {
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  font-size: 0.9em;
+  margin-right: 0.25rem;
+  color: var(--flail-rule, #b58b3e);
+}
+.flail.sheet .attack-special-feature p {
+  margin: 0.15rem 0;
+  display: inline;
 }

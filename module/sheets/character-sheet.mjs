@@ -897,7 +897,14 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       };
     });
     ctx.jackOfAllTradesCount = ctx.jackOfAllTradesItems.length;
-    ctx.jackOfAllTradesLevel = level;   // slot ceiling per level rule
+    // FLAIL v1 rulebook (p.106) — a Bard wearing a 3-item set gains an
+    // extra JOAT pick, "as per Jack of All Trades." Reflected here by
+    // bumping the visible ceiling by 1 when the set is active. The
+    // drop handler doesn't hard-enforce the ceiling, so this bonus
+    // materialises purely as a "you have room for one more" cue.
+    const bardSetBonus = this._getBardSetBonus();
+    ctx.bardSetBonus = bardSetBonus;
+    ctx.jackOfAllTradesLevel = level + (bardSetBonus ? 1 : 0);
 
     return ctx;
   }
@@ -1678,6 +1685,40 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       wornOrCarried.has(i.system?.location)
       && (i.name ?? "").toLowerCase().includes("sigil")
     );
+  }
+
+  /**
+   * Bard set-bonus detection.
+   *
+   * A Bard who has 3+ items of the same set worn (in hands, body, or
+   * adornment slots) triggers the set bonus. Per the FLAIL v1 rulebook
+   * (p.106), the 3-item bonus is "take an extra talent, gadget or spell
+   * as per Jack of All Trades" — so we surface an extra JOAT slot on
+   * the character sheet.
+   *
+   * Set items are flagged in the unique-items compendium with
+   * `flags.flail.setName` and `flags.flail.setClass`. Non-Bard sets and
+   * items in stashed/unequipped slots are ignored.
+   *
+   * @returns {{ setName: string, count: number } | null}
+   */
+  _getBardSetBonus() {
+    if (this.actor.system.class !== "bard") return null;
+    const wornOrCarried = new Set(["hands", "body", "adornment"]);
+    const setCounts = {};
+    for (const item of this.actor.items) {
+      const setName  = item.getFlag("flail", "setName");
+      const setClass = item.getFlag("flail", "setClass");
+      if (!setName || setClass !== "bard") continue;
+      if (!wornOrCarried.has(item.system?.location)) continue;
+      setCounts[setName] = (setCounts[setName] ?? 0) + 1;
+    }
+    // Any set reaching 3 triggers the bonus. If the player is somehow
+    // running two 3-sets, pick the first — the bonus doesn't stack.
+    for (const [name, count] of Object.entries(setCounts)) {
+      if (count >= 3) return { setName: name, count };
+    }
+    return null;
   }
 
   /**

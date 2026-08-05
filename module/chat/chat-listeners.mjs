@@ -682,3 +682,22 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   });
   if (!owned) btn.style.display = "none";
 });
+
+/**
+ * Hide the Special Attack Feature reminder on NPC-originating attack
+ * cards from non-GM players. Message flag `flail.attackRoll.npcAttack`
+ * is set to true in rollToHit when the attacker is an NPC actor; here
+ * we look for the reminder block and hide it unless the viewer is a GM.
+ *
+ * Rationale: NPC weapons may carry secret abilities the GM doesn't
+ * want to reveal to players immediately (e.g. "poisoned", "cursed on
+ * a natural triplet"). Players still see the attack roll and its
+ * outcome — just not the reminder text explaining the mechanic.
+ */
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  const npcAttack = message.flags?.flail?.attackRoll?.npcAttack;
+  if (!npcAttack) return;
+  if (game.user.isGM) return;
+  const block = html.querySelector?.(".special-feature-reminder");
+  if (block) block.style.display = "none";
+});

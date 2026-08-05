@@ -380,7 +380,7 @@ export const FLAIL_POTIONS = [
   },
   {
     "_id": "08d4a80c081b3db7",
-    "name": "Lich Dust",
+    "name": "Lich Bone",
     "type": "gear",
     "img": "icons/consumables/potions/bottle-bulb-corked-purple.webp",
     "system": {
@@ -879,7 +879,7 @@ export const FLAIL_POTIONS = [
     "type": "gear",
     "img": "icons/consumables/potions/potion-bottle-corked-labeled-red.webp",
     "system": {
-      "description": "<p><em>Weak potion.</em></p><p><strong>Effect:</strong> Cures d6 hit points.</p><p><em>Mark one usage each time it's drunk. Three doses per brew.</em></p>",
+      "description": "<p><em>Weak potion.</em></p><p><strong>Effect:</strong> Restores d6 hit points.</p><p><em>Mark one usage each time it's drunk. Three doses per brew.</em></p>",
       "location": "unequipped",
       "slotIndex": 0,
       "slotsRequired": 1,
@@ -1440,7 +1440,7 @@ export const FLAIL_POTIONS = [
     "type": "gear",
     "img": "icons/consumables/potions/vial-ornet-silver-black.webp",
     "system": {
-      "description": "<p><em>Strong potion.</em></p><p><strong>Effect:</strong> Drinker dies for 30 minutes; returns to life unharmed after that.</p><p><em>Mark one usage each time it's drunk. Three doses per brew.</em></p>",
+      "description": "<p><em>Strong potion.</em></p><p><strong>Effect:</strong> Drinker dies for three turns; returns to life unharmed after that.</p><p><em>Mark one usage each time it's drunk. Three doses per brew.</em></p>",
       "location": "unequipped",
       "slotIndex": 0,
       "slotsRequired": 1,

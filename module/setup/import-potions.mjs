@@ -15,8 +15,12 @@ import { FLAIL_POTIONS } from "./potions-data.mjs";
  *       auditing the folder. Nine distinct shape/colour combinations
  *       now in use (bulb / conical / stopper / labelled / flask /
  *       vial / jug) — the palette varies by shape as well as hue.
+ *   5 — FLAIL v1 rulebook (pp.112-113) copy-edit pass:
+ *       • Ingredient "Lich Dust" renamed "Lich Bone" (same _id).
+ *       • Fake Death duration "30 minutes" → "three turns".
+ *       • Potion of Healing "Cures d6" → "Restores d6".
  */
-export const FLAIL_POTIONS_VERSION = 4;
+export const FLAIL_POTIONS_VERSION = 5;
 
 const SETTING_KEY = "potionsVersion";
 const PACK_NAME   = "flail-potions";

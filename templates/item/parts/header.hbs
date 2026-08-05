@@ -1,6 +1,6 @@
 {{!-- Item sheet header — name + image + magical flag --}}
 <header class="flail-item-header">
-  <img class="item-profile" src="{{item.img}}" data-edit="img" />
+  <img class="item-profile" src="{{item.img}}" data-action="editImage" title="{{localize 'FLAIL.Item.ChangeImage'}}" />
   <input type="text" name="name" value="{{item.name}}" placeholder="{{localize 'FLAIL.Field.Name'}}" {{#unless editable}}disabled{{/unless}} />
   {{#unless (flail-eq item.type "guild")}}
   <span class="item-type-tag">{{localize (concat 'FLAIL.ItemType.' item.type)}}</span>

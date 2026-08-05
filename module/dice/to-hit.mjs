@@ -28,7 +28,8 @@ export async function rollToHit({
   actor,
   advantage,
   flavor,
-  slimySkinTarget
+  slimySkinTarget,
+  specialFeature
 } = {}) {
   if (!Number.isInteger(dicePool) || dicePool < 1) {
     ui.notifications?.warn("FLAIL: invalid dice pool for To Hit roll.");
@@ -379,7 +380,8 @@ export async function rollToHit({
     fineCuts,
     rawForce,
     precisionMark,
-    armourNegate
+    armourNegate,
+    specialFeature
   };
 
   const content = await foundry.applications.handlebars.renderTemplate(
@@ -405,6 +407,11 @@ export async function rollToHit({
           damageDealt,
           weaponId,
           actorUuid: actor?.uuid ?? null,
+          // Marks the message as originating from an NPC actor so the
+          // renderChatMessageHTML hook can hide the Special Attack
+          // Feature reminder from non-GM players. Undefined / false
+          // means the reminder stays visible to everyone.
+          npcAttack: actor?.type === "npc",
           armourNegate,
           witnessMe: witnessMe ? {
             bonusDamage: witnessMe.bonusDamage,
@@ -468,7 +475,14 @@ async function applyWitnessMeBuff({ source }) {
     name: game.i18n.localize("FLAIL.Effect.WitnessMe.Name"),
     icon: "icons/skills/social/diplomacy-handshake.webp",
     origin: source.uuid,
-    duration: { rounds: 1 },
+    // FLAIL v1 rulebook (p.13): Witness Me! now lasts "for this combat"
+    // instead of "next round". Effect no longer auto-expires — it's
+    // consumed by the ally's next attack (via consumeOnAttack flag)
+    // OR cleaned up wholesale when the combat ends (deleteCombat hook
+    // in flail.mjs looks for the witnessMe flag). If the trigger fires
+    // outside combat, combatId is empty and the effect persists until
+    // consumed.
+    duration: {},
     changes: [{
       key: "system.toHitBonus",
       mode: CONST.ACTIVE_EFFECT_MODES.ADD,
@@ -478,7 +492,10 @@ async function applyWitnessMeBuff({ source }) {
     flags: {
       flail: {
         consumeOnAttack: true,
-        witnessMe: { sourceUuid: source.uuid }
+        witnessMe: {
+          sourceUuid: source.uuid,
+          combatId: game.combat?.id ?? ""
+        }
       }
     }
   };

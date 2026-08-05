@@ -104,6 +104,7 @@
       "SlotsRequired": "Slots",
       "Category": "Category",
       "SpecialtyTags": "Specialty Tags",
+      "SpecialFeature": "Special Attack Feature",
       "SuggestedDice": "Suggested dice for the cast",
       "Spirit": "Spirit remaining",
       "Range": "Range",
@@ -389,7 +390,8 @@
       "instrument": "Instrument"
     },
     "Item": {
-      "New": "New {type}"
+      "New": "New {type}",
+      "ChangeImage": "Click to change the item image"
     },
     "Action": {
       "Edit":            "Edit",
@@ -854,7 +856,8 @@
         "Label":   "Animate Dead",
         "Hint":    "Spend spirit equal to the target level. Make an INT save to revive the target. On success, the target is raised as an undead ally for a number of watches equal to your level. On a fail, the target is raised, but acts on its own accord.",
         "Tooltip": "Roll INT save (Shift = advantage, Ctrl = disadvantage)"
-      }
+      },
+      "PuppetAttackHint": "Typical attack styles by puppet type (FLAIL v1 p.16): skeletons bite, ghouls drain, grasping corpses grasp, strangled dead choke."
     },
     "Religion": {
       "Choose": "— Choose a religion —",
@@ -1019,32 +1022,32 @@
         "CardTitle":    "released",
         "DamageDealt":  "Damage",
         "BuzzsawDisk": {
-          "Label":            "d6 damage (ricochet on a 6)",
+          "Label":            "d8 damage (ricochet on an 8)",
           "TargetHint":       "Target the token first, then click Apply Damage.",
           "Ricochet":         "Ricochet!",
-          "RicochetDetail":   "Rolled a 6 — the disk ricochets onto another random target within Nearby range. GM picks the secondary target and applies the same damage."
+          "RicochetDetail":   "Rolled an 8 — the disk ricochets onto another random target within Nearby range. GM picks the secondary target and applies the same damage."
         },
         "ClockworkToy": {
-          "Label":            "d8 delayed explosion (all Nearby)",
-          "TargetHint":       "Damage goes off next round to ALL targets Nearby. Target them before applying.",
+          "Label":            "3d6 delayed explosion (all Near it)",
+          "TargetHint":       "Damage goes off next round to ALL targets Near it. Target them before applying.",
           "Delayed":          "Delayed one round",
-          "DelayedDetail":    "The toy walks erratically this round and explodes at the start of the next round, dealing the rolled damage to every target Nearby."
+          "DelayedDetail":    "The toy walks erratically this round and explodes at the start of the next round, dealing the rolled damage to every target Near it."
         },
         "FireSpitter": {
-          "Label":            "d4 flame cone (up to 2 Nearby targets)",
+          "Label":            "d10 flame cone (up to 2 Nearby targets)",
           "TargetHint":       "Target up to two Nearby tokens, then click Apply Damage — each takes the rolled amount."
         },
         "GooBlast": {
-          "Label":            "d8 delayed goo (all Nearby, next round)",
+          "Label":            "2d8 delayed goo (all Nearby, next round)",
           "TargetHint":       "Attaches to the initial target. Next round, all targets Nearby take the rolled damage.",
           "Delayed":          "Attached — detonates next round",
           "DelayedDetail":    "Goo latches onto the initial target. On its next round, the goo detonates and deals the rolled damage to everyone Nearby (including the carrier)."
         },
         "ShockBolas": {
-          "Label":            "d4 electrical (stun on a 4)",
+          "Label":            "d6 electrical (stun on 4-6)",
           "TargetHint":       "Target the token first, then click Apply Damage.",
           "Stunned":          "Stunned!",
-          "StunnedDetail":    "Rolled a 4 — the target is stunned. GM applies the Stunned condition alongside the damage."
+          "StunnedDetail":    "Rolled a 4, 5 or 6 — the target is stunned. GM applies the Stunned condition alongside the damage."
         }
       }
     },
@@ -1055,7 +1058,8 @@
         "DropHint":    "Drag a Cutthroat talent, a Tinkerer gadget, or a wizard spell from its compendium onto this panel. Each pick is used once per day.",
         "CastHint":    "Cast the spell — max dice equals your Bard level (miscasting rules apply).",
         "MarkHint":    "Mark this pick as used today.",
-        "UnmarkHint":  "Unmark — restore this pick for today."
+        "UnmarkHint":  "Unmark — restore this pick for today.",
+        "SetBonusActive": "{setName} set active — one extra pick available."
       }
     },
     "Shapeshift": {

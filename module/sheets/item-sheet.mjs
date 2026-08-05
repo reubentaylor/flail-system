@@ -15,7 +15,8 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     position: { width: 480, height: 540 },
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
-      removeGuildEntry: FlailItemSheet.#onRemoveGuildEntry
+      removeGuildEntry: FlailItemSheet.#onRemoveGuildEntry,
+      editImage:        FlailItemSheet.#onEditImage
     }
   };
 
@@ -34,6 +35,30 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if (idx < 0 || idx >= current.length) return;
     current.splice(idx, 1);
     await this.item.update({ [`system.${field}`]: current });
+  }
+
+  /**
+   * Click on the item image → opens Foundry's FilePicker so the user
+   * can pick a new image path. Same behaviour as the character sheet's
+   * portrait click, minus the Tokenizer branch (Tokenizer targets
+   * actors, not items). Prefers the modern applications namespace and
+   * falls back to the legacy global if that's not available.
+   */
+  static async #onEditImage(event, target) {
+    if (!this.isEditable) return;
+    const current = this.item.img ?? "";
+    const FilePickerImpl = foundry.applications?.apps?.FilePicker?.implementation
+      ?? globalThis.FilePicker;
+    if (!FilePickerImpl) {
+      ui.notifications?.warn("FilePicker unavailable in this environment.");
+      return;
+    }
+    const fp = new FilePickerImpl({
+      type: "image",
+      current,
+      callback: (path) => this.item.update({ img: path })
+    });
+    fp.browse();
   }
 
   /**

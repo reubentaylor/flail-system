@@ -108,7 +108,7 @@ export const GUILDS = [
         {
           "key": "necroticBlade",
           "name": "Necrotic Blade",
-          "description": "Inflict an additional d6 damage on a successful To Hit."
+          "description": "Inflict an additional 2d6 damage on a successful To Hit."
         },
         {
           "key": "shadowStep",

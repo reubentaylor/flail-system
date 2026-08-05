@@ -260,6 +260,19 @@
   </div>
   {{/if}}
 
+  {{!-- Special Attack Feature reminder — free-form text on the weapon
+       item, rendered here so the player and GM see it every time the
+       weapon is fired. Reference-only; no automation. --}}
+  {{#if specialFeature}}
+  <div class="special-feature-reminder">
+    <header>
+      <i class="fas fa-star-of-life"></i>
+      <span class="title">{{localize "FLAIL.Field.SpecialFeature"}}</span>
+    </header>
+    <div class="feature-body">{{{specialFeature}}}</div>
+  </div>
+  {{/if}}
+
   {{!-- Action buttons --}}
   <footer class="card-actions">
     {{#if damageDealt}}

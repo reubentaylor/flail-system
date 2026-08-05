@@ -499,6 +499,28 @@ Hooks.on("updateCombat", async (combat, changes, options, userId) => {
   });
 });
 
+// FLAIL v1 rulebook (p.13) — Bard "Witness Me!" now lasts "for this
+// combat" instead of a single round. The Active Effect no longer has
+// a rounds duration, so we clean it up wholesale when the referenced
+// combat ends. Any character with an effect flagged
+// flags.flail.witnessMe.combatId === combat.id gets it deleted.
+Hooks.on("deleteCombat", async (combat, options, userId) => {
+  // Only the GM has permission to delete effects on actors they don't
+  // own. Non-GMs skip and rely on the GM being present at combat end.
+  if (!game.user.isGM) return;
+  if (userId !== game.user.id && !game.users.filter(u => u.isGM).some(u => u.id === game.user.id)) return;
+  const targetId = combat.id;
+  for (const actor of game.actors.filter(a => a.type === "character")) {
+    const stale = actor.effects.filter(e => {
+      const wm = e.getFlag("flail", "witnessMe");
+      return wm && wm.combatId === targetId;
+    });
+    if (stale.length) {
+      await actor.deleteEmbeddedDocuments("ActiveEffect", stale.map(e => e.id));
+    }
+  }
+});
+
 Hooks.on("updateActor", async (actor, changed, options, userId) => {
   if (userId !== game.user.id) return;
   if (actor.type !== "character") return;

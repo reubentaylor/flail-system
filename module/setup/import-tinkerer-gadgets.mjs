@@ -7,8 +7,17 @@ import { TINKERER_GADGETS, TINKERER_GADGET_FOLDERS } from "./tinkerer-gadgets-da
  * used for primal-gifts, wizard-spells, dark-spells, common-items.
  *
  *   1 — initial bundle (20 gadgets across 4 categories).
+ *   2 — FLAIL v1 rulebook (p.35) mechanical rewrites:
+ *       • Buzzsaw Disk: d6 → d8, ricochet trigger 6 → 8.
+ *       • Clockwork Toy: d8 single-target → 3d6 to all Near it.
+ *       • Fire Spitter: d4 → d10.
+ *       • Goo Blast: d8 → 2d8.
+ *       • Shock Bolas: d4 → d6, stun trigger 4 → 4-6.
+ *       • Sticky Net: removed the save (direct immobilise).
+ *       • Magnetic Orb: "all metal" → "all small metal objects".
+ *       • Healing Injector: added "self or ally" clarification.
  */
-export const TINKERER_GADGETS_VERSION = 1;
+export const TINKERER_GADGETS_VERSION = 2;
 
 const VERSION_SETTING = "tinkererGadgetsVersion";
 const PACK_NAME = "flail-tinkerer-gadgets";
