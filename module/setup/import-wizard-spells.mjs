@@ -9,8 +9,26 @@ import { WIZARD_SPELLS } from "./wizard-spells-data.mjs";
  *   1 — initial bundle (43 spells from FLAIL v0.2 pages 40, 42-43).
  *   2 — icon-path fixes for 19 spells whose Foundry icon references
  *       404'd (broken links). Rules text unchanged.
+ *   3 — FLAIL v1 rulebook print edition (pp 42-43) changes:
+ *       • Hold Monster removed as a wizard spell (delete on sync).
+ *       • Possession added: "may control a level [DICE] target for half
+ *         [DICE] rounds; spell ends if caster is harmed."
+ *       • Sleep reworked: per-die-per-target allocation instead of
+ *         combined-level [SUM] pool.
+ *       • Teleport: single-destination "up to [SUM] x 10' away" wording
+ *         instead of "between two places".
+ *       • Hold Person: cleaner phrasing (no mechanical change).
  */
-export const WIZARD_SPELLS_VERSION = 2;
+export const WIZARD_SPELLS_VERSION = 3;
+
+/**
+ * IDs of spells that used to exist in the bundle and have since been
+ * removed. On sync we explicitly delete these from the pack so a world
+ * upgrading from an older version doesn't keep the stale entry.
+ */
+const REMOVED_SPELL_IDS = [
+  "eDO6bwuaqHVsXwmX"   // Hold Monster — dropped in v3 (FLAIL v1 rulebook).
+];
 
 const VERSION_SETTING = "wizardSpellsVersion";
 const PACK_NAME = "flail-wizard-spells";
@@ -74,6 +92,19 @@ export async function ensureWizardSpellsCompendium() {
   );
 
   try {
+    // Delete any spells removed in this version bump (e.g. Hold Monster
+    // in v3). Only run when we're actually applying an upgrade to avoid
+    // touching freshly-created packs.
+    if (storedVersion < WIZARD_SPELLS_VERSION) {
+      const toDelete = REMOVED_SPELL_IDS.filter(id => existingIds.has(id));
+      if (toDelete.length) {
+        await Item.deleteDocuments(toDelete, { pack: pack.collection });
+        console.log(
+          `FLAIL | Removed ${toDelete.length} deprecated wizard spell(s): ${toDelete.join(", ")}`
+        );
+      }
+    }
+
     if (toCreate.length) {
       await Item.createDocuments(toCreate, { pack: pack.collection, keepId: true });
     }

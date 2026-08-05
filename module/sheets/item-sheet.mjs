@@ -14,8 +14,27 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     classes: ["flail", "sheet", "item"],
     position: { width: 480, height: 540 },
     form: { submitOnChange: true, closeOnSubmit: false },
-    actions: {}
+    actions: {
+      removeGuildEntry: FlailItemSheet.#onRemoveGuildEntry
+    }
   };
+
+  /**
+   * Remove an entry from a guild item's talentItems or actionItems
+   * array. Wired by the row's "x" button. Reads the list name and
+   * index from the button's data attributes.
+   */
+  static async #onRemoveGuildEntry(event, target) {
+    if (this.item.type !== "guild") return;
+    const list = target.dataset.guildList;
+    const idx = Number(target.dataset.idx);
+    if (!list || Number.isNaN(idx)) return;
+    const field = list === "talent" ? "talentItems" : "actionItems";
+    const current = [...(this.item.system[field] ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current.splice(idx, 1);
+    await this.item.update({ [`system.${field}`]: current });
+  }
 
   /**
    * Per-type sizing override. The instrument sheet has a 10-row d10 effect
@@ -152,6 +171,46 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
         await this.document.update({ "system.range": current });
       });
     });
+
+    // Guild drop zones — one for talent items, one for feature items.
+    // On drop, snapshot the dropped item's data and append to the
+    // matching schema array. The character-sheet guild-drop handler
+    // then materialises these as embedded items on the actor.
+    if (this.item.type === "guild") {
+      root.querySelectorAll("[data-guild-drop]").forEach(zone => {
+        zone.addEventListener("dragover", ev => {
+          ev.preventDefault();
+          if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
+          zone.classList.add("drop-active");
+        });
+        zone.addEventListener("dragleave", () => zone.classList.remove("drop-active"));
+        zone.addEventListener("drop", async ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          zone.classList.remove("drop-active");
+          const kind = zone.dataset.guildDrop;   // "talent" | "action"
+          const expectedType = kind === "talent" ? "talent" : "feature";
+          let payload;
+          try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); }
+          catch { return; }
+          const dropped = await Item.implementation.fromDropData(payload);
+          if (!dropped) return;
+          if (dropped.type !== expectedType) {
+            ui.notifications?.warn(
+              kind === "talent"
+                ? game.i18n.localize("FLAIL.Notify.GuildExpectTalent")
+                : game.i18n.localize("FLAIL.Notify.GuildExpectFeature")
+            );
+            return;
+          }
+          const snapshot = dropped.toObject();
+          const field = kind === "talent" ? "talentItems" : "actionItems";
+          const current = [...(this.item.system[field] ?? [])];
+          current.push(snapshot);
+          await this.item.update({ [`system.${field}`]: current });
+        });
+      });
+    }
 
     // Editor pencil click — Foundry v13's HandlebarsApplicationMixin does
     // NOT auto-wire the {{editor}} helper's edit button for HTMLField

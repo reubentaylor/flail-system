@@ -12,6 +12,32 @@ export function registerChatListeners(message, html) {
   root.querySelectorAll("[data-flail-action]").forEach(btn => {
     btn.addEventListener("click", ev => onChatAction(ev, message));
   });
+
+  // Tier 3 shift-roll button from the updateCombat whisper. Wired
+  // separately (rather than as a data-flail-action) because it looks
+  // up the actor from the DOM attribute rather than message flags.
+  root.querySelectorAll("[data-flail-shift-roll]").forEach(btn => {
+    btn.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+      const actorId = btn.dataset.flailShiftRoll;
+      const actor = game.actors.get(actorId);
+      if (!actor) return;
+      // Only owner (or GM) can drive the roll.
+      if (!actor.isOwner) {
+        ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.ShapeshiftNotActive"));
+        return;
+      }
+      // Open the sheet and invoke the same action.
+      const sheet = actor.sheet;
+      if (sheet && !sheet.rendered) await sheet.render(true);
+      // Fire the sheet's shapeshiftRoll action directly via the
+      // registered action handler.
+      const action = sheet?.constructor?.DEFAULT_OPTIONS?.actions?.shapeshiftRoll;
+      if (action) await action.call(sheet, ev, btn);
+      btn.disabled = true;
+      btn.style.opacity = "0.5";
+    });
+  });
 }
 
 async function onChatAction(event, message) {

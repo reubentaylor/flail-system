@@ -31,6 +31,27 @@
   font-family: "Signika", "Roboto", system-ui, sans-serif;
   color: var(--flail-ink);
 }
+/* Character sheet window header — parchment/ink regardless of theme.
+   Same fix as the item sheet: without this, dark theme darkens the
+   header background but our ink-dark text stays dark, making the
+   "Character: <name>" title unreadable. */
+.flail.sheet.actor.character .window-header {
+  background: var(--flail-paper);
+  color: var(--flail-ink);
+  border-bottom: 1px solid var(--flail-rule, #b58b3e);
+}
+.flail.sheet.actor.character .window-header .window-title {
+  color: var(--flail-ink);
+  font-family: "Modesto Condensed", "Cinzel", "Signika", serif;
+  font-weight: 600;
+}
+.flail.sheet.actor.character .window-header .header-control,
+.flail.sheet.actor.character .window-header .header-control i {
+  color: var(--flail-ink);
+}
+.flail.sheet.actor.character .window-header .header-control:hover {
+  color: var(--flail-rule, #b58b3e);
+}
 /* Scroll strategy — the form fills window-content, the banner and tabs
    nav sit fixed at the top, and the active tab-panel becomes the scroll
    region. When the window is resized, banner and tabs-nav keep their
@@ -2413,6 +2434,25 @@
   font-family: "Signika", "Roboto", system-ui, sans-serif;
   color: var(--flail-ink);
 }
+/* NPC sheet window header — same parchment/ink override so the
+   "NPC: <name>" title stays readable in dark theme. */
+.flail.sheet.npc .window-header {
+  background: var(--flail-paper);
+  color: var(--flail-ink);
+  border-bottom: 1px solid var(--flail-rule, #b58b3e);
+}
+.flail.sheet.npc .window-header .window-title {
+  color: var(--flail-ink);
+  font-family: "Modesto Condensed", "Cinzel", "Signika", serif;
+  font-weight: 600;
+}
+.flail.sheet.npc .window-header .header-control,
+.flail.sheet.npc .window-header .header-control i {
+  color: var(--flail-ink);
+}
+.flail.sheet.npc .window-header .header-control:hover {
+  color: var(--flail-rule, #b58b3e);
+}
 /* Force ink-black text across every text-bearing element on the NPC sheet.
    Foundry's base stylesheet sets a muted/blue button/input colour that
    leaks through the cascade; we override it explicitly here. Scoped so
@@ -2553,6 +2593,31 @@
   background: var(--flail-paper);
   font-family: "Signika", "Roboto", system-ui, sans-serif;
   color: var(--flail-ink);
+}
+/* Item sheet window header — keep the FLAIL parchment style regardless
+   of Foundry's active theme. Without this, dark theme darkens the
+   header background but our inherited ink-dark text stays dark,
+   producing a near-invisible "Weapon: <name>" title at the top of the
+   window. Forcing both background and text colour to our own palette
+   preserves the parchment look in every theme and guarantees contrast. */
+.flail.sheet.item .window-header {
+  background: var(--flail-paper);
+  color: var(--flail-ink);
+  border-bottom: 1px solid var(--flail-rule, #b58b3e);
+}
+.flail.sheet.item .window-header .window-title {
+  color: var(--flail-ink);
+  font-family: "Modesto Condensed", "Cinzel", "Signika", serif;
+  font-weight: 600;
+}
+/* Header controls (close, minimise, header icons) inherit the header
+   text colour by default; keep them visible against the light parchment. */
+.flail.sheet.item .window-header .header-control,
+.flail.sheet.item .window-header .header-control i {
+  color: var(--flail-ink);
+}
+.flail.sheet.item .window-header .header-control:hover {
+  color: var(--flail-rule, #b58b3e);
 }
 /* Give the window-content itself a scrollbar so tall bodies (like the
    Bard instrument's banded effect-table editor with three multi-line
@@ -5109,6 +5174,25 @@
   background: var(--flail-paper);
   font-family: "Signika", "Roboto", system-ui, sans-serif;
   color: var(--flail-ink);
+}
+/* Construct sheet window header — same parchment/ink override so the
+   "Construct: <name>" title stays readable in dark theme. */
+.flail.sheet.construct .window-header {
+  background: var(--flail-paper);
+  color: var(--flail-ink);
+  border-bottom: 1px solid var(--flail-rule, #b58b3e);
+}
+.flail.sheet.construct .window-header .window-title {
+  color: var(--flail-ink);
+  font-family: "Modesto Condensed", "Cinzel", "Signika", serif;
+  font-weight: 600;
+}
+.flail.sheet.construct .window-header .header-control,
+.flail.sheet.construct .window-header .header-control i {
+  color: var(--flail-ink);
+}
+.flail.sheet.construct .window-header .header-control:hover {
+  color: var(--flail-rule, #b58b3e);
 }
 /* Same scroll-on-window-content pattern as the character and item
    sheets — .construct-sheet flows at its intrinsic size and the
@@ -8834,3 +8918,120 @@
   color: #5a1812;
 }
 .flail.sheet .attack-trigger.trigger-death .tk { color: #8b1a1a; }
+
+/* -------------------------------------------- */
+/*  Guild Item Sheet — drop zones               */
+/* -------------------------------------------- */
+
+.flail.sheet.item .guild-drop-list {
+  border: 1px dashed var(--flail-rule, #b58b3e);
+  border-radius: 4px;
+  padding: 0.4rem;
+  background: rgba(181, 139, 62, 0.05);
+  min-height: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.flail.sheet.item .guild-drop-list.drop-active {
+  background: rgba(181, 139, 62, 0.18);
+  border-color: #6a4d0e;
+}
+.flail.sheet.item .guild-drop-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.4rem;
+  background: rgba(255, 253, 245, 0.6);
+  border-radius: 3px;
+  border: 1px solid rgba(181, 139, 62, 0.3);
+}
+.flail.sheet.item .guild-drop-row.legacy {
+  background: rgba(220, 220, 220, 0.4);
+  border-style: dashed;
+  opacity: 0.75;
+}
+.flail.sheet.item .guild-drop-row .row-img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid #b58b3e;
+  flex-shrink: 0;
+}
+.flail.sheet.item .guild-drop-row .row-img.legacy-icon {
+  border: none;
+  color: #6a4d0e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  background: none;
+}
+.flail.sheet.item .guild-drop-row .row-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--flail-ink);
+}
+.flail.sheet.item .guild-drop-row .row-name-desc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.flail.sheet.item .guild-drop-row .row-name-desc strong {
+  color: var(--flail-ink);
+}
+.flail.sheet.item .guild-drop-row .row-name-desc .row-desc {
+  font-size: 0.85em;
+  color: #6a4d0e;
+}
+.flail.sheet.item .guild-drop-row .row-legacy-tag {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8a6d1c;
+  background: rgba(181, 139, 62, 0.15);
+  padding: 0.15rem 0.35rem;
+  border-radius: 2px;
+}
+.flail.sheet.item .guild-drop-row .row-remove {
+  background: transparent;
+  border: none;
+  color: #8b1a1a;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.flail.sheet.item .guild-drop-row .row-remove:hover {
+  background: rgba(139, 26, 26, 0.12);
+}
+.flail.sheet.item .guild-drop-empty {
+  margin: 0.3rem 0;
+  color: #8a7a4a;
+  font-style: italic;
+  text-align: center;
+  font-size: 0.9em;
+}
+.flail.sheet.item .guild-drop-hint {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.8em;
+  color: #6a4d0e;
+  text-align: center;
+  opacity: 0.75;
+}
+.flail.sheet.item .guild-sigil-hint {
+  margin: 0.15rem 0 0.5rem 0;
+  padding: 0.35rem 0.5rem;
+  background: rgba(181, 139, 62, 0.08);
+  border-left: 3px solid var(--flail-rule, #b58b3e);
+  border-radius: 0 3px 3px 0;
+  font-size: 0.85em;
+  color: #6a4d0e;
+  line-height: 1.35;
+}
+.flail.sheet.item .guild-sigil-hint i {
+  color: var(--flail-rule, #b58b3e);
+  margin-right: 0.35rem;
+}

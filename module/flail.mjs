@@ -342,6 +342,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/chat/miracle-call.hbs",
         "systems/flail/templates/chat/rest.hbs",
         "systems/flail/templates/chat/shapeshift-start.hbs",
+        "systems/flail/templates/chat/shapeshift-round.hbs",
         "systems/flail/templates/chat/shapeshift-revert.hbs"
       ]).catch(err => console.warn(`${TAG} template preload skipped:`, err?.message ?? err));
     }
@@ -455,6 +456,49 @@ Hooks.on  ("canvasReady", () => console.log(`${TAG} canvasReady`));
  * hook fires on every connected client, but the userId gate keeps
  * one browser from racing another.
  */
+// Tier 3 — combat tracker integration for shifted Druids. When a
+// combat turn advances and the newly-active combatant is a
+// shapeshifted Druid, whisper the owner a prompt (with an inline
+// button) that fires the same Roll Beast Round action as the sheet
+// button. Only the owner and GMs see it.
+Hooks.on("updateCombat", async (combat, changes, options, userId) => {
+  // Only the user who advanced the turn runs this — avoid duplicate
+  // prompts from every connected client.
+  if (userId !== game.user.id) return;
+  if (!("turn" in changes) && !("round" in changes)) return;
+  const combatant = combat?.combatant;
+  const actor = combatant?.actor;
+  if (!actor) return;
+  if (actor.type !== "character") return;
+  if (actor.system.class !== "druid") return;
+  if (!actor.system.shapeshift?.active) return;
+  const round = actor.system.shapeshift.roundNumber ?? 0;
+  const whisperTargets = [
+    ...game.users.filter(u => u.isGM).map(u => u.id),
+    ...game.users.filter(u => actor.testUserPermission(u, "OWNER") && !u.isGM).map(u => u.id)
+  ];
+  const content = `
+<div class="flail-chat-card shapeshift-turn-prompt" style="background:#f6f0e1;border:1px solid #b58b3e;border-radius:4px;padding:0.6em 0.9em;">
+  <p style="margin:0 0 0.4em 0;font-family:'Modesto Condensed','Cinzel',serif;font-size:1.05em;color:#6a4d0e;">
+    <i class="fas fa-paw"></i>
+    ${actor.name}'s beast round ${round + 1}
+  </p>
+  <p style="margin:0 0 0.6em 0;font-size:0.9em;">
+    Roll 1d6 to see how the beast form fares this round.
+  </p>
+  <button type="button"
+    data-flail-shift-roll="${actor.id}"
+    style="background:#b58b3e;color:#f6f0e1;border:none;border-radius:3px;padding:0.35em 0.8em;font-family:inherit;cursor:pointer;">
+    <i class="fas fa-dice-d6"></i> Roll Beast Round
+  </button>
+</div>`;
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    whisper: whisperTargets,
+    content
+  });
+});
+
 Hooks.on("updateActor", async (actor, changed, options, userId) => {
   if (userId !== game.user.id) return;
   if (actor.type !== "character") return;

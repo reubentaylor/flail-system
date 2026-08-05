@@ -154,29 +154,10 @@ export const WIZARD_SPELLS = [
     "type": "spell",
     "img": "icons/magic/perception/silhouette-stealth-shadow.webp",
     "system": {
-      "description": "<p>renders a character of level [DICE] or less immobile for [DICE] rounds.</p>",
+      "description": "<p>immobilises a target of level [DICE] for [DICE] rounds.</p>",
       "tradition": "arcane",
       "effectFormula": "",
       "suggestedDice": 2
-    },
-    "effects": [],
-    "folder": null,
-    "sort": 0,
-    "ownership": {
-      "default": 0
-    },
-    "flags": {}
-  },
-  {
-    "_id": "eDO6bwuaqHVsXwmX",
-    "name": "Hold Monster",
-    "type": "spell",
-    "img": "icons/magic/perception/silhouette-stealth-shadow.webp",
-    "system": {
-      "description": "<p>renders a creature of level [SUM] or less immobile for [DICE] rounds.</p>",
-      "tradition": "arcane",
-      "effectFormula": "",
-      "suggestedDice": 3
     },
     "effects": [],
     "folder": null,
@@ -263,6 +244,25 @@ export const WIZARD_SPELLS = [
     "flags": {}
   },
   {
+    "_id": "PoSsEsSpEll9k2AB",
+    "name": "Possession",
+    "type": "spell",
+    "img": "icons/magic/control/hypnosis-mesmerism-eye.webp",
+    "system": {
+      "description": "<p>may control a level [DICE] target for half [DICE] rounds; spell ends if caster is harmed.</p>",
+      "tradition": "arcane",
+      "effectFormula": "",
+      "suggestedDice": 3
+    },
+    "effects": [],
+    "folder": null,
+    "sort": 0,
+    "ownership": {
+      "default": 0
+    },
+    "flags": {}
+  },
+  {
     "_id": "6gXmi0CL5zKQCd8N",
     "name": "Read Languages",
     "type": "spell",
@@ -287,7 +287,7 @@ export const WIZARD_SPELLS = [
     "type": "spell",
     "img": "icons/magic/control/hypnosis-mesmerism-eye.webp",
     "system": {
-      "description": "<p>causes deep slumber to [DICE] targets of combined level [SUM] or less; any harm or excessive noise breaks the spell.</p>",
+      "description": "<p>causes deep slumber to [DICE] targets; allocate one die per target, taking effect only if the die value meets or exceeds target's level; any harm or excessive noise breaks the spell.</p>",
       "tradition": "arcane",
       "effectFormula": "",
       "suggestedDice": 2
@@ -344,7 +344,7 @@ export const WIZARD_SPELLS = [
     "type": "spell",
     "img": "icons/magic/movement/pinwheel-turning-blue.webp",
     "system": {
-      "description": "<p>caster may teleport between two places within [SUM] x 10'.</p>",
+      "description": "<p>caster may teleport to a spot up to [SUM] x 10' away.</p>",
       "tradition": "arcane",
       "effectFormula": "",
       "suggestedDice": 3

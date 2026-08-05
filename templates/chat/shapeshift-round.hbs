@@ -1,0 +1,38 @@
+<div class="flail-chat-card shapeshift-round-card">
+  <header class="flail-chat-header shapeshift-header">
+    <i class="fas fa-dice-d6"></i>
+    <span>{{localize "FLAIL.Shapeshift.RoundCardTitle" round=roundNumber}}</span>
+  </header>
+  <div class="flail-chat-body">
+    <p class="shift-round-line">
+      <strong>{{actor.name}}</strong>
+      <span class="beast-name">({{beastForm}})</span>
+    </p>
+
+    <div class="shift-round-die shift-die-{{result}}">{{result}}</div>
+
+    {{#if (flail-eq outcome "th")}}
+    <p class="shift-round-outcome th">
+      <i class="fas fa-plus-circle"></i>
+      {{localize "FLAIL.Shapeshift.OutcomeTh"}}
+    </p>
+    {{/if}}
+    {{#if (flail-eq outcome "dmg")}}
+    <p class="shift-round-outcome dmg">
+      <i class="fas fa-plus-circle"></i>
+      {{localize "FLAIL.Shapeshift.OutcomeDmg"}}
+    </p>
+    {{/if}}
+    {{#if (flail-eq outcome "revert")}}
+    <p class="shift-round-outcome revert">
+      <i class="fas fa-triangle-exclamation"></i>
+      {{localize "FLAIL.Shapeshift.OutcomeRevert"}}
+    </p>
+    {{/if}}
+
+    <div class="shift-round-summary">
+      <span class="stat stat-th"><strong>+TH</strong> {{thBonus}}</span>
+      <span class="stat stat-dmg"><strong>+DMG</strong> {{dmgBonus}}</span>
+    </div>
+  </div>
+</div>
