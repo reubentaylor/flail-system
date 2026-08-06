@@ -52,7 +52,8 @@ export class FlailConstructSheet extends HandlebarsApplicationMixin(ActorSheetV2
       setOwner:              FlailConstructSheet.#onSetOwner,
       clearOwner:            FlailConstructSheet.#onClearOwner,
       breakDown:             FlailConstructSheet.#onBreakDown,
-      rebuild:               FlailConstructSheet.#onRebuild
+      rebuild:               FlailConstructSheet.#onRebuild,
+      editImage:             FlailConstructSheet.#onEditImage
     },
     form: { submitOnChange: true, closeOnSubmit: false },
     dragDrop: [{ dragSelector: ".construct-slot .slot-item", dropSelector: ".construct-slot" }]
@@ -1168,6 +1169,32 @@ export class FlailConstructSheet extends HandlebarsApplicationMixin(ActorSheetV2
     });
     if (chosen === null || chosen === undefined) return null;
     return improvements[chosen] ?? null;
+  }
+
+  /**
+   * Click on the construct portrait — opens Foundry's FilePicker so
+   * the owner can pick a new image path. If Tokenizer is active this
+   * handler no-ops so Tokenizer's own hook (on `data-edit="img"`)
+   * takes over. Shift-click forces FilePicker regardless.
+   */
+  static async #onEditImage(event, target) {
+    if (!this.isEditable) return;
+    const forceFilePicker = event?.shiftKey === true;
+    const tokenizerActive = !!game.modules?.get("vtta-tokenizer")?.active;
+    if (tokenizerActive && !forceFilePicker) return;
+    const current = this.actor.img ?? "";
+    const FilePickerImpl = foundry.applications?.apps?.FilePicker?.implementation
+      ?? globalThis.FilePicker;
+    if (!FilePickerImpl) {
+      ui.notifications?.warn("FilePicker unavailable in this environment.");
+      return;
+    }
+    const fp = new FilePickerImpl({
+      type: "image",
+      current,
+      callback: (path) => this.actor.update({ img: path })
+    });
+    fp.browse();
   }
 }
 

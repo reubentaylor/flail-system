@@ -166,6 +166,7 @@
     "Placeholder": {
       "Backstory":  "name and backstory here",
       "Background": "background…",
+      "CustomBackgroundLabel": "your background's name — e.g. \"Retired mercenary\"",
       "Tagline":    "e.g. “The obvious choice for the obvious bard”",
       "EffectEntry": "what happens on this roll…"
     },

@@ -19,7 +19,8 @@ export class FlailNpcSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       itemEdit:   FlailNpcSheet.#onItemEdit,
       itemDelete: FlailNpcSheet.#onItemDelete,
       itemCreate: FlailNpcSheet.#onItemCreate,
-      adjustHp:   FlailNpcSheet.#onAdjustHp
+      adjustHp:   FlailNpcSheet.#onAdjustHp,
+      editImage:  FlailNpcSheet.#onEditImage
     },
     form: { submitOnChange: true, closeOnSubmit: false }
   };
@@ -179,5 +180,34 @@ export class FlailNpcSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (!delta) return;
     if (delta < 0) return this.actor.applyDamage(-delta, { ignoreDefence: true });
     return this.actor.heal(delta);
+  }
+
+  /**
+   * Click on the NPC portrait — opens Foundry's FilePicker so the GM
+   * can pick a new image path. If Tokenizer is active, this handler
+   * no-ops: Tokenizer's own document-level click listener fires (via
+   * `data-edit="img"`) and opens its dialog. That's why the portrait
+   * carries both `data-edit="img"` and `data-action="editImage"`.
+   *
+   * Shift-click forces FilePicker even when Tokenizer is active.
+   */
+  static async #onEditImage(event, target) {
+    if (!this.isEditable) return;
+    const forceFilePicker = event?.shiftKey === true;
+    const tokenizerActive = !!game.modules?.get("vtta-tokenizer")?.active;
+    if (tokenizerActive && !forceFilePicker) return;
+    const current = this.actor.img ?? "";
+    const FilePickerImpl = foundry.applications?.apps?.FilePicker?.implementation
+      ?? globalThis.FilePicker;
+    if (!FilePickerImpl) {
+      ui.notifications?.warn("FilePicker unavailable in this environment.");
+      return;
+    }
+    const fp = new FilePickerImpl({
+      type: "image",
+      current,
+      callback: (path) => this.actor.update({ img: path })
+    });
+    fp.browse();
   }
 }

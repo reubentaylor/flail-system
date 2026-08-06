@@ -263,6 +263,42 @@
   font-style: italic;
   line-height: 1.25;
 }
+/* Custom background — editable input + read-only display. Text input
+   matches the sheet's other inline fields; the label-view is styled
+   like a small heading over the perk. */
+.flail.sheet .char-background-custom-label {
+  width: 100%;
+  margin-top: 0.15rem;
+  padding: 0.15rem 0.3rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--flail-rule, #b58b3e);
+  color: var(--flail-ink, #2b1e0a);
+}
+.flail.sheet .char-background-custom-label:focus {
+  outline: none;
+  border-bottom-color: var(--flail-ink, #2b1e0a);
+}
+.flail.sheet .char-background-custom-label-view {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--flail-ink, #2b1e0a);
+}
+.flail.sheet .char-background-custom-perk {
+  margin-top: 0.2rem;
+  min-height: 3rem;
+}
+.flail.sheet .char-background-custom-perk .editor,
+.flail.sheet .char-background-custom-perk .editor-content,
+.flail.sheet .char-background-custom-perk .editor-content * {
+  color: var(--flail-accent);
+  font-size: 0.72rem;
+  font-style: italic;
+  line-height: 1.25;
+}
 .flail.sheet .banner-right {
   display: flex;
   flex-direction: column;

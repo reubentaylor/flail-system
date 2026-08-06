@@ -727,6 +727,18 @@ FLAIL.backgrounds = {
   ]
 };
 
+// Append a "custom" option to every class so players can author their
+// own background. The label and perk are placeholders — the character
+// sheet reads the actor's `system.customBackground.{label,perk}` when
+// this key is picked. See actor-character.mjs for the schema.
+for (const cls of Object.keys(FLAIL.backgrounds)) {
+  FLAIL.backgrounds[cls].push({
+    key: "custom",
+    label: "Custom",
+    perk: ""
+  });
+}
+
 /**
  * Construct improvements — rulebook page 32.
  *

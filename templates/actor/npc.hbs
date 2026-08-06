@@ -8,7 +8,7 @@
 <div class="flail-npc-sheet">
 
   <header class="npc-header">
-    <img class="profile" src="{{actor.img}}" data-edit="img" />
+    <img class="profile" src="{{actor.img}}" data-edit="img" data-action="editImage" title="{{localize 'FLAIL.Character.ChangePortrait'}}" />
     <div class="meta">
       <input type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'FLAIL.Field.Name'}}" {{#unless editable}}disabled{{/unless}} />
       <div class="row">

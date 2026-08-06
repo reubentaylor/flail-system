@@ -49,7 +49,8 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       castDarkSpell:   FlailCharacterSheet.#onCastDarkSpell,
       castWizardSpell: FlailCharacterSheet.#onCastWizardSpell,
       useDamageGadget: FlailCharacterSheet.#onUseDamageGadget,
-      editPortrait:    FlailCharacterSheet.#onEditPortrait,   // kept for backward compat with any external triggers
+      editPortrait:    FlailCharacterSheet.#onEditImage,   // kept for backward compat with any external triggers
+      editImage:       FlailCharacterSheet.#onEditImage,
       toggleJoatUsed:  FlailCharacterSheet.#onToggleJoatUsed,
       castJoatSpell:   FlailCharacterSheet.#onCastJoatSpell,
       castPrayer:      FlailCharacterSheet.#onCastPrayer,
@@ -152,8 +153,17 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       selected: b.key === bgKey
     }));
     const currentBg = bgList.find(b => b.key === bgKey);
-    ctx.currentBackgroundLabel = currentBg?.label ?? "";
-    ctx.currentBackgroundPerk = currentBg?.perk ?? "";
+    ctx.isCustomBackground = bgKey === "custom";
+    if (ctx.isCustomBackground) {
+      // Custom background — read the actor's own label + perk. Blank
+      // strings are fine (the sheet renders the editor for the player
+      // to fill in).
+      ctx.currentBackgroundLabel = sys.customBackground?.label ?? "";
+      ctx.currentBackgroundPerk  = sys.customBackground?.perk ?? "";
+    } else {
+      ctx.currentBackgroundLabel = currentBg?.label ?? "";
+      ctx.currentBackgroundPerk  = currentBg?.perk ?? "";
+    }
 
     // Attributes — list form for handlebars iteration.
     ctx.attributeList = FLAIL.attributeKeys.map(key => {
@@ -2456,27 +2466,28 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
    * If Tokenizer isn't installed, both click and shift-click open
    * the FilePicker directly. Guards against non-editable sheets.
    */
-  static async #onEditPortrait(event, target) {
+  /**
+   * Click on the portrait image — opens Foundry's FilePicker so the
+   * user can pick a new image path. If the Tokenizer module is active,
+   * this handler no-ops: Tokenizer's own document-level click listener
+   * (which hooks `data-edit="img"`) fires and opens its own dialog.
+   * That's why the portrait carries BOTH attributes: `data-edit="img"`
+   * for Tokenizer, `data-action="editImage"` for our FilePicker
+   * fallback via Foundry's action dispatch.
+   *
+   * Shift-click forces FilePicker even when Tokenizer is active — a
+   * user escape hatch if they want the raw FilePicker directly.
+   */
+  static async #onEditImage(event, target) {
     if (!this.isEditable) return;
 
     const forceFilePicker = event?.shiftKey === true;
-    const tokenizerModule = game.modules?.get("vtta-tokenizer");
-    const tokenizerActive = !!tokenizerModule?.active;
+    const tokenizerActive = !!game.modules?.get("vtta-tokenizer")?.active;
 
-    if (tokenizerActive && !forceFilePicker) {
-      // Prefer the module's api surface (stable across versions);
-      // fall back to the window global if the api namespace is
-      // unavailable in older Tokenizer builds.
-      const api = tokenizerModule.api ?? globalThis.Tokenizer;
-      if (api?.tokenizeActor) {
-        try {
-          return await api.tokenizeActor(this.actor);
-        } catch (err) {
-          console.error("FLAIL | Tokenizer launch failed", err);
-          // Fall through to FilePicker on error.
-        }
-      }
-    }
+    // Tokenizer active + not force-shifted → let Tokenizer's own hook
+    // handle the click. Our handler no-ops to avoid opening FilePicker
+    // on top of Tokenizer's dialog.
+    if (tokenizerActive && !forceFilePicker) return;
 
     const current = this.actor.img ?? "";
     const FilePickerImpl = foundry.applications?.apps?.FilePicker?.implementation

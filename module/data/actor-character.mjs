@@ -66,10 +66,20 @@ export class FlailCharacterModel extends foundry.abstract.TypeDataModel {
       toHitBonus: new fields.NumberField({ integer: true, initial: 0 }),
 
       // Background — d6 result key from FLAIL.backgrounds[<class>].
-      // Stored as "1".."6" or blank. The dropdown in the sheet resolves
-      // this against the current class to surface the descriptive label
-      // and mechanical perk.
+      // Stored as "1".."6" or "custom" or blank. The dropdown in the sheet
+      // resolves this against the current class to surface the descriptive
+      // label and mechanical perk. The special key "custom" tells the sheet
+      // to read from `customBackground` (below) instead of the config.
       background: new fields.StringField({ blank: true, initial: "" }),
+
+      // Custom background — player-authored label + rich-text perk,
+      // surfaced when `background === "custom"`. Persists across class
+      // changes so a character carries their custom identity even if
+      // they multiclass. Purely descriptive: no mechanical automation.
+      customBackground: new fields.SchemaField({
+        label: new fields.StringField({ blank: true, initial: "" }),
+        perk:  new fields.HTMLField({   blank: true, initial: "" })
+      }),
 
       // Class-specific picks. Religion (Cleric) is constrained to one of
       // the keys in FLAIL.religions; the chosen religion derives deity,
