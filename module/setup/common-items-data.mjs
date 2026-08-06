@@ -45,7 +45,7 @@ export const COMMON_ITEMS = [
     "_id": "NhtM53xGBeN3v1I6",
     "name": "Battle Axe",
     "type": "weapon",
-    "img": "systems/flail/icons/items/battle-axe.png",
+    "img": "systems/flail/icons/items/battleaxe.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -82,7 +82,7 @@ export const COMMON_ITEMS = [
     "_id": "nfRPbOCzzz3GVBGG",
     "name": "Bear Trap",
     "type": "gear",
-    "img": "systems/flail/icons/items/bear-trap.png",
+    "img": "systems/flail/icons/items/bear_trap.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -110,7 +110,7 @@ export const COMMON_ITEMS = [
     "_id": "IqHFbYI7y9TR6cPo",
     "name": "Bedroll",
     "type": "gear",
-    "img": "systems/flail/icons/items/bedroll.png",
+    "img": "systems/flail/icons/items/bedroll.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -138,7 +138,7 @@ export const COMMON_ITEMS = [
     "_id": "eA6M8tvAl3VZoYg4",
     "name": "Bell",
     "type": "gear",
-    "img": "systems/flail/icons/items/bell.png",
+    "img": "systems/flail/icons/items/bell.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -166,7 +166,7 @@ export const COMMON_ITEMS = [
     "_id": "yrB4ztyjGGvlgRwt",
     "name": "Blowgun",
     "type": "weapon",
-    "img": "systems/flail/icons/items/blowgun.png",
+    "img": "systems/flail/icons/items/blowgun.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -204,7 +204,7 @@ export const COMMON_ITEMS = [
     "_id": "rO88DA8Ie1gGfq0D",
     "name": "Bolstering Lute",
     "type": "instrument",
-    "img": "systems/flail/icons/items/bolstering-lute.png",
+    "img": "systems/flail/icons/items/bolstering_lute.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -244,7 +244,7 @@ export const COMMON_ITEMS = [
     "_id": "PuWSpD5y6MWJuism",
     "name": "Book",
     "type": "gear",
-    "img": "systems/flail/icons/items/book.png",
+    "img": "systems/flail/icons/items/book.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -272,7 +272,7 @@ export const COMMON_ITEMS = [
     "_id": "O9x4pORiZ5vpWHsn",
     "name": "Cage",
     "type": "gear",
-    "img": "systems/flail/icons/items/cage.png",
+    "img": "systems/flail/icons/items/cage.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -300,7 +300,7 @@ export const COMMON_ITEMS = [
     "_id": "B24eoYZgtsY0mmI1",
     "name": "Caltrops",
     "type": "gear",
-    "img": "systems/flail/icons/items/caltrops.png",
+    "img": "systems/flail/icons/items/caltrops.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -328,7 +328,7 @@ export const COMMON_ITEMS = [
     "_id": "YgkR6K3ySuUJXeW7",
     "name": "Chain Mail",
     "type": "armour",
-    "img": "systems/flail/icons/items/chain-mail.png",
+    "img": "systems/flail/icons/items/chainmail_armour.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -356,7 +356,7 @@ export const COMMON_ITEMS = [
     "_id": "fjXEtSlYZBtdvtoI",
     "name": "Chain",
     "type": "gear",
-    "img": "systems/flail/icons/items/chain.png",
+    "img": "systems/flail/icons/items/chain.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -384,7 +384,7 @@ export const COMMON_ITEMS = [
     "_id": "Ce7nGMjtN1xWiWly",
     "name": "Club",
     "type": "weapon",
-    "img": "systems/flail/icons/items/club.png",
+    "img": "systems/flail/icons/items/club.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -420,7 +420,7 @@ export const COMMON_ITEMS = [
     "_id": "m3B1amgmXPNRo4Om",
     "name": "Coin Purse",
     "type": "gear",
-    "img": "systems/flail/icons/items/coin-purse.png",
+    "img": "systems/flail/icons/items/coin_pouch.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -448,7 +448,7 @@ export const COMMON_ITEMS = [
     "_id": "bC9MafiuPI1zWiEd",
     "name": "Compass",
     "type": "gear",
-    "img": "systems/flail/icons/items/compass.png",
+    "img": "systems/flail/icons/items/compass.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -476,7 +476,7 @@ export const COMMON_ITEMS = [
     "_id": "k2dsWx8LVELPWJqJ",
     "name": "Cooking Pots",
     "type": "gear",
-    "img": "systems/flail/icons/items/cooking-pots.png",
+    "img": "systems/flail/icons/items/stove_pots.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -504,7 +504,7 @@ export const COMMON_ITEMS = [
     "_id": "2CLDS2CJLvcnzNyC",
     "name": "Crimson Coin Sigil",
     "type": "gear",
-    "img": "systems/flail/icons/items/crimson-coin.png",
+    "img": "systems/flail/icons/items/crimson_coin.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -536,7 +536,7 @@ export const COMMON_ITEMS = [
     "_id": "s6V9FT0B6OUxL5pb",
     "name": "Cross of Sheezuz",
     "type": "gear",
-    "img": "systems/flail/icons/items/cross-of-sheezuz.png",
+    "img": "systems/flail/icons/items/wooden_cross.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -568,7 +568,7 @@ export const COMMON_ITEMS = [
     "_id": "YjAyTPDsvQEgVK9Z",
     "name": "Crossbow",
     "type": "weapon",
-    "img": "systems/flail/icons/items/crossbow.png",
+    "img": "systems/flail/icons/items/crossbow.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -606,7 +606,7 @@ export const COMMON_ITEMS = [
     "_id": "hIawrZ74qmBzt715",
     "name": "Crowbar",
     "type": "gear",
-    "img": "systems/flail/icons/items/crowbar.png",
+    "img": "systems/flail/icons/items/crowbar.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -634,7 +634,7 @@ export const COMMON_ITEMS = [
     "_id": "Q90P8MqmwvZIH0UN",
     "name": "Dagger",
     "type": "weapon",
-    "img": "systems/flail/icons/items/dagger.png",
+    "img": "systems/flail/icons/items/dagger.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -671,7 +671,7 @@ export const COMMON_ITEMS = [
     "_id": "GbVLvaB6ZuoEQZg8",
     "name": "Darts",
     "type": "weapon",
-    "img": "systems/flail/icons/items/darts.png",
+    "img": "systems/flail/icons/items/darts.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -709,7 +709,7 @@ export const COMMON_ITEMS = [
     "_id": "G2HOb8Ikuk9cm9EI",
     "name": "Eye Ring Sigil",
     "type": "gear",
-    "img": "systems/flail/icons/items/eye-ring.png",
+    "img": "systems/flail/icons/items/eye_ring.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -741,7 +741,7 @@ export const COMMON_ITEMS = [
     "_id": "Vbg7IAxe2z33vHy3",
     "name": "Fishing Gear",
     "type": "gear",
-    "img": "systems/flail/icons/items/fishing-gear.png",
+    "img": "systems/flail/icons/items/fishing_gear.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -769,7 +769,7 @@ export const COMMON_ITEMS = [
     "_id": "InPzuv35eHUcZD9k",
     "name": "Flail",
     "type": "weapon",
-    "img": "systems/flail/icons/items/flail.png",
+    "img": "systems/flail/icons/items/flail.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -805,7 +805,7 @@ export const COMMON_ITEMS = [
     "_id": "E3GzrSLH2aZYSNE9",
     "name": "Flask of Oil",
     "type": "gear",
-    "img": "systems/flail/icons/items/flask-of-oil.png",
+    "img": "systems/flail/icons/items/oil_flask.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -833,7 +833,7 @@ export const COMMON_ITEMS = [
     "_id": "21YIurCGSuVsxpWa",
     "name": "Flask",
     "type": "gear",
-    "img": "systems/flail/icons/items/flask.png",
+    "img": "systems/flail/icons/items/flask_empty.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -861,7 +861,7 @@ export const COMMON_ITEMS = [
     "_id": "xpyZnCAy32P9WvK8",
     "name": "Flint & Steel",
     "type": "gear",
-    "img": "systems/flail/icons/items/flint-and-steel.png",
+    "img": "systems/flail/icons/items/flint_steel.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -889,7 +889,7 @@ export const COMMON_ITEMS = [
     "_id": "yQGvMfPvd34kfN0f",
     "name": "Full Plate Mail",
     "type": "armour",
-    "img": "systems/flail/icons/items/full-plate-mail.png",
+    "img": "systems/flail/icons/items/heavy_armour.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -917,7 +917,7 @@ export const COMMON_ITEMS = [
     "_id": "V7LfgUxGKd7syuMY",
     "name": "Gadget Belt",
     "type": "gear",
-    "img": "systems/flail/icons/items/gadget-belt.png",
+    "img": "systems/flail/icons/items/gadget_belt.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -945,7 +945,7 @@ export const COMMON_ITEMS = [
     "_id": "veSZFEAJqj3nYXF8",
     "name": "Garrotte",
     "type": "weapon",
-    "img": "systems/flail/icons/items/garrotte.png",
+    "img": "systems/flail/icons/items/garrote.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -982,7 +982,7 @@ export const COMMON_ITEMS = [
     "_id": "ITn16fwP2dCYtM1P",
     "name": "Grappling Hook",
     "type": "gear",
-    "img": "systems/flail/icons/items/grappling-hook.png",
+    "img": "systems/flail/icons/items/grappling_hook.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1010,7 +1010,7 @@ export const COMMON_ITEMS = [
     "_id": "zvqRqAGjT1PqVW8O",
     "name": "Great Sword",
     "type": "weapon",
-    "img": "systems/flail/icons/items/great-sword.png",
+    "img": "systems/flail/icons/items/greatsword.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1047,7 +1047,7 @@ export const COMMON_ITEMS = [
     "_id": "Kw4EyEKV04URZI94",
     "name": "Grub",
     "type": "gear",
-    "img": "systems/flail/icons/items/grub.png",
+    "img": "systems/flail/icons/items/rations.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1075,7 +1075,7 @@ export const COMMON_ITEMS = [
     "_id": "CEhr6KJP5tl74G91",
     "name": "Hammer",
     "type": "gear",
-    "img": "systems/flail/icons/items/hammer.png",
+    "img": "systems/flail/icons/items/hammer.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1103,7 +1103,7 @@ export const COMMON_ITEMS = [
     "_id": "j2Hr6SLvZgq1xI8C",
     "name": "Hand Brooch Sigil",
     "type": "gear",
-    "img": "systems/flail/icons/items/hand-brooch.png",
+    "img": "systems/flail/icons/items/hand_brooch.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1135,7 +1135,7 @@ export const COMMON_ITEMS = [
     "_id": "hWPiqoq37YsC2X0y",
     "name": "Skull Harp of the Abyss",
     "type": "instrument",
-    "img": "systems/flail/icons/items/harp-of-abyss.png",
+    "img": "systems/flail/icons/items/skull_harp.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1175,7 +1175,7 @@ export const COMMON_ITEMS = [
     "_id": "9UtDrYoCpwyJc7t0",
     "name": "Helm of Zor'Vol",
     "type": "gear",
-    "img": "systems/flail/icons/items/helm-of-zorvol.png",
+    "img": "systems/flail/icons/items/horned_helmet.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1203,7 +1203,7 @@ export const COMMON_ITEMS = [
     "_id": "QNNsOnW2rDzsg0T3",
     "name": "Helmet",
     "type": "armour",
-    "img": "systems/flail/icons/items/helmet.png",
+    "img": "systems/flail/icons/items/helmet.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1231,7 +1231,7 @@ export const COMMON_ITEMS = [
     "_id": "L3Nw5GYfpVivdTw2",
     "name": "Herbs",
     "type": "gear",
-    "img": "systems/flail/icons/items/herbs.png",
+    "img": "systems/flail/icons/items/herbs.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1259,7 +1259,7 @@ export const COMMON_ITEMS = [
     "_id": "vALHODbZCuaFkqTy",
     "name": "Hide Armour",
     "type": "armour",
-    "img": "systems/flail/icons/items/hide-armour.png",
+    "img": "systems/flail/icons/items/hide_armor.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1287,7 +1287,7 @@ export const COMMON_ITEMS = [
     "_id": "sy3nInIwVnjpVTq3",
     "name": "Hourglass",
     "type": "gear",
-    "img": "systems/flail/icons/items/hourglass.png",
+    "img": "systems/flail/icons/items/hourglass.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1315,7 +1315,7 @@ export const COMMON_ITEMS = [
     "_id": "uXOW9X1Qwbn0KSN8",
     "name": "Ink & Quill",
     "type": "gear",
-    "img": "systems/flail/icons/items/ink-and-quill.png",
+    "img": "systems/flail/icons/items/ink_quill.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1343,7 +1343,7 @@ export const COMMON_ITEMS = [
     "_id": "keaHbHDDtiDOrFs0",
     "name": "Iron Spikes",
     "type": "gear",
-    "img": "systems/flail/icons/items/iron-spikes.png",
+    "img": "systems/flail/icons/items/iron_spikes.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1371,7 +1371,7 @@ export const COMMON_ITEMS = [
     "_id": "cqptLdlmhb5PGX7P",
     "name": "Ladder",
     "type": "gear",
-    "img": "systems/flail/icons/items/ladder.png",
+    "img": "systems/flail/icons/items/ladder.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1399,7 +1399,7 @@ export const COMMON_ITEMS = [
     "_id": "T02Nt4QJtvq4pAJ1",
     "name": "Lantern",
     "type": "gear",
-    "img": "systems/flail/icons/items/lantern.png",
+    "img": "systems/flail/icons/items/lantern.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1427,7 +1427,7 @@ export const COMMON_ITEMS = [
     "_id": "VdGETZoJXm4Jofqq",
     "name": "Leather Armour",
     "type": "armour",
-    "img": "systems/flail/icons/items/leather-armour.png",
+    "img": "systems/flail/icons/items/leather_armour.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1455,7 +1455,7 @@ export const COMMON_ITEMS = [
     "_id": "k0h2RLPiOVrYNQAO",
     "name": "Lockbox",
     "type": "gear",
-    "img": "systems/flail/icons/items/lockbox.png",
+    "img": "systems/flail/icons/items/lockbox.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1483,7 +1483,7 @@ export const COMMON_ITEMS = [
     "_id": "U1fot5aQBbn1HeET",
     "name": "Long Bow",
     "type": "weapon",
-    "img": "systems/flail/icons/items/long-bow.png",
+    "img": "systems/flail/icons/items/longbow.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1521,7 +1521,7 @@ export const COMMON_ITEMS = [
     "_id": "VkBdyjdsjYArpbSi",
     "name": "Long Crumhorn of Pandemonium",
     "type": "instrument",
-    "img": "systems/flail/icons/items/long-crumhorn.png",
+    "img": "systems/flail/icons/items/crumhorn.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1561,7 +1561,7 @@ export const COMMON_ITEMS = [
     "_id": "wKvU1GD8DWtnva77",
     "name": "Mace",
     "type": "weapon",
-    "img": "systems/flail/icons/items/mace.png",
+    "img": "systems/flail/icons/items/mace.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1598,7 +1598,7 @@ export const COMMON_ITEMS = [
     "_id": "jbngcOqZJeuxXcDb",
     "name": "Manacles",
     "type": "gear",
-    "img": "systems/flail/icons/items/manacles.png",
+    "img": "systems/flail/icons/items/manacles.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1626,7 +1626,7 @@ export const COMMON_ITEMS = [
     "_id": "dwyzAieEJXgSVRGZ",
     "name": "Map",
     "type": "gear",
-    "img": "systems/flail/icons/items/map.png",
+    "img": "systems/flail/icons/items/map.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1654,7 +1654,7 @@ export const COMMON_ITEMS = [
     "_id": "jqZuPecPrvC3AsT7",
     "name": "Marbles",
     "type": "gear",
-    "img": "systems/flail/icons/items/marbles.png",
+    "img": "systems/flail/icons/items/marbles.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1682,7 +1682,7 @@ export const COMMON_ITEMS = [
     "_id": "32ogUAStZI5kHUeR",
     "name": "Maul",
     "type": "weapon",
-    "img": "systems/flail/icons/items/maul.png",
+    "img": "systems/flail/icons/items/maul.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1719,7 +1719,7 @@ export const COMMON_ITEMS = [
     "_id": "DAzNTcJI3r2BN8mR",
     "name": "Microscope",
     "type": "gear",
-    "img": "systems/flail/icons/items/microscope.png",
+    "img": "systems/flail/icons/items/microscope.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1747,7 +1747,7 @@ export const COMMON_ITEMS = [
     "_id": "DWIP1Y6SGk4XjOQV",
     "name": "Mirror",
     "type": "gear",
-    "img": "systems/flail/icons/items/mirror.png",
+    "img": "systems/flail/icons/items/mirror.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1775,7 +1775,7 @@ export const COMMON_ITEMS = [
     "_id": "ODpPz87Io18yO75G",
     "name": "Morningstar",
     "type": "weapon",
-    "img": "systems/flail/icons/items/morningstar.png",
+    "img": "systems/flail/icons/items/morningstar.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1812,7 +1812,7 @@ export const COMMON_ITEMS = [
     "_id": "oNpMoN0l3LCBhXUQ",
     "name": "Mutton Tunic",
     "type": "gear",
-    "img": "systems/flail/icons/items/mutton-tunic.png",
+    "img": "systems/flail/icons/items/tunic_crest.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1840,7 +1840,7 @@ export const COMMON_ITEMS = [
     "_id": "eF9wKpvZqz89J4OK",
     "name": "Net",
     "type": "gear",
-    "img": "systems/flail/icons/items/net.png",
+    "img": "systems/flail/icons/items/net.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1868,7 +1868,7 @@ export const COMMON_ITEMS = [
     "_id": "qbSyJL48ginYk0C1",
     "name": "Perfume",
     "type": "gear",
-    "img": "systems/flail/icons/items/perfume.png",
+    "img": "systems/flail/icons/items/perfume.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1896,7 +1896,7 @@ export const COMMON_ITEMS = [
     "_id": "S7rJR8AfzCXPRgmO",
     "name": "Pickaxe",
     "type": "gear",
-    "img": "systems/flail/icons/items/pickaxe.png",
+    "img": "systems/flail/icons/items/pickaxe.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1924,7 +1924,7 @@ export const COMMON_ITEMS = [
     "_id": "wujeIenyUjlxvmZ1",
     "name": "Pipes of Doom",
     "type": "instrument",
-    "img": "systems/flail/icons/items/pipes-of-doom.png",
+    "img": "systems/flail/icons/items/bagpipes_doom.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -1964,7 +1964,7 @@ export const COMMON_ITEMS = [
     "_id": "Agco4i1mKnGzRElS",
     "name": "Polearm",
     "type": "weapon",
-    "img": "systems/flail/icons/items/polearm.png",
+    "img": "systems/flail/icons/items/polearm.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2000,7 +2000,7 @@ export const COMMON_ITEMS = [
     "_id": "SEN2b1COEKKadaKg",
     "name": "Potion",
     "type": "gear",
-    "img": "systems/flail/icons/items/potion.png",
+    "img": "systems/flail/icons/items/potion.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2028,7 +2028,7 @@ export const COMMON_ITEMS = [
     "_id": "5rrF9WJspNgEOVTx",
     "name": "Quarterstaff",
     "type": "weapon",
-    "img": "systems/flail/icons/items/quarterstaff.png",
+    "img": "systems/flail/icons/items/quarterstaff.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2065,7 +2065,7 @@ export const COMMON_ITEMS = [
     "_id": "BO1Ra7BEq4qfIwXL",
     "name": "Quiver",
     "type": "gear",
-    "img": "systems/flail/icons/items/quiver.png",
+    "img": "systems/flail/icons/items/quiver.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2093,7 +2093,7 @@ export const COMMON_ITEMS = [
     "_id": "dfjpxvS2Hna1AlpD",
     "name": "Rope",
     "type": "gear",
-    "img": "systems/flail/icons/items/rope.png",
+    "img": "systems/flail/icons/items/rope.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2121,7 +2121,7 @@ export const COMMON_ITEMS = [
     "_id": "fIS9U3ApNnJu1sya",
     "name": "Scale Mail",
     "type": "armour",
-    "img": "systems/flail/icons/items/scale-mail.png",
+    "img": "systems/flail/icons/items/scalemail_armour.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2149,7 +2149,7 @@ export const COMMON_ITEMS = [
     "_id": "TTeKC6A0U7w9l8FI",
     "name": "Scimitar",
     "type": "weapon",
-    "img": "systems/flail/icons/items/scimitar.png",
+    "img": "systems/flail/icons/items/scimitar.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2186,7 +2186,7 @@ export const COMMON_ITEMS = [
     "_id": "FAlPpRZpWqNbkwoa",
     "name": "Scroll",
     "type": "gear",
-    "img": "systems/flail/icons/items/scroll.png",
+    "img": "systems/flail/icons/items/scroll.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2214,7 +2214,7 @@ export const COMMON_ITEMS = [
     "_id": "41a138zHSdku1jFT",
     "name": "Scythe",
     "type": "weapon",
-    "img": "systems/flail/icons/items/scythe.png",
+    "img": "systems/flail/icons/items/scythe.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2251,7 +2251,7 @@ export const COMMON_ITEMS = [
     "_id": "UQCnNTVtACfTsLrK",
     "name": "Shield",
     "type": "armour",
-    "img": "systems/flail/icons/items/shield.png",
+    "img": "systems/flail/icons/items/shield.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2279,7 +2279,7 @@ export const COMMON_ITEMS = [
     "_id": "FN6qsspJM7zu3RkB",
     "name": "Short Bow",
     "type": "weapon",
-    "img": "systems/flail/icons/items/short-bow.png",
+    "img": "systems/flail/icons/items/short_bow.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2317,7 +2317,7 @@ export const COMMON_ITEMS = [
     "_id": "Yg4IY0N3f97ZcJXi",
     "name": "Short Sword",
     "type": "weapon",
-    "img": "systems/flail/icons/items/short-sword.png",
+    "img": "systems/flail/icons/items/short_sword.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2354,7 +2354,7 @@ export const COMMON_ITEMS = [
     "_id": "gNpU4BME249vTcmk",
     "name": "Shovel",
     "type": "gear",
-    "img": "systems/flail/icons/items/shovel.png",
+    "img": "systems/flail/icons/items/shovel.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2382,7 +2382,7 @@ export const COMMON_ITEMS = [
     "_id": "hlmbpkjrEXy5AMtb",
     "name": "Sizzling Castanets",
     "type": "instrument",
-    "img": "systems/flail/icons/items/siz-castanets.png",
+    "img": "systems/flail/icons/items/sizzling_castanets.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2422,7 +2422,7 @@ export const COMMON_ITEMS = [
     "_id": "MtqvJ8E7q4E8kjT4",
     "name": "Sling",
     "type": "weapon",
-    "img": "systems/flail/icons/items/sling.png",
+    "img": "systems/flail/icons/items/sling.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2460,7 +2460,7 @@ export const COMMON_ITEMS = [
     "_id": "jbnPtVBTLR7BBIwg",
     "name": "Smoking Pipe",
     "type": "gear",
-    "img": "systems/flail/icons/items/smoking-pipe.png",
+    "img": "systems/flail/icons/items/smoking_pipe.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2488,7 +2488,7 @@ export const COMMON_ITEMS = [
     "_id": "Ui3gs64uoAeqT7Th",
     "name": "Sparkle of Life",
     "type": "gear",
-    "img": "systems/flail/icons/items/sparkle-of-life.png",
+    "img": "systems/flail/icons/items/sparkle_life.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2516,7 +2516,7 @@ export const COMMON_ITEMS = [
     "_id": "1eJFlRgUbnr14Hv1",
     "name": "Spear",
     "type": "weapon",
-    "img": "systems/flail/icons/items/spear.png",
+    "img": "systems/flail/icons/items/spear.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2553,7 +2553,7 @@ export const COMMON_ITEMS = [
     "_id": "pDI8izEq2oGU0CrP",
     "name": "Spellbook",
     "type": "gear",
-    "img": "systems/flail/icons/items/spellbook.png",
+    "img": "systems/flail/icons/items/spellbook.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2581,7 +2581,7 @@ export const COMMON_ITEMS = [
     "_id": "IH11i8UrV9jj7OSO",
     "name": "Spiked Chain",
     "type": "weapon",
-    "img": "systems/flail/icons/items/spiked-chain.png",
+    "img": "systems/flail/icons/items/spiked_chain.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2618,7 +2618,7 @@ export const COMMON_ITEMS = [
     "_id": "Vnb75cba3SUElq0b",
     "name": "Spirit Lantern",
     "type": "gear",
-    "img": "systems/flail/icons/items/spirit-lantern.png",
+    "img": "systems/flail/icons/items/spirit_lantern.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2646,7 +2646,7 @@ export const COMMON_ITEMS = [
     "_id": "lh5SHuLVVLNlpcid",
     "name": "Spyglass",
     "type": "gear",
-    "img": "systems/flail/icons/items/spyglass.png",
+    "img": "systems/flail/icons/items/spyglass.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2674,7 +2674,7 @@ export const COMMON_ITEMS = [
     "_id": "pXcLeeIf3yy2FyjW",
     "name": "Telescope",
     "type": "gear",
-    "img": "systems/flail/icons/items/telescope.png",
+    "img": "systems/flail/icons/items/telescope.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2702,7 +2702,7 @@ export const COMMON_ITEMS = [
     "_id": "emW45i5bDNFMzxL2",
     "name": "Ten-foot Pole",
     "type": "gear",
-    "img": "systems/flail/icons/items/ten-foot-pole.png",
+    "img": "systems/flail/icons/items/ten_foot_pole.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2730,7 +2730,7 @@ export const COMMON_ITEMS = [
     "_id": "lk5mKmHeHRpQe6sA",
     "name": "Tent",
     "type": "gear",
-    "img": "systems/flail/icons/items/tent.png",
+    "img": "systems/flail/icons/items/tent.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2758,7 +2758,7 @@ export const COMMON_ITEMS = [
     "_id": "h1B6AmTFGiIYCXIT",
     "name": "Tentacle Clasp Sigil",
     "type": "gear",
-    "img": "systems/flail/icons/items/tentacle-clasp.png",
+    "img": "systems/flail/icons/items/tentacle_clasp.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2790,7 +2790,7 @@ export const COMMON_ITEMS = [
     "_id": "Jzpvy0HJf1ufTDrc",
     "name": "The Oak Leaf",
     "type": "gear",
-    "img": "systems/flail/icons/items/the-oak-leaf.png",
+    "img": "systems/flail/icons/items/oakleaf_medallion.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2822,7 +2822,7 @@ export const COMMON_ITEMS = [
     "_id": "Tl7iVRGdJJVuwISX",
     "name": "Thieves' Tools",
     "type": "gear",
-    "img": "systems/flail/icons/items/thieves-tools.png",
+    "img": "systems/flail/icons/items/thieves_tools.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2850,7 +2850,7 @@ export const COMMON_ITEMS = [
     "_id": "lmEuEscMyOYav0NU",
     "name": "Throw Knives",
     "type": "weapon",
-    "img": "systems/flail/icons/items/throw-knives.png",
+    "img": "systems/flail/icons/items/throwing_knives.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2889,7 +2889,7 @@ export const COMMON_ITEMS = [
     "_id": "m340d3V7Y7VM1kb8",
     "name": "Thundering Drum of Reckoning",
     "type": "instrument",
-    "img": "systems/flail/icons/items/thunder-drum.png",
+    "img": "systems/flail/icons/items/thundering_drum.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2929,7 +2929,7 @@ export const COMMON_ITEMS = [
     "_id": "c5dRdltEyPlioUo8",
     "name": "Tin Whistle of Spontaneous Combustion",
     "type": "instrument",
-    "img": "systems/flail/icons/items/tin-whistle.png",
+    "img": "systems/flail/icons/items/whistle_combustion.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2969,7 +2969,7 @@ export const COMMON_ITEMS = [
     "_id": "4ArgdbmowrcJZWdx",
     "name": "Torches",
     "type": "gear",
-    "img": "systems/flail/icons/items/torches.png",
+    "img": "systems/flail/icons/items/torches.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -2997,7 +2997,7 @@ export const COMMON_ITEMS = [
     "_id": "sZi9yZgLUyiWHp3W",
     "name": "Tulwar",
     "type": "weapon",
-    "img": "systems/flail/icons/items/tulwar.png",
+    "img": "systems/flail/icons/items/tulwar.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -3034,7 +3034,7 @@ export const COMMON_ITEMS = [
     "_id": "dg4aN6GxLv2diq3X",
     "name": "Wand",
     "type": "weapon",
-    "img": "systems/flail/icons/items/wand.png",
+    "img": "systems/flail/icons/items/wand.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -3071,7 +3071,7 @@ export const COMMON_ITEMS = [
     "_id": "xKuedFpji9sxR67q",
     "name": "Warhammer",
     "type": "weapon",
-    "img": "systems/flail/icons/items/warhammer.png",
+    "img": "systems/flail/icons/items/warhammer.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,
@@ -3108,7 +3108,7 @@ export const COMMON_ITEMS = [
     "_id": "aPSD0e8QR9A2G14V",
     "name": "Whip",
     "type": "weapon",
-    "img": "systems/flail/icons/items/whip.png",
+    "img": "systems/flail/icons/items/whip.webp",
     "system": {
       "location": "unequipped",
       "slotIndex": 0,

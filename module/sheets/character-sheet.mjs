@@ -49,7 +49,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       castDarkSpell:   FlailCharacterSheet.#onCastDarkSpell,
       castWizardSpell: FlailCharacterSheet.#onCastWizardSpell,
       useDamageGadget: FlailCharacterSheet.#onUseDamageGadget,
-      editPortrait:    FlailCharacterSheet.#onEditPortrait,
+      editPortrait:    FlailCharacterSheet.#onEditPortrait,   // kept for backward compat with any external triggers
       toggleJoatUsed:  FlailCharacterSheet.#onToggleJoatUsed,
       castJoatSpell:   FlailCharacterSheet.#onCastJoatSpell,
       castPrayer:      FlailCharacterSheet.#onCastPrayer,

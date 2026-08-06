@@ -34,6 +34,8 @@ Updates come through automatically on Foundry's next startup after a new release
 
 **FLAIL!** is © Andre Novoa. This is an unofficial community implementation. Please buy the rulebook to support the author.
 
+Item and unique item artwork © André Novoa, used with permission.
+
 Foundry VTT implementation by Reuben Taylor. Contributions welcome — open an issue or pull request.
 
 ## Development

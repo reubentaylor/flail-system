@@ -13,8 +13,16 @@ import { FLAIL_UNIQUE_ITEMS } from "./unique-items-data.mjs";
  *       PDF (white-background pages), extracted with alpha masks
  *       and composited onto solid white. All 99 items now carry
  *       distinctive artwork at systems/flail/icons/unique-items/.
+ *   4 — Andre art normalised: source PNGs composited onto a solid
+ *       white background (matches the printed rulebook's page look),
+ *       resized from 1181×1181 to 256×256, re-saved as WEBP at
+ *       quality 85 (~½ the size of the equivalent PNGs). Version
+ *       bumped from 3 → 4 so worlds that already synced the PNG
+ *       paths from an earlier build re-sync to the new .webp paths.
+ *   5 — added Andre's art for Crimson Moon (Crimson_crescent.png).
+ *       Item is the crescent-shaped Legendary Blade on p.104.
  */
-export const FLAIL_UNIQUE_ITEMS_VERSION = 2;
+export const FLAIL_UNIQUE_ITEMS_VERSION = 5;
 
 const SETTING_KEY = "uniqueItemsVersion";
 const PACK_NAME   = "flail-unique-items";

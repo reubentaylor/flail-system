@@ -393,6 +393,9 @@
       "New": "New {type}",
       "ChangeImage": "Click to change the item image"
     },
+    "Character": {
+      "ChangePortrait": "Click to change portrait — Tokenizer opens if the module is active."
+    },
     "Action": {
       "Edit":            "Edit",
       "Delete":          "Delete",
