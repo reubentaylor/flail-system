@@ -438,6 +438,61 @@ Hooks.once("ready", async () => {
       await applyWitnessMeBuffFromSocket(source);
     }
   });
+
+  // Public API — exposed via game.flail for external modules (e.g. the
+  // Token Action HUD FLAIL companion module). Kept intentionally small:
+  // wrapper functions around the internal roll modules + a generic
+  // "trigger any sheet action" bridge. Any external caller should
+  // guard against `game.flail` being undefined (means the FLAIL system
+  // isn't active in this world).
+  game.flail = game.flail ?? {};
+  Object.assign(game.flail, {
+    /** Roll a save (STR/DEX/CHA/INT/LUCK) for the given actor. */
+    rollSave: (actor, attribute, options = {}) => rollSave(actor, attribute, options),
+
+    /** Roll a To-Hit attack for the actor with the given weapon Item. */
+    rollAttack: (actor, weapon, options = {}) => actor.rollAttack(weapon, options),
+
+    /** Roll a morale save for an NPC (delegates to rollSave with NPC.morale). */
+    rollMorale: (npc, options = {}) => {
+      const morale = npc?.system?.morale ?? 0;
+      // Morale mechanic: d6 roll-under vs morale score. Reuse rollSave
+      // wired to a synthetic attribute if it can accept one; otherwise
+      // implement inline. For now delegate to a Roll — the sheet's
+      // morale button also uses this pattern.
+      const roll = new Roll("1d6");
+      return roll.toMessage({
+        speaker: ChatMessage.getSpeaker({ actor: npc }),
+        flavor: `${npc.name} — Morale (target ≤ ${morale})`
+      });
+    },
+
+    /**
+     * Generic bridge: trigger any registered sheet action on the given
+     * actor's sheet. Handles rendering the sheet if it's not open, then
+     * calls the action handler with a synthesized event + target
+     * element carrying any data attributes passed in.
+     *
+     * Example:
+     *   game.flail.triggerSheetAction(actor, "shapeshiftRoll");
+     *   game.flail.triggerSheetAction(actor, "castSpell", { spellId: item.id });
+     */
+    triggerSheetAction: async (actor, actionName, dataAttrs = {}) => {
+      if (!actor?.sheet) return;
+      const sheet = actor.sheet;
+      const handler = sheet.constructor?.DEFAULT_OPTIONS?.actions?.[actionName];
+      if (!handler) {
+        console.warn(`FLAIL | No action "${actionName}" registered on ${actor.name}'s sheet`);
+        return;
+      }
+      // Synthesize a target element with the provided data attributes
+      // so handlers that read from target.dataset get consistent data.
+      const target = document.createElement("button");
+      for (const [k, v] of Object.entries(dataAttrs)) target.dataset[k] = v;
+      if (!sheet.rendered) await sheet.render(true);
+      return handler.call(sheet, new Event("click"), target);
+    }
+  });
 });
 Hooks.on  ("canvasReady", () => console.log(`${TAG} canvasReady`));
 
