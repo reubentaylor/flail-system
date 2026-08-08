@@ -75,6 +75,7 @@
       "GadgetBelt":      "Gadget Belt",
       "JackOfAllTrades": "Jack of All Trades",
       "ThievingTalents": "Thieving Talents",
+      "ClassActions":    "Class Actions",
       "Notes":           "Notes & Biography"
     },
     "Field": {
@@ -746,7 +747,8 @@
     },
     "Notify": {
       "SelectTokens": "Target or select at least one token first.",
-      "NoGmForProxy": "Cannot apply to {name}: you don't own this actor and no GM is online to apply on your behalf.",
+      "ApplyNeedsOwner": "Cannot apply to {name}: only {owner} can apply this. Ask them to click the button.",
+      "NoOwnerFound": "the GM",
       "ZoneRejectsType": "{zone} only accepts {type} items.",
       "ZoneRejectsMissingFlag": "{zone} slots only accept items flagged as an adornment. Tick the Adornment checkbox on the {item} item sheet first.",
       "MultiSlotNoRoom":        "{item} takes more than one slot — not enough room at that position in the {zone} column.",
@@ -859,6 +861,7 @@
       }
     },
     "BoneWhisperer": {
+      "CastButtonHint": "Cast this dark spell — make an INT save.",
       "AnimateDead": {
         "Label":   "Animate Dead",
         "Hint":    "Spend spirit equal to the target level. Make an INT save to revive the target. On success, the target is raised as an undead ally for a number of watches equal to your level. On a fail, the target is raised, but acts on its own accord.",
@@ -1059,6 +1062,8 @@
       }
     },
     "Bard": {
+      "PlayInstrumentHint": "Play — roll the instrument's d10 effect table.",
+      "UseJoatHint":        "Use this JOAT pick.",
       "JOAT": {
         "SlotHint":    "picks (one per level)",
         "EmptyHint":   "No picks yet.",
@@ -1079,6 +1084,9 @@
       "CancelButton":       "Cancel",
       "RevertButton":       "Revert to human",
       "RollRoundButton":    "Roll Beast Round",
+      "StartButtonHint":    "Transform into a beast from your dominant kingdom.",
+      "RollButtonHint":     "Roll 1d6 for this beast round.",
+      "RevertButtonHint":   "Revert from beast form back to human.",
       "RoundLabel":         "Round",
       "GiftsDisabled":      "Primal Gifts are disabled while transformed.",
       "CardTitle":          "Shapeshift!",

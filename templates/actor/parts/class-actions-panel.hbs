@@ -1,0 +1,224 @@
+{{!--
+  Class Actions side panel — a compact strip on the Abilities tab
+  surfacing the key class-specific clickable elements so players
+  don't have to switch to the Class tab in the middle of combat.
+
+  Each button dispatches to the same `data-action` handler the
+  full Class tab uses; no new backend code needed. This is purely
+  a visual duplication of the most-used actions per class.
+
+  Renders nothing for a class that has no notable Abilities-tab
+  actions (or an unset class).
+--}}
+{{#if actor.system.class}}
+<div class="tabbed-card class-actions-card">
+  <header class="tab-label">{{localize "FLAIL.Section.ClassActions"}}</header>
+  <div class="class-actions-body">
+
+    {{!-- WARRIOR — Weathered toggle + read-only Combat Talents ------- --}}
+    {{#if isWarrior}}
+      <button type="button"
+              class="ca-btn ca-weathered ca-weathered-{{#if system.weatheredAvailable}}available{{else}}unavailable{{/if}}"
+              data-action="toggleWeathered"
+              title="{{localize 'FLAIL.Warrior.WeatheredButton'}}"
+              {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-{{#if system.weatheredAvailable}}check-circle{{else}}times-circle{{/if}} ca-icon"></i>
+        <span class="ca-name">{{localize "FLAIL.Warrior.WeatheredButton"}}</span>
+      </button>
+      {{#each combatTalents as |slot|}}
+        {{#if slot.currentDisplay}}
+        <div class="ca-info ca-talent-info"
+             title="{{slot.currentDisplay.desc}}">
+          <span class="ca-tier-badge ca-tier-{{slot.currentDisplay.tier}}">{{slot.currentDisplay.tier}}</span>
+          <span class="ca-name">{{slot.currentDisplay.tree}}</span>
+        </div>
+        {{/if}}
+      {{/each}}
+    {{/if}}
+
+    {{!-- WIZARD — Cast each known spell ------------------------------ --}}
+    {{#if isWizard}}
+      {{#each knownWizardSpells as |s|}}
+      <button type="button"
+              class="ca-btn ca-spell wizard-spell-{{s.tradition}}"
+              data-action="castWizardSpell"
+              data-item-id="{{s.id}}"
+              title="{{localize 'FLAIL.Wizard.CastButtonHint'}}"
+              {{#unless ../editable}}disabled{{/unless}}>
+        <img class="ca-img" src="{{s.img}}" alt="" />
+        <span class="ca-name">{{s.name}}</span>
+        <span class="ca-badge">{{s.suggestedDice}}d</span>
+      </button>
+      {{/each}}
+      {{#unless knownWizardSpells.length}}
+      <p class="ca-empty">{{localize "FLAIL.Wizard.SpellbookEmptyHint"}}</p>
+      {{/unless}}
+    {{/if}}
+
+    {{!-- BONE WHISPERER — Animate Dead + Dark Spells ----------------- --}}
+    {{#if isBoneWhisperer}}
+      <button type="button"
+              class="ca-btn ca-summon"
+              data-action="summonPuppet"
+              title="{{localize 'FLAIL.BoneWhisperer.AnimateDead.Tooltip'}}"
+              {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-skull ca-icon"></i>
+        <span class="ca-name">{{localize "FLAIL.BoneWhisperer.AnimateDead.Label"}}</span>
+      </button>
+      {{#each knownDarkSpells as |s|}}
+      <button type="button"
+              class="ca-btn ca-spell dark-spell"
+              data-action="castDarkSpell"
+              data-item-id="{{s.id}}"
+              title="{{localize 'FLAIL.BoneWhisperer.CastButtonHint'}}"
+              {{#unless ../editable}}disabled{{/unless}}>
+        <img class="ca-img" src="{{s.img}}" alt="" />
+        <span class="ca-name">{{s.name}}</span>
+        <span class="ca-badge">{{s.suggestedDice}}d</span>
+      </button>
+      {{/each}}
+    {{/if}}
+
+    {{!-- CLERIC — Prayers + Lay on Hands ------------------------------ --}}
+    {{#if isCleric}}
+      <button type="button"
+              class="ca-btn ca-lay-on-hands"
+              data-action="rollLayOnHands"
+              title="{{localize 'FLAIL.LayOnHands.Tooltip'}}"
+              {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-hand-holding-medical ca-icon"></i>
+        <span class="ca-name">{{localize "FLAIL.LayOnHands.Title"}}</span>
+      </button>
+      {{#each knownDivinePrayers as |p|}}
+      <button type="button"
+              class="ca-btn ca-prayer"
+              data-action="castPrayer"
+              data-item-id="{{p.id}}"
+              title="{{localize 'FLAIL.Prayer.CastTooltip'}}"
+              {{#unless ../editable}}disabled{{/unless}}>
+        <img class="ca-img" src="{{p.img}}" alt="" />
+        <span class="ca-name">{{p.name}}</span>
+      </button>
+      {{/each}}
+    {{/if}}
+
+    {{!-- CUTTHROAT — Guild actions + Talents ---------------------------- --}}
+    {{#if isCutthroat}}
+      {{#if currentGuild}}
+        {{#each currentGuild.specialActions as |a|}}
+        <button type="button"
+                class="ca-btn ca-guild-action"
+                data-action="spendGuildAction"
+                data-action-key="{{a.key}}"
+                title="Spend a guild token to trigger this action"
+                {{#unless ../editable}}disabled{{/unless}}>
+          <i class="fas fa-fingerprint ca-icon"></i>
+          <span class="ca-name">{{a.name}}</span>
+        </button>
+        {{/each}}
+      {{/if}}
+      {{#each selectedTalents as |t|}}
+      <button type="button"
+              class="ca-btn ca-talent"
+              data-action="rollTalent"
+              data-item-id="{{t.id}}"
+              title="Roll this talent"
+              {{#unless ../editable}}disabled{{/unless}}>
+        <img class="ca-img" src="{{t.img}}" alt="" />
+        <span class="ca-name">{{t.name}}</span>
+      </button>
+      {{/each}}
+    {{/if}}
+
+    {{!-- DRUID — Shapeshift + Primal Gifts ------------------------------ --}}
+    {{#if isDruid}}
+      {{#if shapeshift.active}}
+        <button type="button"
+                class="ca-btn ca-shapeshift-roll"
+                data-action="shapeshiftRoll"
+                title="{{localize 'FLAIL.Shapeshift.RollButtonHint'}}"
+                {{#unless editable}}disabled{{/unless}}>
+          <i class="fas fa-paw ca-icon"></i>
+          <span class="ca-name">{{localize "FLAIL.Shapeshift.RollRoundButton"}}</span>
+        </button>
+        <button type="button"
+                class="ca-btn ca-shapeshift-revert"
+                data-action="shapeshiftRevert"
+                title="{{localize 'FLAIL.Shapeshift.RevertButtonHint'}}"
+                {{#unless editable}}disabled{{/unless}}>
+          <i class="fas fa-user ca-icon"></i>
+          <span class="ca-name">{{localize "FLAIL.Shapeshift.RevertButton"}}</span>
+        </button>
+      {{else}}
+        <button type="button"
+                class="ca-btn ca-shapeshift-start"
+                data-action="shapeshiftStart"
+                title="{{localize 'FLAIL.Shapeshift.StartButtonHint'}}"
+                {{#unless editable}}disabled{{/unless}}>
+          <i class="fas fa-paw ca-icon"></i>
+          <span class="ca-name">{{localize "FLAIL.Shapeshift.StartButton"}}</span>
+        </button>
+      {{/if}}
+      {{#each knownPrimalGiftsByKingdom as |kingdom|}}
+        {{#each kingdom.gifts as |gift|}}
+        <button type="button"
+                class="ca-btn ca-gift"
+                data-action="activateGift"
+                data-item-id="{{gift.id}}"
+                title="Activate this primal gift"
+                {{#unless ../../editable}}disabled{{/unless}}>
+          <img class="ca-img" src="{{gift.img}}" alt="" />
+          <span class="ca-name">{{gift.name}}</span>
+        </button>
+        {{/each}}
+      {{/each}}
+    {{/if}}
+
+    {{!-- TINKERER — Gadgets --------------------------------------------- --}}
+    {{#if isTinkerer}}
+      {{#each knownGadgetsByCategory as |category|}}
+        {{#each category.gadgets as |gadget|}}
+        <button type="button"
+                class="ca-btn ca-gadget"
+                data-action="useDamageGadget"
+                data-item-id="{{gadget.id}}"
+                title="Use this gadget"
+                {{#unless ../../editable}}disabled{{/unless}}>
+          <img class="ca-img" src="{{gadget.img}}" alt="" />
+          <span class="ca-name">{{gadget.name}}</span>
+        </button>
+        {{/each}}
+      {{/each}}
+    {{/if}}
+
+    {{!-- BARD — Instruments + JOAT --------------------------------------- --}}
+    {{#if isBard}}
+      {{#each inventory.instruments.slots as |slot|}}
+        {{#if slot.item}}
+        <button type="button"
+                class="ca-btn ca-instrument"
+                data-action="rollInstrument"
+                data-item-id="{{slot.item.id}}"
+                title="{{localize 'FLAIL.Bard.PlayInstrumentHint'}}"
+                {{#unless ../editable}}disabled{{/unless}}>
+          <img class="ca-img" src="{{slot.item.img}}" alt="" />
+          <span class="ca-name">{{slot.item.name}}</span>
+        </button>
+        {{/if}}
+      {{/each}}
+      {{#each jackOfAllTradesItems as |j|}}
+      <button type="button"
+              class="ca-btn ca-joat ca-joat-{{j.type}}"
+              data-action="{{#if (flail-eq j.type 'spell')}}castJoatSpell{{else if (flail-eq j.type 'gadget')}}useDamageGadget{{else}}toggleJoatUsed{{/if}}"
+              data-item-id="{{j.id}}"
+              title="{{localize 'FLAIL.Bard.UseJoatHint'}}"
+              {{#unless ../editable}}disabled{{/unless}}>
+        <img class="ca-img" src="{{j.img}}" alt="" />
+        <span class="ca-name">{{j.name}}</span>
+      </button>
+      {{/each}}
+    {{/if}}
+
+  </div>
+</div>
+{{/if}}

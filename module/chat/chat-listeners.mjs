@@ -126,25 +126,31 @@ function resolveApplyTokens() {
  * the active GM's client will pick up and process. If no GM is
  * online, warn the user — the update can't be applied.
  */
+/**
+ * Owner-only application, with a helpful message if the clicker isn't
+ * permitted to modify the target.
+ *
+ * Simple pattern: whoever owns the target actor (its player or the GM)
+ * has permission to update it, so they click Apply. If someone else
+ * (e.g. the healer casting from a different sheet) clicks, they get a
+ * notification asking the right person to click instead. Avoids the
+ * socket-proxy complexity — Foundry's socket routing for custom events
+ * has proven unreliable across versions.
+ */
 async function applyWithPermissionFallback(actor, type, amount) {
-  if (actor.isOwner) {
-    console.log(`FLAIL | ${type} direct on ${actor.name} (owner path)`);
-    if (type === "applyDamage")   return actor.applyDamage?.(amount);
-    if (type === "applyHealing")  return actor.heal?.(amount);
-    return;
-  }
-  if (!game.users.activeGM) {
+  if (!actor.isOwner) {
+    // Find who owns the actor so we can name them in the notification.
+    const owners = game.users.filter(u => actor.testUserPermission(u, "OWNER"));
+    const ownerName = owners.length > 0
+      ? owners.map(u => u.name).join(", ")
+      : game.i18n.localize("FLAIL.Notify.NoOwnerFound");
     ui.notifications.warn(
-      game.i18n.format("FLAIL.Notify.NoGmForProxy", { name: actor.name })
+      game.i18n.format("FLAIL.Notify.ApplyNeedsOwner", { name: actor.name, owner: ownerName })
     );
     return;
   }
-  console.log(`FLAIL | ${type} emitting socket for ${actor.name} (uuid=${actor.uuid}, amount=${amount})`);
-  game.socket.emit("flail-gm-proxy", {
-    type,
-    actorUuid: actor.uuid,
-    amount
-  });
+  if (type === "applyDamage")   return actor.applyDamage?.(amount);
+  if (type === "applyHealing")  return actor.heal?.(amount);
 }
 
 async function markWeaponUsage(flags) {

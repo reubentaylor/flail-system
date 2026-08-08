@@ -311,6 +311,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/actor/parts/attributes.hbs",
         "systems/flail/templates/actor/parts/vitals.hbs",
         "systems/flail/templates/actor/parts/quick-attacks.hbs",
+        "systems/flail/templates/actor/parts/class-actions-panel.hbs",
         "systems/flail/templates/actor/parts/main-row.hbs",
         "systems/flail/templates/actor/parts/inventory-slot.hbs",
         "systems/flail/templates/actor/parts/legend.hbs",
@@ -510,61 +511,6 @@ Hooks.once("ready", async () => {
       // would visibly pop the sheet open on TAH clicks — undesirable.
       // Any handler that DOES need the DOM should render itself.
       return handler.call(sheet, event, target);
-    }
-  });
-
-  // -------------------------------------------------------------
-  //  GM proxy socket — enables non-owning players to trigger
-  //  heal/damage on actors they don't have write permission on.
-  //
-  //  Pattern: player-side handlers (in chat-listeners.mjs) check
-  //  actor.isOwner. If owner → apply directly. If not → emit this
-  //  socket event, and the connected active GM's client processes
-  //  it with full permission. Needs a GM online.
-  //
-  //  The handler runs on every connected client, but only the
-  //  active GM (game.users.activeGM) processes the request. This
-  //  avoids double-application when multiple GMs are online.
-  // -------------------------------------------------------------
-  // -------------------------------------------------------------
-  //  GM proxy socket — enables non-owning players to trigger
-  //  heal/damage on actors they don't have write permission on.
-  //
-  //  Pattern: player-side handlers (in chat-listeners.mjs) check
-  //  actor.isOwner. If owner → apply directly. If not → emit this
-  //  socket event, and the connected active GM's client processes
-  //  it with full permission. Needs a GM online.
-  //
-  //  Event name: "flail-gm-proxy" (plain custom, not scoped to
-  //  system/module namespace). Some Foundry versions filter
-  //  "system.*" events; using a plain event name avoids that.
-  //
-  //  The handler runs on every connected client, but only the
-  //  active GM (game.users.activeGM) processes the request. This
-  //  avoids double-application when multiple GMs are online.
-  // -------------------------------------------------------------
-  game.socket.on("flail-gm-proxy", async (payload) => {
-    console.log(`${TAG} socket received:`, payload,
-      "| am I active GM?", game.user.id === game.users.activeGM?.id);
-
-    if (!payload) return;
-    if (game.user.id !== game.users.activeGM?.id) return;
-
-    try {
-      const actor = await fromUuid(payload.actorUuid);
-      if (!actor) {
-        console.warn(`${TAG} socket proxy: actor not found for ${payload.actorUuid}`);
-        return;
-      }
-      if (payload.type === "applyHealing" && typeof actor.heal === "function") {
-        await actor.heal(Number(payload.amount) || 0);
-        console.log(`${TAG} socket proxy: healed ${actor.name} for ${payload.amount}`);
-      } else if (payload.type === "applyDamage" && typeof actor.applyDamage === "function") {
-        await actor.applyDamage(Number(payload.amount) || 0);
-        console.log(`${TAG} socket proxy: damaged ${actor.name} for ${payload.amount}`);
-      }
-    } catch (err) {
-      console.error(`${TAG} Socket proxy failed`, err);
     }
   });
 });
