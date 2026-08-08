@@ -12,8 +12,19 @@ import { COMMON_ITEMS } from "./common-items-data.mjs";
  *       (Crimson Coin, Eye Ring, Hand Brooch, Tentacle Clasp) so the
  *       sheet's sigil presence check picks them up automatically.
  *   1 — initial bundle.
+ *   12 — Andre art normalised: composited onto white, resized to
+ *       256×256, re-saved as WEBP at quality 85. Version bumped
+ *       from 11 → 12 so worlds that already synced the previous
+ *       PNG paths re-sync to the new .webp paths.
+ *   13 — added Andre's art for Long Crumhorn of Pandemonium and
+ *       Thundering Drum of Reckoning (previously matched to Andre's
+ *       instrument files by name but rejected by the first pass).
+ *   14 — added Andre's art for Tin Whistle of Spontaneous Combustion
+ *       (Whistle_combustion.png), The Oak Leaf (Oakleaf_medallion.png),
+ *       and Mutton Tunic (Tunic_crest.png). Same white-bg + 256px +
+ *       WEBP processing pipeline.
  */
-export const COMMON_ITEMS_VERSION = 10;
+export const COMMON_ITEMS_VERSION = 14;
 
 const VERSION_SETTING = "commonItemsVersion";
 

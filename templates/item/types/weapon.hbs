@@ -36,11 +36,16 @@
     <legend>{{localize "FLAIL.Field.Range"}}</legend>
     {{#each config.weaponRange as |r key|}}
     <label class="checkbox">
-      <input type="checkbox" name="system.range" value="{{key}}" {{#if (flail-includes ../system.range key)}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}} />
+      <input type="checkbox" data-range="{{key}}" {{#if (flail-includes ../system.range key)}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}} />
       {{localize r.label}}
     </label>
     {{/each}}
   </fieldset>
+</section>
+
+<section class="card">
+  <h3>{{localize "FLAIL.Field.SpecialFeature"}}</h3>
+  {{editor system.specialFeature target="system.specialFeature" button=true editable=editable engine="prosemirror"}}
 </section>
 
 <section class="card">

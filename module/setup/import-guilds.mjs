@@ -10,8 +10,10 @@ import { GUILDS } from "./guilds-data.mjs";
  *   2 — guild icons switched from the generic aura placeholder to
  *       the per-guild sigil icons in icons/items/ (crimson-coin,
  *       eye-ring, hand-brooch, tentacle-clasp).
+ *   3 — FLAIL v1 rulebook (p.26): Necrotic Blade damage bumped from
+ *       d6 to 2d6.
  */
-export const GUILDS_VERSION = 2;
+export const GUILDS_VERSION = 3;
 
 const VERSION_SETTING = "guildsVersion";
 const PACK_NAME = "flail-guilds";

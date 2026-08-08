@@ -199,7 +199,8 @@ export class FlailActor extends Actor {
       label: weapon.name,
       flavor: options.flavor,
       advantage: netAdvantage,
-      slimySkinTarget
+      slimySkinTarget,
+      specialFeature: weapon.system.specialFeature ?? ""
     });
 
     // Consume any "next attack" buff effects regardless of hit/miss — the

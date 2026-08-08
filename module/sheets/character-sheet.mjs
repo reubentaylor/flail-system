@@ -49,7 +49,8 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       castDarkSpell:   FlailCharacterSheet.#onCastDarkSpell,
       castWizardSpell: FlailCharacterSheet.#onCastWizardSpell,
       useDamageGadget: FlailCharacterSheet.#onUseDamageGadget,
-      editPortrait:    FlailCharacterSheet.#onEditPortrait,
+      editPortrait:    FlailCharacterSheet.#onEditImage,   // kept for backward compat with any external triggers
+      editImage:       FlailCharacterSheet.#onEditImage,
       toggleJoatUsed:  FlailCharacterSheet.#onToggleJoatUsed,
       castJoatSpell:   FlailCharacterSheet.#onCastJoatSpell,
       castPrayer:      FlailCharacterSheet.#onCastPrayer,
@@ -68,6 +69,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       switchTalentTab:   FlailCharacterSheet.#onSwitchTalentTab,
       activateGift:      FlailCharacterSheet.#onActivateGift,
       shapeshiftStart:   FlailCharacterSheet.#onShapeshiftStart,
+      shapeshiftRoll:    FlailCharacterSheet.#onShapeshiftRoll,
       shapeshiftRevert:  FlailCharacterSheet.#onShapeshiftRevert,
       repairItem:        FlailCharacterSheet.#onRepairItem,
       quickCraft:        FlailCharacterSheet.#onQuickCraft,
@@ -98,7 +100,8 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     tabsNav:        { template: "systems/flail/templates/actor/parts/tabs-nav.hbs" },
     abilitiesPanel: { template: "systems/flail/templates/actor/parts/abilities-panel.hbs" },
     inventoryPanel: { template: "systems/flail/templates/actor/parts/inventory-panel.hbs" },
-    classPanel:     { template: "systems/flail/templates/actor/parts/class-panel.hbs" }
+    classPanel:     { template: "systems/flail/templates/actor/parts/class-panel.hbs" },
+    notesPanel:     { template: "systems/flail/templates/actor/parts/notes-panel.hbs" }
   };
 
   /* -------------------------------------------- */
@@ -150,8 +153,17 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       selected: b.key === bgKey
     }));
     const currentBg = bgList.find(b => b.key === bgKey);
-    ctx.currentBackgroundLabel = currentBg?.label ?? "";
-    ctx.currentBackgroundPerk = currentBg?.perk ?? "";
+    ctx.isCustomBackground = bgKey === "custom";
+    if (ctx.isCustomBackground) {
+      // Custom background — read the actor's own label + perk. Blank
+      // strings are fine (the sheet renders the editor for the player
+      // to fill in).
+      ctx.currentBackgroundLabel = sys.customBackground?.label ?? "";
+      ctx.currentBackgroundPerk  = sys.customBackground?.perk ?? "";
+    } else {
+      ctx.currentBackgroundLabel = currentBg?.label ?? "";
+      ctx.currentBackgroundPerk  = currentBg?.perk ?? "";
+    }
 
     // Attributes — list form for handlebars iteration.
     ctx.attributeList = FLAIL.attributeKeys.map(key => {
@@ -281,7 +293,8 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     ctx.tabs = [
       { id: "abilities", label: "FLAIL.Tab.Abilities", active: this._activeTab === "abilities" },
       { id: "inventory", label: "FLAIL.Tab.Inventory", active: this._activeTab === "inventory" },
-      { id: "class",     label: "FLAIL.Tab.Class",     active: this._activeTab === "class"     }
+      { id: "class",     label: "FLAIL.Tab.Class",     active: this._activeTab === "class"     },
+      { id: "notes",     label: "FLAIL.Tab.Notes",     active: this._activeTab === "notes"     }
     ];
 
     // Resource label (depends on class).
@@ -668,15 +681,39 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         const talentLabelMap = Object.fromEntries(
           FLAIL.cutthroatTalents.map(t => [t.key, game.i18n.localize(t.label)])
         );
+
+        // Special actions — prefer the item-data snapshots (from a
+        // GM-authored guild edited via drag-and-drop). Fall back to
+        // the legacy `specialActions` structured array (bundled
+        // compendium guilds). Normalise to a shared shape the class
+        // panel template can iterate over: { key, name, description }.
+        const actionSnaps = guildItem.system?.actionItems ?? [];
+        let specialActions;
+        if (actionSnaps.length > 0) {
+          specialActions = actionSnaps.map((snap, idx) => ({
+            key:         `item_${idx}`,
+            name:        snap?.name ?? "",
+            description: snap?.system?.description ?? ""
+          }));
+        } else {
+          specialActions = guildItem.system?.specialActions ?? [];
+        }
+
+        // Starting talents — if item snapshots are populated, list
+        // their names; else map legacy keys to labels.
+        const talentSnaps = guildItem.system?.talentItems ?? [];
+        const startingTalents = talentSnaps.length > 0
+          ? talentSnaps.map(s => s?.name ?? "")
+          : (guildItem.system?.startingTalents ?? []).map(k => talentLabelMap[k] ?? k);
+
         ctx.currentGuild = {
           id:    guildItem.id,
           name:  guildItem.name,
           img:   guildItem.img,
           blurb: guildItem.system?.blurb ?? "",
           sigil: guildItem.system?.sigil ?? "",
-          startingTalents: (guildItem.system?.startingTalents ?? [])
-            .map(k => talentLabelMap[k] ?? k),
-          specialActions: guildItem.system?.specialActions ?? []
+          startingTalents,
+          specialActions
         };
       } else {
         ctx.currentGuild = null;
@@ -769,10 +806,16 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       kingdomLabel: shift.kingdom ? (FLAIL.druidPrimalGifts[shift.kingdom]?.label ?? "") : "",
       beast:       shift.kingdom ? FLAIL.druidBeastForms[shift.kingdom] : null,
       beastForm:   shift.beastForm ?? "",
+      // Old fields — surfaced for backward compat only.
       diceRolled:  shift.diceRolled ?? 0,
       onesCount:   shift.onesCount ?? 0,
       sixesCount:  shift.sixesCount ?? 0,
       rollResults: shift.rollResults ?? [],
+      // New v1 mechanic fields.
+      thBonus:     shift.thBonus ?? 0,
+      dmgBonus:    shift.dmgBonus ?? 0,
+      roundNumber: shift.roundNumber ?? 0,
+      rollHistory: shift.rollHistory ?? [],
       dominant
     };
 
@@ -864,7 +907,14 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       };
     });
     ctx.jackOfAllTradesCount = ctx.jackOfAllTradesItems.length;
-    ctx.jackOfAllTradesLevel = level;   // slot ceiling per level rule
+    // FLAIL v1 rulebook (p.106) — a Bard wearing a 3-item set gains an
+    // extra JOAT pick, "as per Jack of All Trades." Reflected here by
+    // bumping the visible ceiling by 1 when the set is active. The
+    // drop handler doesn't hard-enforce the ceiling, so this bonus
+    // materialises purely as a "you have room for one more" cue.
+    const bardSetBonus = this._getBardSetBonus();
+    ctx.bardSetBonus = bardSetBonus;
+    ctx.jackOfAllTradesLevel = level + (bardSetBonus ? 1 : 0);
 
     return ctx;
   }
@@ -929,6 +979,60 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     // panel without a full re-render.
     root.dataset.activeTab = this._activeTab;
 
+    // Scroll enforcement — set inline styles on the actual DOM elements
+    // rather than relying on CSS. Foundry's HandlebarsApplicationMixin +
+    // ApplicationV2 sometimes structures the sheet's DOM in ways that CSS
+    // rules targeting `.window-content > form` miss (extra wrappers, or
+    // parts rendered without a form wrapper at all). By walking the DOM
+    // here we can apply the flex/overflow chain to whatever elements are
+    // actually present, and the active tab-panel always ends up as a
+    // properly-bounded scroll region.
+    const windowContent = root.querySelector(".window-content");
+    if (windowContent) {
+      windowContent.style.overflow = "hidden";
+      windowContent.style.display = "flex";
+      windowContent.style.flexDirection = "column";
+      windowContent.style.minHeight = "0";
+    }
+    // The parts might be wrapped in a <form>, or might be direct children
+    // of window-content. Walk down until we find a container that has the
+    // tab-panels as children — that's the flex parent we need to constrain.
+    let flexParent = root.querySelector("form") ?? windowContent;
+    if (flexParent) {
+      flexParent.style.display = "flex";
+      flexParent.style.flexDirection = "column";
+      flexParent.style.height = "100%";
+      flexParent.style.minHeight = "0";
+      flexParent.style.overflow = "hidden";
+    }
+    // Every tab-panel is a potential scroll region. Active one gets
+    // flex:1 (fills available space) + overflow-y:auto (scrolls when
+    // content exceeds the space). Inactive panels stay display:none via
+    // CSS. Any wrappers between form and tab-panel get flex passthroughs.
+    const panels = root.querySelectorAll(".tab-panel");
+    for (const panel of panels) {
+      if (panel.dataset.tab === this._activeTab) {
+        panel.style.flex = "1 1 auto";
+        panel.style.minHeight = "0";
+        panel.style.overflowY = "auto";
+        panel.style.overflowX = "hidden";
+        // Walk up to the flex parent, marking any wrapper divs
+        // between it and the panel as flex passthroughs so height
+        // constraints propagate cleanly.
+        let node = panel.parentElement;
+        while (node && node !== flexParent && node !== windowContent) {
+          node.style.display = "flex";
+          node.style.flexDirection = "column";
+          node.style.flex = "1 1 auto";
+          node.style.minHeight = "0";
+          node = node.parentElement;
+        }
+      } else {
+        panel.style.flex = "";
+        panel.style.overflowY = "";
+      }
+    }
+
     // Same mirror trick for the Cutthroat talents card's two-tab nav.
     const talentsCard = root.querySelector(".talents-card");
     if (talentsCard) talentsCard.dataset.activeTalentTab = this._activeTalentTab;
@@ -936,6 +1040,28 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     root.querySelectorAll("[draggable=true]").forEach(el => {
       el.addEventListener("dragstart", this.#onDragStart.bind(this));
     });
+
+    // Editor pencil click — Foundry v13's HandlebarsApplicationMixin
+    // does NOT auto-wire the {{editor}} helper's edit button for
+    // HTMLField editors on ApplicationV2 sheets, so we activate the
+    // ProseMirror editor ourselves. Fields the {{editor}} helper
+    // renders share the same DOM shape:
+    //   <div class="editor prosemirror">
+    //     <a class="editor-edit"><i class="fa-edit"></i></a>
+    //     <div class="editor-content" data-edit="system.<field>">…</div>
+    //   </div>
+    // On pencil click we read the field path, look up the current
+    // value, and create a ProseMirror editor in place. The editor's
+    // Save button both writes the value back to the actor and
+    // destroys the editor; a follow-up re-render restores view mode.
+    root.querySelectorAll(".editor a.editor-edit, .editor button.editor-edit").forEach(btn => {
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        await this.#activateEditor(btn);
+      });
+    });
+
     // Only attach drop listeners to slots, NOT to the zone wrapper too —
     // the zone is the slot's parent, and a single drop on a slot was firing
     // the handler twice (once on the slot, once on the bubbled-up zone),
@@ -1008,6 +1134,78 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       el.addEventListener("dragover", this.#onSpellListDragOver.bind(this));
       el.addEventListener("drop", this.#onGuildDrop.bind(this));
     });
+  }
+
+  /**
+   * Activate a ProseMirror editor in place of an {{editor}} helper's
+   * view mode. Foundry v13's HandlebarsApplicationMixin doesn't auto-
+   * wire the pencil-click for HTMLField editors on ApplicationV2
+   * sheets, so we do it ourselves. Save writes back to the actor and
+   * a follow-up re-render restores view mode.
+   *
+   * Supported field discovery:
+   *   1. `[data-edit="…"]` on the editor-content div (Foundry default)
+   *   2. `[name="…"]` fallback on the editor container
+   */
+  async #activateEditor(btn) {
+    const editorEl = btn.closest(".editor");
+    if (!editorEl) return;
+    const contentEl = editorEl.querySelector("[data-edit], [name]");
+    if (!contentEl) return;
+    const field = contentEl.dataset.edit ?? contentEl.getAttribute("name");
+    if (!field) return;
+    if (editorEl.classList.contains("prosemirror-editing")) return;
+
+    const currentValue = foundry.utils.getProperty(this.document, field) ?? "";
+
+    // Foundry v13 exposes the ProseMirror module as a global.
+    const PM = globalThis.ProseMirror ?? foundry?.prosemirror;
+    if (!PM?.ProseMirrorEditor) {
+      // Fallback: temporary contenteditable + submit-on-blur, so text
+      // can still be entered even if ProseMirror is unreachable.
+      contentEl.setAttribute("contenteditable", "true");
+      contentEl.style.outline = "2px solid var(--flail-rule, #b58b3e)";
+      contentEl.focus();
+      const original = contentEl.innerHTML;
+      const stop = async (save) => {
+        contentEl.setAttribute("contenteditable", "false");
+        contentEl.style.outline = "";
+        if (save) await this.document.update({ [field]: contentEl.innerHTML });
+        else contentEl.innerHTML = original;
+        this.render(false);
+      };
+      contentEl.addEventListener("blur", () => stop(true), { once: true });
+      contentEl.addEventListener("keydown", ev => {
+        if (ev.key === "Escape") { ev.preventDefault(); stop(false); }
+      });
+      return;
+    }
+
+    editorEl.classList.add("prosemirror-editing");
+
+    try {
+      const schema = PM.defaultSchema;
+      const menu = PM.ProseMirrorMenu.build(schema, {
+        destroyOnSave: true,
+        onSave: async () => {
+          // ProseMirrorMenu writes the field back to the document
+          // internally when destroyOnSave is true. Re-render so we go
+          // back to view mode with the new content.
+          setTimeout(() => this.render(false), 100);
+        }
+      });
+      const keyMaps = PM.ProseMirrorKeyMaps.build(schema, { onSave: () => {} });
+
+      await PM.ProseMirrorEditor.create(contentEl, currentValue, {
+        document:  this.document,
+        fieldName: field,
+        plugins:   { menu, keyMaps }
+      });
+    } catch (err) {
+      console.error("FLAIL | Failed to activate ProseMirror editor", err);
+      editorEl.classList.remove("prosemirror-editing");
+      ui.notifications?.error("Editor failed to open — see console.");
+    }
   }
 
   /**
@@ -1105,22 +1303,39 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const data = item.toObject();
     await this.actor.createEmbeddedDocuments("Item", [data]);
 
-    // Auto-add this guild's starting talents as embedded talent items.
-    // Loads each config entry and materialises a talent item with the
-    // canonical action key + save attribute. Existing talents are not
-    // re-added (dedupe by `action`), so talents persist across guild
-    // changes (the player learned them, after all).
-    const starting = item.system?.startingTalents ?? [];
-    if (starting.length) {
-      const existingActions = new Set(
-        this.actor.items
-          .filter(i => i.type === "talent")
-          .map(i => i.system?.action)
-          .filter(Boolean)
-      );
-      const toCreate = [];
+    // Materialise starting talents onto the actor. Prefer the new
+    // `talentItems` snapshots (dropped onto the guild sheet); fall
+    // back to the legacy `startingTalents` string keys for bundled
+    // compendium guilds. Dedupe against existing talents so learned
+    // talents persist across guild changes.
+    const existingTalentActions = new Set(
+      this.actor.items
+        .filter(i => i.type === "talent")
+        .map(i => i.system?.action)
+        .filter(Boolean)
+    );
+    const existingTalentNames = new Set(
+      this.actor.items.filter(i => i.type === "talent").map(i => i.name)
+    );
+    const toCreate = [];
+
+    const talentSnaps = item.system?.talentItems ?? [];
+    if (talentSnaps.length) {
+      for (const snap of talentSnaps) {
+        const actionKey = snap?.system?.action ?? "";
+        if (actionKey && existingTalentActions.has(actionKey)) continue;
+        if (!actionKey && existingTalentNames.has(snap?.name)) continue;
+        // Copy the snapshot verbatim but drop any _id so Foundry mints
+        // a fresh one when embedding.
+        const clone = foundry.utils.deepClone(snap);
+        delete clone._id;
+        toCreate.push(clone);
+      }
+    } else {
+      // Legacy path — string-key list from bundled guilds.
+      const starting = item.system?.startingTalents ?? [];
       for (const key of starting) {
-        if (existingActions.has(key)) continue;
+        if (existingTalentActions.has(key)) continue;
         const cfg = FLAIL.cutthroatTalents.find(t => t.key === key);
         if (!cfg) continue;
         toCreate.push({
@@ -1134,9 +1349,9 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
           }
         });
       }
-      if (toCreate.length) {
-        await this.actor.createEmbeddedDocuments("Item", toCreate);
-      }
+    }
+    if (toCreate.length) {
+      await this.actor.createEmbeddedDocuments("Item", toCreate);
     }
   }
   #onSpellListDragOver(event) {
@@ -1480,6 +1695,40 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       wornOrCarried.has(i.system?.location)
       && (i.name ?? "").toLowerCase().includes("sigil")
     );
+  }
+
+  /**
+   * Bard set-bonus detection.
+   *
+   * A Bard who has 3+ items of the same set worn (in hands, body, or
+   * adornment slots) triggers the set bonus. Per the FLAIL v1 rulebook
+   * (p.106), the 3-item bonus is "take an extra talent, gadget or spell
+   * as per Jack of All Trades" — so we surface an extra JOAT slot on
+   * the character sheet.
+   *
+   * Set items are flagged in the unique-items compendium with
+   * `flags.flail.setName` and `flags.flail.setClass`. Non-Bard sets and
+   * items in stashed/unequipped slots are ignored.
+   *
+   * @returns {{ setName: string, count: number } | null}
+   */
+  _getBardSetBonus() {
+    if (this.actor.system.class !== "bard") return null;
+    const wornOrCarried = new Set(["hands", "body", "adornment"]);
+    const setCounts = {};
+    for (const item of this.actor.items) {
+      const setName  = item.getFlag("flail", "setName");
+      const setClass = item.getFlag("flail", "setClass");
+      if (!setName || setClass !== "bard") continue;
+      if (!wornOrCarried.has(item.system?.location)) continue;
+      setCounts[setName] = (setCounts[setName] ?? 0) + 1;
+    }
+    // Any set reaching 3 triggers the bonus. If the player is somehow
+    // running two 3-sets, pick the first — the bonus doesn't stack.
+    for (const [name, count] of Object.entries(setCounts)) {
+      if (count >= 3) return { setName: name, count };
+    }
+    return null;
   }
 
   /**
@@ -2217,27 +2466,28 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
    * If Tokenizer isn't installed, both click and shift-click open
    * the FilePicker directly. Guards against non-editable sheets.
    */
-  static async #onEditPortrait(event, target) {
+  /**
+   * Click on the portrait image — opens Foundry's FilePicker so the
+   * user can pick a new image path. If the Tokenizer module is active,
+   * this handler no-ops: Tokenizer's own document-level click listener
+   * (which hooks `data-edit="img"`) fires and opens its own dialog.
+   * That's why the portrait carries BOTH attributes: `data-edit="img"`
+   * for Tokenizer, `data-action="editImage"` for our FilePicker
+   * fallback via Foundry's action dispatch.
+   *
+   * Shift-click forces FilePicker even when Tokenizer is active — a
+   * user escape hatch if they want the raw FilePicker directly.
+   */
+  static async #onEditImage(event, target) {
     if (!this.isEditable) return;
 
     const forceFilePicker = event?.shiftKey === true;
-    const tokenizerModule = game.modules?.get("vtta-tokenizer");
-    const tokenizerActive = !!tokenizerModule?.active;
+    const tokenizerActive = !!game.modules?.get("vtta-tokenizer")?.active;
 
-    if (tokenizerActive && !forceFilePicker) {
-      // Prefer the module's api surface (stable across versions);
-      // fall back to the window global if the api namespace is
-      // unavailable in older Tokenizer builds.
-      const api = tokenizerModule.api ?? globalThis.Tokenizer;
-      if (api?.tokenizeActor) {
-        try {
-          return await api.tokenizeActor(this.actor);
-        } catch (err) {
-          console.error("FLAIL | Tokenizer launch failed", err);
-          // Fall through to FilePicker on error.
-        }
-      }
-    }
+    // Tokenizer active + not force-shifted → let Tokenizer's own hook
+    // handle the click. Our handler no-ops to avoid opening FilePicker
+    // on top of Tokenizer's dialog.
+    if (tokenizerActive && !forceFilePicker) return;
 
     const current = this.actor.img ?? "";
     const FilePickerImpl = foundry.applications?.apps?.FilePicker?.implementation
@@ -2769,10 +3019,6 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       return;
     }
 
-    // Prompt for dice count.
-    const diceCount = await FlailCharacterSheet.#promptShapeshiftDice();
-    if (diceCount === null) return;   // cancelled
-
     // Break ties by random roll among tied kingdoms.
     const tied = counts.filter(c => c.count === maxCount);
     let kingdom;
@@ -2782,13 +3028,6 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       const idx = Math.floor(Math.random() * tied.length);
       kingdom = tied[idx].key;
     }
-
-    // Roll the dice pool.
-    const roll = new Roll(`${diceCount}d6`);
-    await roll.evaluate();
-    const results = roll.dice[0]?.results.map(r => r.result) ?? [];
-    const onesCount = results.filter(r => r === 1).length;
-    const sixesCount = results.filter(r => r === 6).length;
 
     const beast = FLAIL.druidBeastForms[kingdom];
 
@@ -2804,15 +3043,23 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const preShiftTokenImg = actor.prototypeToken?.texture?.src ?? actor.img ?? "";
 
     // Commit shapeshift state AND swap actor HP to the beast's pool.
+    // v1 rulebook: no initial dice pool — bonuses start at zero and
+    // accumulate each round via #onShapeshiftRoll.
     await actor.update({
       "system.shapeshift": {
         active:      true,
         kingdom,
         beastForm:   beast.name,
-        diceRolled:  diceCount,
-        onesCount,
-        sixesCount,
-        rollResults: results,
+        // Old fields — zeroed but kept in schema for backward compat.
+        diceRolled:  0,
+        onesCount:   0,
+        sixesCount:  0,
+        rollResults: [],
+        // New v1 fields — start of round tracking.
+        thBonus:     0,
+        dmgBonus:    0,
+        roundNumber: 0,
+        rollHistory: [],
         preShiftHp,
         preShiftHpMax,
         preShiftTokenImg
@@ -2821,32 +3068,23 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       "system.hp.max":   beast.hp
     });
 
-    // Swap the canvas token art to the kingdom graphic. Touches the
-    // actor's prototype (so any newly-dropped token gets the beast
-    // art) plus every placed token on every scene that belongs to
-    // this actor (so mid-scene shifts update immediately without a
-    // manual token refresh).
+    // Swap the canvas token art to the kingdom graphic.
     const kingdomTokenImg = FLAIL.druidKingdomTokens?.[kingdom];
     if (kingdomTokenImg) {
       await FlailCharacterSheet.#swapDruidTokenArt(actor, kingdomTokenImg);
     }
 
     // Create the beast's attacks as temporary weapon Items on the
-    // actor, placed in the "hands" location so they appear in the
-    // quick-attacks panel alongside anything the Druid was already
-    // wielding. Each attack's To Hit pool is `beast.attacks[i].th`
-    // plus the shift's onesCount bonus, baked into the item so
-    // rollAttack sees the total without additional logic. Marked
-    // with `flags.flail.beastAttack: true` so revert can find and
-    // delete them. Special text is stored on the item description
-    // for players to reference on the sheet if needed.
+    // actor. Each attack starts at the beast's BASE TH/DMG — bonuses
+    // are applied round-by-round via #onShapeshiftRoll. `beastAttackIndex`
+    // flag lets round-roll code find each item and recompute its total.
     const paw = "icons/creatures/abilities/paw-print-orange.webp";
     const beastWeapons = beast.attacks.map((atk, idx) => ({
       name: `${atk.name} (${beast.name})`,
       type: "weapon",
       img: paw,
       system: {
-        th: (atk.th ?? 0) + onesCount,
+        th: atk.th ?? 0,
         damage: atk.dmg ?? 0,
         weaponType: "melee",
         location: "hands",
@@ -2855,13 +3093,14 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         category: "beast",
         tags: ["beast"]
       },
-      flags: { flail: { beastAttack: true } }
+      flags: { flail: { beastAttack: true, beastAttackIndex: idx } }
     }));
     if (beastWeapons.length) {
       await actor.createEmbeddedDocuments("Item", beastWeapons);
     }
 
-    // Post the transformation chat card.
+    // Post the transformation chat card. v1 mechanic — no dice display,
+    // just the beast reveal + reminder about round rolls and gifts.
     const content = await foundry.applications.handlebars.renderTemplate(
       "systems/flail/templates/chat/shapeshift-start.hbs",
       {
@@ -2869,18 +3108,12 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         kingdom,
         kingdomLabel: FLAIL.druidPrimalGifts[kingdom]?.label ?? "",
         beast,
-        diceRolled: diceCount,
-        results,
-        onesCount,
-        sixesCount,
         tiedKingdoms: tied.length > 1 ? tied.map(t => t.label) : null
       }
     );
     return ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
-      rolls: [roll],
-      content,
-      sound: CONFIG.sounds.dice
+      content
     });
   }
 
@@ -3000,53 +3233,182 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
   }
 
   /**
-   * Revert the Druid to human form. If any sixes were rolled at
-   * transformation, first prompt the player to pick one attribute
-   * per six for the mutation saves. Roll each save (d20 roll-under
-   * against the picked attribute's current score). Any failed save
-   * permanently reduces that attribute by 1. Then clear the
-   * shapeshift state and post a summary card.
+   * Voluntary revert — the Druid deliberately spends the round to
+   * transform back safely. No attribute save required (that's the
+   * whole point of choosing the safe path). Delegates the actual
+   * revert to #doShapeshiftRevert.
    */
   static async #onShapeshiftRevert(event, target) {
     const actor = this.actor;
+    if (!actor.system.shapeshift?.active) return;
+    await FlailCharacterSheet.#doShapeshiftRevert(actor, { forced: false });
+  }
+
+  /**
+   * Per-round d6 roll in beast form (v1 rulebook mechanic). Rolls one
+   * die at the start of each round the Druid remains transformed and
+   * applies the outcome:
+   *
+   *   • 1    → +1 TH (cumulative). Beast attack items get +1 TH each.
+   *   • 2-5  → +1 DMG (cumulative). Beast attack items get +1 DMG each.
+   *   • 6    → immediate forced revert with attribute save (see
+   *            #doShapeshiftRevert with { forced: true }).
+   *
+   * State (roundNumber, thBonus, dmgBonus, rollHistory) is tracked on
+   * `system.shapeshift` for the revert chat card and any GM audit.
+   */
+  static async #onShapeshiftRoll(event, target) {
+    const actor = this.actor;
+    const shift = actor.system.shapeshift ?? {};
+    if (!shift.active) {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.ShapeshiftNotActive"));
+      return;
+    }
+
+    const roll = new Roll("1d6");
+    await roll.evaluate();
+    const result = roll.total;
+
+    const newRoundNumber = (shift.roundNumber ?? 0) + 1;
+    const newHistory     = [...(shift.rollHistory ?? []), result];
+
+    let newThBonus  = shift.thBonus  ?? 0;
+    let newDmgBonus = shift.dmgBonus ?? 0;
+    let outcome;   // "th" | "dmg" | "revert"
+
+    if (result === 1) {
+      newThBonus += 1;
+      outcome = "th";
+    } else if (result === 6) {
+      outcome = "revert";
+    } else {
+      newDmgBonus += 1;
+      outcome = "dmg";
+    }
+
+    // Commit the round state before doing anything else so a race with
+    // a rapid double-click doesn't double-count.
+    await actor.update({
+      "system.shapeshift.roundNumber": newRoundNumber,
+      "system.shapeshift.rollHistory": newHistory,
+      "system.shapeshift.thBonus":     newThBonus,
+      "system.shapeshift.dmgBonus":    newDmgBonus
+    });
+
+    // If the outcome is a bonus (1 or 2-5), update every beast attack
+    // item on the actor to reflect the cumulative bonus applied to its
+    // base TH/DMG. The base values come from the beast's attack def,
+    // looked up by the `beastAttackIndex` flag on the item.
+    if (outcome !== "revert") {
+      const beast = shift.kingdom ? FLAIL.druidBeastForms[shift.kingdom] : null;
+      if (beast?.attacks?.length) {
+        const beastItems = actor.items.filter(i => i.getFlag("flail", "beastAttack"));
+        const itemUpdates = [];
+        for (const item of beastItems) {
+          const idx = item.getFlag("flail", "beastAttackIndex") ?? 0;
+          const base = beast.attacks[idx];
+          if (!base) continue;
+          itemUpdates.push({
+            _id: item.id,
+            "system.th":     (base.th  ?? 0) + newThBonus,
+            "system.damage": (base.dmg ?? 0) + newDmgBonus
+          });
+        }
+        if (itemUpdates.length) {
+          await actor.updateEmbeddedDocuments("Item", itemUpdates);
+        }
+      }
+    }
+
+    // Post a round-roll chat card so the table sees what happened.
+    const roundContent = await foundry.applications.handlebars.renderTemplate(
+      "systems/flail/templates/chat/shapeshift-round.hbs",
+      {
+        actor: { name: actor.name, img: actor.img },
+        beastForm: shift.beastForm,
+        result,
+        outcome,
+        roundNumber: newRoundNumber,
+        thBonus: newThBonus,
+        dmgBonus: newDmgBonus
+      }
+    );
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      rolls: [roll],
+      content: roundContent,
+      sound: CONFIG.sounds.dice
+    });
+
+    // On a 6, immediately trigger the forced-revert path.
+    if (outcome === "revert") {
+      await FlailCharacterSheet.#doShapeshiftRevert(actor, { forced: true });
+    }
+  }
+
+  /**
+   * Shared revert helper — used by both voluntary revert (player
+   * clicks the Revert button, no save) and forced revert (round roll
+   * came up 6, one attribute save).
+   *
+   * Steps:
+   *   1. If forced, prompt player to pick one attribute for the save.
+   *   2. Roll the save (d20 roll-under vs attribute score).
+   *      • pass  — no penalty
+   *      • fail  — -1 to the chosen attribute (permanent)
+   *      • fumble (natural 20) — -1 to attribute AND retire chat msg
+   *   3. Delete beast attack items.
+   *   4. Restore pre-shift HP and token art.
+   *   5. Clear shapeshift state.
+   *   6. Post revert chat card.
+   *
+   * @param {Actor}  actor    The Druid to revert.
+   * @param {object} opts
+   * @param {boolean} opts.forced  True if triggered by a round roll of 6.
+   */
+  static async #doShapeshiftRevert(actor, { forced = false } = {}) {
     const shift = actor.system.shapeshift ?? {};
     if (!shift.active) return;
 
-    // If there are mutation risks, prompt for attribute picks.
-    let picks = [];
-    if (shift.sixesCount > 0) {
-      picks = await FlailCharacterSheet.#promptMutationSaves(actor, shift.sixesCount);
-      if (picks === null) return;   // cancelled — stay shifted
-    }
+    // Save resolution — only for forced reverts.
+    let saveOutcome = null;
+    let attrLoss = null;   // { key, label, amount }
+    let retire = false;    // fumble on save → character retires
 
-    // Roll each save and apply attribute changes.
-    const saveOutcomes = [];
-    const attrChanges = {};   // running deltas per attribute
-    for (const attr of picks) {
-      const currentScore = (actor.system.attributes?.[attr]?.current ?? 0)
-                          + (attrChanges[attr] ?? 0);   // apply any prior loss this revert
+    if (forced) {
+      const attrKey = await FlailCharacterSheet.#promptMutationSave(actor);
+      if (attrKey === null) return;   // cancelled; stay in beast form
+
+      const currentScore = actor.system.attributes?.[attrKey]?.current ?? 0;
       const r = new Roll("1d20");
       await r.evaluate();
       const rolled = r.total;
-      // FLAIL save: 1 = crit success (auto-pass), 20 = fumble (auto-fail),
-      // otherwise roll-under attribute score.
-      const pass = rolled === 1 ? true
+      const pass = rolled === 1  ? true
                  : rolled === 20 ? false
                  : rolled <= currentScore;
-      if (!pass) attrChanges[attr] = (attrChanges[attr] ?? 0) - 1;
-      saveOutcomes.push({
-        attribute: attr,
-        attributeLabel: game.i18n.localize(FLAIL.attributes[attr].label),
+      const fumble = rolled === 20;
+
+      saveOutcome = {
+        attribute: attrKey,
+        attributeLabel: game.i18n.localize(FLAIL.attributes[attrKey].label),
         score: currentScore,
         rolled,
         pass,
+        fumble,
         roll: r
-      });
+      };
+
+      if (!pass) {
+        attrLoss = {
+          key: attrKey,
+          label: saveOutcome.attributeLabel,
+          amount: 1
+        };
+      }
+      if (fumble) retire = true;
     }
 
-    // Delete the beast-attack Items that were created on shift.
-    // Filtered by the beastAttack flag so this doesn't touch anything
-    // the player added or already had on the sheet.
+    // Delete beast attack items.
     const beastItemIds = actor.items
       .filter(i => i.getFlag("flail", "beastAttack"))
       .map(i => i.id);
@@ -3054,43 +3416,31 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       await actor.deleteEmbeddedDocuments("Item", beastItemIds);
     }
 
-    // Apply attribute deltas, restore pre-shift HP, and clear shapeshift
-    // state in one update. The stored preShiftHp is used verbatim —
-    // whatever HP the beast form had at revert is discarded. If the
-    // beast "died" (HP hit 0), the Druid still comes back with their
-    // original HP; this matches the rulebook's silence on beast-form
-    // death as anything but a narrative outcome.
+    // Build actor update — clear shift state, restore HP, apply
+    // attribute loss if any.
     const update = { "system.shapeshift": {
       active: false, kingdom: "", beastForm: "",
       diceRolled: 0, onesCount: 0, sixesCount: 0, rollResults: [],
+      thBonus: 0, dmgBonus: 0, roundNumber: 0, rollHistory: [],
       preShiftHp: 0, preShiftHpMax: 0, preShiftTokenImg: ""
     }};
     if (shift.preShiftHpMax > 0) {
       update["system.hp.value"] = shift.preShiftHp ?? 0;
       update["system.hp.max"]   = shift.preShiftHpMax;
     }
-    for (const [attr, delta] of Object.entries(attrChanges)) {
-      // Attribute scores persist on `base`; `current` and `mod` are
-      // derived every prepareDerivedData cycle. Writing to `.value`
-      // (which doesn't exist on the attribute schema) would be
-      // silently discarded — the loss must land on `.base` to
-      // survive the next prep.
-      const oldScore = actor.system.attributes[attr]?.base ?? 0;
-      update[`system.attributes.${attr}.base`] = Math.max(0, oldScore + delta);
+    if (attrLoss) {
+      const oldScore = actor.system.attributes[attrLoss.key]?.base ?? 0;
+      update[`system.attributes.${attrLoss.key}.base`] = Math.max(0, oldScore - 1);
     }
     await actor.update(update);
 
-    // Restore the pre-shift token art on prototype + placed tokens.
-    // Guard against a missing snapshot (older shapeshifts committed
-    // before this field existed on the schema): if the snapshot is
-    // empty, fall back to actor.img so we don't leave the Druid
-    // rendered as their beast form on the map.
+    // Restore pre-shift token art.
     const restoreImg = shift.preShiftTokenImg || actor.img || "";
     if (restoreImg) {
       await FlailCharacterSheet.#swapDruidTokenArt(actor, restoreImg);
     }
 
-    // Post the revert chat card.
+    // Post revert chat card.
     const beast = shift.kingdom ? FLAIL.druidBeastForms[shift.kingdom] : null;
     const content = await foundry.applications.handlebars.renderTemplate(
       "systems/flail/templates/chat/shapeshift-revert.hbs",
@@ -3098,22 +3448,46 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         actor: { name: actor.name, img: actor.img },
         beast,
         beastForm: shift.beastForm,
-        saveOutcomes,
-        losses: Object.entries(attrChanges).map(([attr, delta]) => ({
-          attribute: attr,
-          attributeLabel: game.i18n.localize(FLAIL.attributes[attr].label),
-          amount: Math.abs(delta)
-        })),
-        hadSixes: shift.sixesCount > 0
+        forced,
+        roundNumber: shift.roundNumber ?? 0,
+        rollHistory: shift.rollHistory ?? [],
+        thBonus: shift.thBonus ?? 0,
+        dmgBonus: shift.dmgBonus ?? 0,
+        saveOutcome,
+        attrLoss,
+        retire
       }
     );
-    const rolls = saveOutcomes.map(o => o.roll);
-    return ChatMessage.create({
+    const rolls = saveOutcome ? [saveOutcome.roll] : [];
+    await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
       rolls,
       content,
       sound: rolls.length ? CONFIG.sounds.dice : undefined
     });
+
+    // On fumble — post a separate retirement notice as a GM whisper so
+    // it doesn't get lost in the revert card.
+    if (retire) {
+      await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor }),
+        whisper: game.users.filter(u => u.isGM).map(u => u.id),
+        content: `
+<div style="background:#f6f0e1;border:2px solid #b58b3e;border-radius:4px;padding:0.7em 1em;">
+  <div style="font-family:'Modesto Condensed','Cinzel',serif;font-size:1.15em;color:#6a4d0e;border-bottom:1px solid #b58b3e;padding-bottom:0.3em;margin-bottom:0.5em;">
+    Character Retired: ${actor.name}
+  </div>
+  <p style="margin:0.3em 0;">
+    <strong>${actor.name}</strong> fumbled the reversion save (natural 20 on d20)
+    and remains permanently in ${shift.beastForm} form. Per the FLAIL v1 rulebook
+    (p.28), this Druid is now retired from play.
+  </p>
+  <p style="font-size:0.85em;color:#6a4d0e;margin-top:0.5em;">
+    <em>GM: mark this character as retired in your campaign notes.</em>
+  </p>
+</div>`
+      });
+    }
   }
 
   /**
@@ -3188,6 +3562,66 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
   }
 
   /**
+   * Single-attribute picker used by the v1 forced-revert path. When a
+   * round roll comes up 6, the Druid must save in ONE attribute of
+   * their choice to avoid a permanent -1. Returns the attribute key
+   * ("str"/"dex"/"cha"/"int"/"luck") or null on cancel (which stays
+   * in beast form).
+   */
+  static async #promptMutationSave(actor) {
+    const attrs = ["str", "dex", "cha", "int", "luck"];
+    const opts = attrs.map(a => {
+      const abbr = game.i18n.localize(FLAIL.attributes[a].abbr);
+      const score = actor.system.attributes?.[a]?.current ?? 0;
+      return `<option value="${a}">${abbr} (${score})</option>`;
+    }).join("");
+
+    const content = `
+      <form class="flail-modifier-form">
+        <p class="flail-modifier-prompt">
+          ${game.i18n.localize("FLAIL.Shapeshift.ForcedRevertPrompt")}
+        </p>
+        <div class="form-group flail-modifier-row">
+          <label>${game.i18n.localize("FLAIL.Shapeshift.SaveAttributeLabel")}</label>
+          <select name="attr">${opts}</select>
+        </div>
+        <p class="flail-modifier-hint">
+          ${game.i18n.localize("FLAIL.Shapeshift.ForcedRevertHint")}
+        </p>
+      </form>
+    `;
+
+    const chosen = await foundry.applications.api.DialogV2.wait({
+      window: {
+        title: game.i18n.localize("FLAIL.Shapeshift.ForcedRevertDialogTitle"),
+        icon:  "fas fa-dna"
+      },
+      content,
+      buttons: [
+        {
+          action: "roll",
+          label: game.i18n.localize("FLAIL.Shapeshift.RollSaveButton"),
+          icon: "fas fa-dice-d20",
+          default: true,
+          callback: (event, btn, dialog) => {
+            const form = dialog.element.querySelector("form");
+            return form.elements.attr?.value ?? "str";
+          }
+        },
+        {
+          action: "cancel",
+          label: game.i18n.localize("FLAIL.Shapeshift.CancelButton"),
+          icon:  "fas fa-times",
+          callback: () => null
+        }
+      ],
+      rejectClose: false,
+      submit: v => v
+    });
+    return typeof chosen === "string" ? chosen : null;
+  }
+
+  /**
    * Spend a guild token on a specific named action. Resolves the action
    * from the embedded guild Item's `specialActions` array by key,
    * confirms with the player, checks gates (sigil + tokens), then
@@ -3207,7 +3641,22 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.NoGuild"));
       return;
     }
-    const action = (guildItem.system?.specialActions ?? []).find(a => a.key === actionKey);
+    // Look up the action by key. New-style actions come from
+    // `actionItems` and are keyed `item_<idx>`; legacy actions come
+    // from `specialActions` and carry their own `.key`. Try new first,
+    // fall back to legacy.
+    let action = null;
+    const actionSnaps = guildItem.system?.actionItems ?? [];
+    if (actionKey.startsWith("item_")) {
+      const idx = Number(actionKey.slice(5));
+      const snap = actionSnaps[idx];
+      if (snap) {
+        action = { name: snap.name ?? "", description: snap.system?.description ?? "" };
+      }
+    }
+    if (!action) {
+      action = (guildItem.system?.specialActions ?? []).find(a => a.key === actionKey);
+    }
     if (!action) return;
 
     // Sigil gate (defensive recheck even though the UI may already hide
@@ -3439,6 +3888,33 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     root.dataset.activeTab = tab;
     for (const btn of root.querySelectorAll(".tabs-nav .tab-btn")) {
       btn.classList.toggle("is-active", btn.dataset.tab === tab);
+    }
+
+    // Re-apply the scroll enforcement to the newly-active panel — same
+    // walk-up logic used in _onRender. Without this, switching tabs
+    // would leave the previously-active panel with the flex/overflow
+    // styles and the new one un-styled.
+    const windowContent = root.querySelector(".window-content");
+    const flexParent = root.querySelector("form") ?? windowContent;
+    const panels = root.querySelectorAll(".tab-panel");
+    for (const panel of panels) {
+      if (panel.dataset.tab === tab) {
+        panel.style.flex = "1 1 auto";
+        panel.style.minHeight = "0";
+        panel.style.overflowY = "auto";
+        panel.style.overflowX = "hidden";
+        let node = panel.parentElement;
+        while (node && node !== flexParent && node !== windowContent) {
+          node.style.display = "flex";
+          node.style.flexDirection = "column";
+          node.style.flex = "1 1 auto";
+          node.style.minHeight = "0";
+          node = node.parentElement;
+        }
+      } else {
+        panel.style.flex = "";
+        panel.style.overflowY = "";
+      }
     }
   }
 

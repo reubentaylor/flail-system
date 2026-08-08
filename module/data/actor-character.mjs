@@ -66,10 +66,20 @@ export class FlailCharacterModel extends foundry.abstract.TypeDataModel {
       toHitBonus: new fields.NumberField({ integer: true, initial: 0 }),
 
       // Background — d6 result key from FLAIL.backgrounds[<class>].
-      // Stored as "1".."6" or blank. The dropdown in the sheet resolves
-      // this against the current class to surface the descriptive label
-      // and mechanical perk.
+      // Stored as "1".."6" or "custom" or blank. The dropdown in the sheet
+      // resolves this against the current class to surface the descriptive
+      // label and mechanical perk. The special key "custom" tells the sheet
+      // to read from `customBackground` (below) instead of the config.
       background: new fields.StringField({ blank: true, initial: "" }),
+
+      // Custom background — player-authored label + rich-text perk,
+      // surfaced when `background === "custom"`. Persists across class
+      // changes so a character carries their custom identity even if
+      // they multiclass. Purely descriptive: no mechanical automation.
+      customBackground: new fields.SchemaField({
+        label: new fields.StringField({ blank: true, initial: "" }),
+        perk:  new fields.HTMLField({   blank: true, initial: "" })
+      }),
 
       // Class-specific picks. Religion (Cleric) is constrained to one of
       // the keys in FLAIL.religions; the chosen religion derives deity,
@@ -111,8 +121,9 @@ export class FlailCharacterModel extends foundry.abstract.TypeDataModel {
       }),
 
       // Free-form HTML notes.
-      biography: new fields.HTMLField({ required: false, blank: true, initial: "" }),
-      notes:     new fields.HTMLField({ required: false, blank: true, initial: "" }),
+      biography:    new fields.HTMLField({ required: false, blank: true, initial: "" }),
+      notes:        new fields.HTMLField({ required: false, blank: true, initial: "" }),
+      adventureLog: new fields.HTMLField({ required: false, blank: true, initial: "" }),
 
       // ----- Class-specific data fields -----
       // Each is only meaningful for one class but the field always exists
@@ -170,7 +181,16 @@ export class FlailCharacterModel extends foundry.abstract.TypeDataModel {
       // and cleared when the Druid reverts to human. `onesCount` feeds
       // system.toHitBonus in prepareDerivedData while active.
       // `sixesCount` records the mutation risks accrued at shift time;
-      // resolved individually on revert with player-chosen saves.
+      // FLAIL v1 rulebook rewrite: shapeshifting is now a per-round
+      // d6 mechanic instead of a pre-shift dice pool. `thBonus` and
+      // `dmgBonus` accumulate as the Druid rolls each round in beast
+      // form (1 → +1 TH, 2-5 → +1 DMG, 6 → forced revert with save).
+      // `roundNumber` tracks how many rounds have been rolled;
+      // `rollHistory` is kept for the revert chat card. The old
+      // `diceRolled` / `onesCount` / `sixesCount` / `rollResults`
+      // fields are kept in the schema for backward compatibility with
+      // any character that was mid-shift when the rulebook update
+      // shipped, but nothing new writes to them.
       shapeshift: new fields.SchemaField({
         active:      new fields.BooleanField({ initial: false }),
         kingdom:     new fields.StringField({ required: false, blank: true, initial: "" }),
@@ -178,8 +198,12 @@ export class FlailCharacterModel extends foundry.abstract.TypeDataModel {
         diceRolled:  new fields.NumberField({ integer: true, min: 0, initial: 0 }),
         onesCount:   new fields.NumberField({ integer: true, min: 0, initial: 0 }),
         sixesCount:  new fields.NumberField({ integer: true, min: 0, initial: 0 }),
-        // Kept for chat-card display after the fact.
         rollResults: new fields.ArrayField(new fields.NumberField({ integer: true }), { initial: () => [] }),
+        // New v1 fields:
+        thBonus:     new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+        dmgBonus:    new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+        roundNumber: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+        rollHistory: new fields.ArrayField(new fields.NumberField({ integer: true }), { initial: () => [] }),
         // Pre-shift HP snapshot — restored verbatim on revert. The
         // beast form runs with its own HP pool during the shift.
         preShiftHp:    new fields.NumberField({ integer: true, min: 0, initial: 0 }),
@@ -470,13 +494,16 @@ function applyPrimalGiftPassives(model) {
     if (gifts.bird?.falconsGrace)     dexSaveAdvantage = true;
   }
 
-  // Druid Shapeshift — while active, add the "ones rolled" count to
-  // toHitBonus so all attacks benefit. Uses += to stack with any
-  // other transient bonuses (e.g. Witness Me from an ally Bard).
+  // Druid Shapeshift — while active, add the cumulative TH bonus from
+  // per-round rolls (v1 rulebook mechanic) to toHitBonus so all attacks
+  // benefit. Falls back to the legacy `onesCount` field for characters
+  // still mid-shift under the old dice-pool mechanic on migration.
+  // Uses += to stack with any other transient bonuses (e.g. Witness Me
+  // from an ally Bard).
   if (model.class === "druid" && model.shapeshift?.active) {
-    const onesBonus = model.shapeshift.onesCount ?? 0;
-    if (onesBonus > 0) {
-      model.toHitBonus = (model.toHitBonus ?? 0) + onesBonus;
+    const thBonus = model.shapeshift.thBonus ?? model.shapeshift.onesCount ?? 0;
+    if (thBonus > 0) {
+      model.toHitBonus = (model.toHitBonus ?? 0) + thBonus;
     }
     // While transformed, defence IS the beast's defence — direct
     // replacement, not a max. The Druid takes on the beast's tough

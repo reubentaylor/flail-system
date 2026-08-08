@@ -18,29 +18,6 @@
     </p>
     {{/if}}
 
-    <div class="shift-dice-row">
-      {{#each results}}
-      <span class="shift-die shift-die-{{this}}">{{this}}</span>
-      {{/each}}
-    </div>
-
-    <div class="shift-summary">
-      <span class="shift-badge shift-duration">
-        <i class="fas fa-hourglass-half"></i>
-        {{localize "FLAIL.Shapeshift.Duration" rounds=diceRolled}}
-      </span>
-      <span class="shift-badge shift-th">
-        <i class="fas fa-plus-circle"></i>
-        {{localize "FLAIL.Shapeshift.ThBonus" bonus=onesCount}}
-      </span>
-      {{#if sixesCount}}
-      <span class="shift-badge shift-risk">
-        <i class="fas fa-triangle-exclamation"></i>
-        {{localize "FLAIL.Shapeshift.RiskCount" count=sixesCount}}
-      </span>
-      {{/if}}
-    </div>
-
     <div class="beast-stats-row">
       <span class="stat"><strong>HP</strong> {{beast.hp}}</span>
       <span class="stat"><strong>Defence</strong> {{beast.defence}}</span>
@@ -59,5 +36,10 @@
       </div>
       {{/each}}
     </div>
+
+    <p class="shift-reminder">
+      <i class="fas fa-circle-info"></i>
+      {{localize "FLAIL.Shapeshift.StartReminder"}}
+    </p>
   </div>
 </div>

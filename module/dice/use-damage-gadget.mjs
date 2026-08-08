@@ -9,11 +9,11 @@ import { FLAIL } from "../helpers/config.mjs";
  * Apply Damage button (reuses the standard applyDamage chat action).
  *
  * Per-gadget mechanics (config keys match `system.gadgetKey`):
- *   • buzzsawDisk   — d6 to target; on 6, ricochets onto another random target.
- *   • clockworkToy  — walks erratically for 1 round, then d8 to all Nearby.
- *   • fireSpitter   — d4 cone; up to 2 Nearby targets take the same amount.
- *   • gooBlast      — attaches to target; on its next round, d8 to all Nearby.
- *   • shockBolas    — d4 electrical; on a 4, target is Stunned.
+ *   • buzzsawDisk   — d8 to target; on an 8, ricochets onto another random target.
+ *   • clockworkToy  — walks erratically for 1 round, then 3d6 to all Near it.
+ *   • fireSpitter   — d10 cone; up to 2 Nearby targets take the same amount.
+ *   • gooBlast      — attaches to target; on its next round, 2d8 to all Nearby.
+ *   • shockBolas    — d6 electrical; on 4-6, target is Stunned.
  *
  * On successful release, the gadget's usage.value is incremented so
  * the sheet reflects the once-per-day expenditure. Chat card surfaces
@@ -142,18 +142,18 @@ export async function releaseDamageGadget({ actor, gadget } = {}) {
  */
 const DAMAGE_GADGET_MECHANICS = {
   buzzsawDisk: {
-    formula: "1d6",
+    formula: "1d8",
     labelKey: "FLAIL.Gadget.Damage.BuzzsawDisk.Label",
     targetHint: "FLAIL.Gadget.Damage.BuzzsawDisk.TargetHint",
     damage: ({ total }) => total,
-    trigger: ({ total }) => total === 6 ? {
+    trigger: ({ total }) => total === 8 ? {
       key: "ricochet",
       labelKey: "FLAIL.Gadget.Damage.BuzzsawDisk.Ricochet",
       detailKey: "FLAIL.Gadget.Damage.BuzzsawDisk.RicochetDetail"
     } : null
   },
   clockworkToy: {
-    formula: "1d8",
+    formula: "3d6",
     labelKey: "FLAIL.Gadget.Damage.ClockworkToy.Label",
     targetHint: "FLAIL.Gadget.Damage.ClockworkToy.TargetHint",
     damage: ({ total }) => total,
@@ -167,14 +167,14 @@ const DAMAGE_GADGET_MECHANICS = {
     })
   },
   fireSpitter: {
-    formula: "1d4",
+    formula: "1d10",
     labelKey: "FLAIL.Gadget.Damage.FireSpitter.Label",
     targetHint: "FLAIL.Gadget.Damage.FireSpitter.TargetHint",
     damage: ({ total }) => total,
     trigger: null
   },
   gooBlast: {
-    formula: "1d8",
+    formula: "2d8",
     labelKey: "FLAIL.Gadget.Damage.GooBlast.Label",
     targetHint: "FLAIL.Gadget.Damage.GooBlast.TargetHint",
     damage: ({ total }) => total,
@@ -185,11 +185,11 @@ const DAMAGE_GADGET_MECHANICS = {
     })
   },
   shockBolas: {
-    formula: "1d4",
+    formula: "1d6",
     labelKey: "FLAIL.Gadget.Damage.ShockBolas.Label",
     targetHint: "FLAIL.Gadget.Damage.ShockBolas.TargetHint",
     damage: ({ total }) => total,
-    trigger: ({ total }) => total === 4 ? {
+    trigger: ({ total }) => total >= 4 ? {
       key: "stunned",
       labelKey: "FLAIL.Gadget.Damage.ShockBolas.Stunned",
       detailKey: "FLAIL.Gadget.Damage.ShockBolas.StunnedDetail"

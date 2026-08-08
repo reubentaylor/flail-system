@@ -1,4 +1,4 @@
-# UNOFFICIAL FLAIL! Foundry VTT System
+# FLAIL! Foundry VTT System
 
 An unofficial Foundry VTT implementation of **FLAIL!**, the old-school fantasy brawler by Andre Novoa.
 
@@ -30,18 +30,13 @@ Updates come through automatically on Foundry's next startup after a new release
   - Guilds, Hexcrawl Tables, Roll Tables, Macros
 - **Random-generation macros** — Death Table, Crossing a Hex, Reactions, Weather, Build Dungeon, Build Wizard Tower, Build Cave, plus adventure-site rollers (Puzzle / Obstacle / Trap / Anomaly).
 
-Shift+click to roll with advantage
-Ctrl+Click to roll with disadvantage
-Alt+Click to modify a roll
-
 ## Credits
 
-**FLAIL!** is © Andre Novoa. This is an unofficial community implementation. Please buy the rulebook to support Andre when the game becomes available.
+**FLAIL!** is © Andre Novoa. This is an unofficial community implementation. Please buy the rulebook to support the author.
 
-Foundry VTT implementation by Reuben Taylor. All thoughts and suggestions welcome — open an issue or pull request.
+Item and unique item artwork © André Novoa, used with permission.
 
-Flail Rules are available free(!): https://www.backerkit.com/c/projects/games-omnivorous/flail-an-old-school-fantasy-brawler
-Please support Andre Novoa and his amazing work by subscribing to his Patreon: https://www.patreon.com/cw/GamesOmnivorous
+Foundry VTT implementation by Reuben Taylor. Contributions welcome — open an issue or pull request.
 
 ## Development
 

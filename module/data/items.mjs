@@ -40,7 +40,15 @@ export class FlailWeaponModel extends FlailItemBaseModel {
       // corresponding dice pattern comes up.
       deathBlow: new fields.StringField({ required: false, blank: true, initial: "" }),
       majorHit:  new fields.StringField({ required: false, blank: true, initial: "" }),
-      anyHit:    new fields.StringField({ required: false, blank: true, initial: "" })
+      anyHit:    new fields.StringField({ required: false, blank: true, initial: "" }),
+      // Special attack feature — free-form rich text describing any
+      // unusual mechanic the weapon has beyond its base TH/DMG (e.g.
+      // "Cleave on natural triplet", "Poisoned — Death Blow trigger
+      // adds -1 STR", "Reach: may target adjacent tokens Nearby+1").
+      // Rendered as its own section on the weapon sheet with a
+      // ProseMirror editor. Nothing automated — this is GM/player
+      // reference text.
+      specialFeature: new fields.HTMLField({ required: false, blank: true, initial: "" })
     };
   }
 }
@@ -258,9 +266,16 @@ export class FlailInstrumentModel extends FlailItemBaseModel {
 
 /**
  * Cutthroat guild — drag a guild Item onto the character sheet to set
- * their guild affiliation. Bundles starting talent keys (auto-marked
- * on the actor when the guild is taken), sigil description, blurb,
- * and the seven guild-specific special actions.
+ * their guild affiliation. Bundles item-data snapshots for starting
+ * talents (dropped onto the guild sheet as talent Items) and special
+ * actions (dropped as feature Items), plus sigil description and blurb.
+ *
+ * Legacy fields `startingTalents` (string keys into FLAIL.cutthroatTalents)
+ * and `specialActions` (structured {key,name,description}) are kept in
+ * the schema so bundled compendium guilds imported under the old data
+ * model continue to work. The character-sheet drop handler prefers the
+ * new item-data arrays when present and falls back to the legacy fields
+ * otherwise.
  */
 export class FlailGuildModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
@@ -268,20 +283,28 @@ export class FlailGuildModel extends foundry.abstract.TypeDataModel {
       ...descriptionField(),
       blurb: new fields.StringField({ required: false, blank: true, initial: "" }),
       sigil: new fields.StringField({ required: false, blank: true, initial: "" }),
-      // Talent keys matching FLAIL.cutthroatTalents (config.mjs).
+      // New drop-based fields — full item document snapshots. Each
+      // element is passed straight to createEmbeddedDocuments when the
+      // guild is dropped onto a Cutthroat.
+      talentItems: new fields.ArrayField(
+        new fields.ObjectField(),
+        { initial: () => [] }
+      ),
+      actionItems: new fields.ArrayField(
+        new fields.ObjectField(),
+        { initial: () => [] }
+      ),
+      // Legacy string keys — still supported by the drop handler for
+      // bundled guilds imported under the old data model.
       startingTalents: new fields.ArrayField(
         new fields.StringField({ blank: false }),
         { initial: () => [] }
       ),
-      // Seven special actions. Each entry has a stable key, a display
-      // name, and a one-sentence rules description. Buttons on the
-      // class panel dispatch by action key.
+      // Legacy structured actions — relaxed from SchemaField to
+      // ObjectField so bundled guilds continue to load without
+      // validation errors.
       specialActions: new fields.ArrayField(
-        new fields.SchemaField({
-          key:         new fields.StringField({ blank: false }),
-          name:        new fields.StringField({ blank: false }),
-          description: new fields.StringField({ blank: true, initial: "" })
-        }),
+        new fields.ObjectField(),
         { initial: () => [] }
       )
     };

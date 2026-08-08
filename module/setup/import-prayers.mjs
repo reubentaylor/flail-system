@@ -8,8 +8,10 @@ import { DIVINE_PRAYERS } from "./prayers-data.mjs";
  *
  *   1 — initial bundle (24 prayers from FLAIL v0.2 page 20).
  *       Six prayers each for Brotherhood, Crusade, Shadow Demon, Verdant Grove.
+ *   2 — FLAIL v1 rulebook (p.22): Holy Shield clarified that each ally
+ *       gets their own separate shield ("each gain a radiant energy shield").
  */
-export const DIVINE_PRAYERS_VERSION = 1;
+export const DIVINE_PRAYERS_VERSION = 2;
 
 const VERSION_SETTING = "divinePrayersVersion";
 const PACK_NAME = "flail-divine-prayers";

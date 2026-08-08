@@ -18,6 +18,7 @@ import { FLAIL_MACROS } from "./macros-data.mjs";
  *     5 — added Wizard Towers (4 d10 columns from p.84).
  *     6 — added Caves (5 d6 theme columns + Chamber Contents + Tunnel
  *         Encounter tables from p.86).
+ *     7 — added Weak/Strong/Mighty Potions rolltables (p.113).
  *
  *   Macros:
  *     1 — initial bundle (Roll Death Table).
@@ -30,9 +31,26 @@ import { FLAIL_MACROS } from "./macros-data.mjs";
  *     7 — extended Build Wizard Tower: adds wizard stats
  *         (level/HP/mana), 5 random spells, and 5-7 floor stack.
  *     8 — added Build Cave, Roll Cave Chamber, Roll Cave Tunnel.
+ *     9 — added Roll Weak/Strong/Mighty Potion rollers.
+ *     10 — added Brew Potion (Tier 3 brewing helper with ingredient
+ *          dialog, category validation, recipe-book persistence) and
+ *          Show Known Recipes.
+ *     11 — assigned Foundry potion-bottle icons to all 5 potion
+ *          macros (green Weak / blue Strong / purple Mighty rollers,
+ *          alchemical flask for Brew, brown bottle for Recipes).
+ *     12 — corrected potion-macro icon paths to bottle-bulb-corked-<c>.
+ *     13 — resolved macro icons to actual Foundry filenames after
+ *          folder audit (conical blue, stopper yellow, jug brown, etc).
+ *     14 — added eight city-generation macros: Build City Theme,
+ *          Build Tavern, Roll Random Building, four per-suit rollers,
+ *          and Build City (Tier 3 mega-generator with Journal Entry
+ *          persistence).
+ *
+ *   Rolltables 8: added fifteen city-generation tables (six theme
+ *   d20s, event d6, four tavern d10s, four suit d13s).
  */
-export const FLAIL_ROLLTABLES_VERSION = 6;
-export const FLAIL_MACROS_VERSION = 8;
+export const FLAIL_ROLLTABLES_VERSION = 8;
+export const FLAIL_MACROS_VERSION = 14;
 
 const ROLLTABLES_SETTING = "rolltablesVersion";
 const MACROS_SETTING = "macrosVersion";

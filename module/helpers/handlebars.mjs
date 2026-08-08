@@ -79,10 +79,16 @@ export function registerHandlebarsHelpers() {
   if (!Handlebars.helpers.sub) Handlebars.registerHelper("sub", (a, b) => Number(a) - Number(b));
   if (!Handlebars.helpers.mul) Handlebars.registerHelper("mul", (a, b) => Number(a) * Number(b));
 
-  // {{flail-includes arr value}}
-  Handlebars.registerHelper("flail-includes", (arr, val) =>
-    Array.isArray(arr) ? arr.includes(val) : false
-  );
+  // {{flail-includes arr value}} — membership check that handles both
+  // Arrays and Sets. Foundry v13's SetField stores values as Set
+  // objects, not Arrays; without the Set branch, this helper would
+  // always return false for SetField values (e.g. weapon.system.range),
+  // and every derived checkbox would render as unchecked no matter what.
+  Handlebars.registerHelper("flail-includes", (arr, val) => {
+    if (Array.isArray(arr))  return arr.includes(val);
+    if (arr instanceof Set)  return arr.has(val);
+    return false;
+  });
 
   // {{array ...items}} — build inline arrays in templates.
   if (!Handlebars.helpers.array) Handlebars.registerHelper("array", (...args) => args.slice(0, -1));

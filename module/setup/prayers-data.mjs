@@ -157,7 +157,7 @@ export const DIVINE_PRAYERS = [
     "type": "prayer",
     "img": "icons/svg/aura.svg",
     "system": {
-      "description": "<p>[LEVEL] allies Nearby gain a radiant energy shield with 2d4 hit points.</p>",
+      "description": "<p>[LEVEL] allies Nearby each gain a radiant energy shield with 2d4 hit points.</p>",
       "religion": "crusade",
       "effectFormula": ""
     },

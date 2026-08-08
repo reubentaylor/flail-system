@@ -52,7 +52,8 @@ export class FlailConstructSheet extends HandlebarsApplicationMixin(ActorSheetV2
       setOwner:              FlailConstructSheet.#onSetOwner,
       clearOwner:            FlailConstructSheet.#onClearOwner,
       breakDown:             FlailConstructSheet.#onBreakDown,
-      rebuild:               FlailConstructSheet.#onRebuild
+      rebuild:               FlailConstructSheet.#onRebuild,
+      editImage:             FlailConstructSheet.#onEditImage
     },
     form: { submitOnChange: true, closeOnSubmit: false },
     dragDrop: [{ dragSelector: ".construct-slot .slot-item", dropSelector: ".construct-slot" }]
@@ -316,6 +317,77 @@ export class FlailConstructSheet extends HandlebarsApplicationMixin(ActorSheetV2
     root.querySelectorAll(".construct-slot .slot-item").forEach(el => {
       el.addEventListener("dragstart", this.#onDragStart.bind(this));
     });
+
+    // Editor pencil click — Foundry v13's HandlebarsApplicationMixin does
+    // NOT auto-wire the {{editor}} helper's edit button for HTMLField
+    // editors on ApplicationV2 sheets. Same fix as the character, NPC,
+    // and item sheets.
+    root.querySelectorAll(".editor a.editor-edit, .editor button.editor-edit").forEach(btn => {
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        await this.#activateEditor(btn);
+      });
+    });
+  }
+
+  /**
+   * Activate a ProseMirror editor in place of an {{editor}} helper's
+   * view mode. Same helper as on the other sheets.
+   */
+  async #activateEditor(btn) {
+    const editorEl = btn.closest(".editor");
+    if (!editorEl) return;
+    const contentEl = editorEl.querySelector("[data-edit], [name]");
+    if (!contentEl) return;
+    const field = contentEl.dataset.edit ?? contentEl.getAttribute("name");
+    if (!field) return;
+    if (editorEl.classList.contains("prosemirror-editing")) return;
+
+    const currentValue = foundry.utils.getProperty(this.document, field) ?? "";
+
+    const PM = globalThis.ProseMirror ?? foundry?.prosemirror;
+    if (!PM?.ProseMirrorEditor) {
+      contentEl.setAttribute("contenteditable", "true");
+      contentEl.style.outline = "2px solid var(--flail-rule, #b58b3e)";
+      contentEl.focus();
+      const original = contentEl.innerHTML;
+      const stop = async (save) => {
+        contentEl.setAttribute("contenteditable", "false");
+        contentEl.style.outline = "";
+        if (save) await this.document.update({ [field]: contentEl.innerHTML });
+        else contentEl.innerHTML = original;
+        this.render(false);
+      };
+      contentEl.addEventListener("blur", () => stop(true), { once: true });
+      contentEl.addEventListener("keydown", ev => {
+        if (ev.key === "Escape") { ev.preventDefault(); stop(false); }
+      });
+      return;
+    }
+
+    editorEl.classList.add("prosemirror-editing");
+
+    try {
+      const schema = PM.defaultSchema;
+      const menu = PM.ProseMirrorMenu.build(schema, {
+        destroyOnSave: true,
+        onSave: async () => {
+          setTimeout(() => this.render(false), 100);
+        }
+      });
+      const keyMaps = PM.ProseMirrorKeyMaps.build(schema, { onSave: () => {} });
+
+      await PM.ProseMirrorEditor.create(contentEl, currentValue, {
+        document:  this.document,
+        fieldName: field,
+        plugins:   { menu, keyMaps }
+      });
+    } catch (err) {
+      console.error("FLAIL | Failed to activate ProseMirror editor", err);
+      editorEl.classList.remove("prosemirror-editing");
+      ui.notifications?.error("Editor failed to open — see console.");
+    }
   }
 
   #onDragStart(event) {
@@ -1097,6 +1169,32 @@ export class FlailConstructSheet extends HandlebarsApplicationMixin(ActorSheetV2
     });
     if (chosen === null || chosen === undefined) return null;
     return improvements[chosen] ?? null;
+  }
+
+  /**
+   * Click on the construct portrait — opens Foundry's FilePicker so
+   * the owner can pick a new image path. If Tokenizer is active this
+   * handler no-ops so Tokenizer's own hook (on `data-edit="img"`)
+   * takes over. Shift-click forces FilePicker regardless.
+   */
+  static async #onEditImage(event, target) {
+    if (!this.isEditable) return;
+    const forceFilePicker = event?.shiftKey === true;
+    const tokenizerActive = !!game.modules?.get("vtta-tokenizer")?.active;
+    if (tokenizerActive && !forceFilePicker) return;
+    const current = this.actor.img ?? "";
+    const FilePickerImpl = foundry.applications?.apps?.FilePicker?.implementation
+      ?? globalThis.FilePicker;
+    if (!FilePickerImpl) {
+      ui.notifications?.warn("FilePicker unavailable in this environment.");
+      return;
+    }
+    const fp = new FilePickerImpl({
+      type: "image",
+      current,
+      callback: (path) => this.actor.update({ img: path })
+    });
+    fp.browse();
   }
 }
 

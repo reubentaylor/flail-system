@@ -221,6 +221,10 @@
       <label class="full">Name
         <input type="text" name="system.undeadPuppet.name" value="{{system.undeadPuppet.name}}" {{#unless editable}}disabled{{/unless}} />
       </label>
+      <p class="puppet-attack-hint">
+        <i class="fas fa-circle-info"></i>
+        {{localize "FLAIL.BoneWhisperer.PuppetAttackHint"}}
+      </p>
       <label>HP
         <input type="number" name="system.undeadPuppet.hp" value="{{system.undeadPuppet.hp}}" min="0" {{#unless editable}}disabled{{/unless}} />
       </label>
@@ -405,18 +409,24 @@
           <span class="stat"><strong>HP</strong> {{shapeshift.beast.hp}}</span>
           <span class="stat"><strong>Defence</strong> {{shapeshift.beast.defence}}</span>
           <span class="stat"><strong>Mov</strong> {{shapeshift.beast.mov}}</span>
-          <span class="stat stat-th"><strong>+TH</strong> {{shapeshift.onesCount}}</span>
+          <span class="stat stat-round"><strong>{{localize "FLAIL.Shapeshift.RoundLabel"}}</strong> {{shapeshift.roundNumber}}</span>
+          <span class="stat stat-th"><strong>+TH</strong> {{shapeshift.thBonus}}</span>
+          <span class="stat stat-dmg"><strong>+DMG</strong> {{shapeshift.dmgBonus}}</span>
         </div>
-        {{#if shapeshift.sixesCount}}
-        <p class="shapeshift-warn">
-          <i class="fas fa-triangle-exclamation"></i>
-          {{localize "FLAIL.Shapeshift.MutationWarning" sixes=shapeshift.sixesCount}}
+        <p class="shapeshift-note">
+          <i class="fas fa-circle-info"></i>
+          {{localize "FLAIL.Shapeshift.GiftsDisabled"}}
         </p>
-        {{/if}}
-        <button type="button" class="shapeshift-revert-btn" data-action="shapeshiftRevert">
-          <i class="fas fa-person"></i>
-          {{localize "FLAIL.Shapeshift.RevertButton"}}
-        </button>
+        <div class="shapeshift-buttons">
+          <button type="button" class="shapeshift-roll-btn" data-action="shapeshiftRoll">
+            <i class="fas fa-dice-d6"></i>
+            {{localize "FLAIL.Shapeshift.RollRoundButton"}}
+          </button>
+          <button type="button" class="shapeshift-revert-btn" data-action="shapeshiftRevert">
+            <i class="fas fa-person"></i>
+            {{localize "FLAIL.Shapeshift.RevertButton"}}
+          </button>
+        </div>
       </div>
     {{else}}
       <div class="shapeshift-body">
@@ -579,6 +589,12 @@
       {{jackOfAllTradesCount}} / {{jackOfAllTradesLevel}}
       <span class="joat-slot-hint">{{localize "FLAIL.Bard.JOAT.SlotHint"}}</span>
     </p>
+    {{#if bardSetBonus}}
+    <p class="joat-set-bonus">
+      <i class="fas fa-star"></i>
+      {{localize "FLAIL.Bard.JOAT.SetBonusActive" setName=bardSetBonus.setName}}
+    </p>
+    {{/if}}
     {{#if jackOfAllTradesItems.length}}
       <ul class="joat-list">
       {{#each jackOfAllTradesItems as |j|}}

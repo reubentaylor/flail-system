@@ -14,8 +14,52 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     classes: ["flail", "sheet", "item"],
     position: { width: 480, height: 540 },
     form: { submitOnChange: true, closeOnSubmit: false },
-    actions: {}
+    actions: {
+      removeGuildEntry: FlailItemSheet.#onRemoveGuildEntry,
+      editImage:        FlailItemSheet.#onEditImage
+    }
   };
+
+  /**
+   * Remove an entry from a guild item's talentItems or actionItems
+   * array. Wired by the row's "x" button. Reads the list name and
+   * index from the button's data attributes.
+   */
+  static async #onRemoveGuildEntry(event, target) {
+    if (this.item.type !== "guild") return;
+    const list = target.dataset.guildList;
+    const idx = Number(target.dataset.idx);
+    if (!list || Number.isNaN(idx)) return;
+    const field = list === "talent" ? "talentItems" : "actionItems";
+    const current = [...(this.item.system[field] ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current.splice(idx, 1);
+    await this.item.update({ [`system.${field}`]: current });
+  }
+
+  /**
+   * Click on the item image → opens Foundry's FilePicker so the user
+   * can pick a new image path. Same behaviour as the character sheet's
+   * portrait click, minus the Tokenizer branch (Tokenizer targets
+   * actors, not items). Prefers the modern applications namespace and
+   * falls back to the legacy global if that's not available.
+   */
+  static async #onEditImage(event, target) {
+    if (!this.isEditable) return;
+    const current = this.item.img ?? "";
+    const FilePickerImpl = foundry.applications?.apps?.FilePicker?.implementation
+      ?? globalThis.FilePicker;
+    if (!FilePickerImpl) {
+      ui.notifications?.warn("FilePicker unavailable in this environment.");
+      return;
+    }
+    const fp = new FilePickerImpl({
+      type: "image",
+      current,
+      callback: (path) => this.item.update({ img: path })
+    });
+    fp.browse();
+  }
 
   /**
    * Per-type sizing override. The instrument sheet has a 10-row d10 effect
@@ -130,5 +174,138 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       }
     }
     return data;
+  }
+
+  _onRender(context, options) {
+    super._onRender?.(context, options);
+    const root = this.element;
+    if (!root) return;
+
+    // Weapon range checkboxes — plain change listener. Now that
+    // flail-includes handles Set values correctly, we don't need any
+    // interception tricks. Browser toggles the box naturally on click,
+    // change fires, we gather the new state and update. Foundry's
+    // submitOnChange also fires but with FormData that has no
+    // system.range key (the inputs have data-range instead of name),
+    // so its document.update merges without touching the range field —
+    // no race, no clear.
+    root.querySelectorAll('input[type="checkbox"][data-range]').forEach(cb => {
+      cb.addEventListener("change", async () => {
+        const current = [...root.querySelectorAll('input[type="checkbox"][data-range]:checked')]
+          .map(el => el.dataset.range);
+        await this.document.update({ "system.range": current });
+      });
+    });
+
+    // Guild drop zones — one for talent items, one for feature items.
+    // On drop, snapshot the dropped item's data and append to the
+    // matching schema array. The character-sheet guild-drop handler
+    // then materialises these as embedded items on the actor.
+    if (this.item.type === "guild") {
+      root.querySelectorAll("[data-guild-drop]").forEach(zone => {
+        zone.addEventListener("dragover", ev => {
+          ev.preventDefault();
+          if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
+          zone.classList.add("drop-active");
+        });
+        zone.addEventListener("dragleave", () => zone.classList.remove("drop-active"));
+        zone.addEventListener("drop", async ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          zone.classList.remove("drop-active");
+          const kind = zone.dataset.guildDrop;   // "talent" | "action"
+          const expectedType = kind === "talent" ? "talent" : "feature";
+          let payload;
+          try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); }
+          catch { return; }
+          const dropped = await Item.implementation.fromDropData(payload);
+          if (!dropped) return;
+          if (dropped.type !== expectedType) {
+            ui.notifications?.warn(
+              kind === "talent"
+                ? game.i18n.localize("FLAIL.Notify.GuildExpectTalent")
+                : game.i18n.localize("FLAIL.Notify.GuildExpectFeature")
+            );
+            return;
+          }
+          const snapshot = dropped.toObject();
+          const field = kind === "talent" ? "talentItems" : "actionItems";
+          const current = [...(this.item.system[field] ?? [])];
+          current.push(snapshot);
+          await this.item.update({ [`system.${field}`]: current });
+        });
+      });
+    }
+
+    // Editor pencil click — Foundry v13's HandlebarsApplicationMixin does
+    // NOT auto-wire the {{editor}} helper's edit button for HTMLField
+    // editors on ApplicationV2 sheets. Wire it ourselves. Same fix as
+    // the character and NPC sheets.
+    root.querySelectorAll(".editor a.editor-edit, .editor button.editor-edit").forEach(btn => {
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        await this.#activateEditor(btn);
+      });
+    });
+  }
+
+  /**
+   * Activate a ProseMirror editor in place of an {{editor}} helper's
+   * view mode. Same helper as on the actor sheets.
+   */
+  async #activateEditor(btn) {
+    const editorEl = btn.closest(".editor");
+    if (!editorEl) return;
+    const contentEl = editorEl.querySelector("[data-edit], [name]");
+    if (!contentEl) return;
+    const field = contentEl.dataset.edit ?? contentEl.getAttribute("name");
+    if (!field) return;
+    if (editorEl.classList.contains("prosemirror-editing")) return;
+
+    const currentValue = foundry.utils.getProperty(this.document, field) ?? "";
+
+    const PM = globalThis.ProseMirror ?? foundry?.prosemirror;
+    if (!PM?.ProseMirrorEditor) {
+      contentEl.setAttribute("contenteditable", "true");
+      contentEl.style.outline = "2px solid var(--flail-rule, #b58b3e)";
+      contentEl.focus();
+      const original = contentEl.innerHTML;
+      const stop = async (save) => {
+        contentEl.setAttribute("contenteditable", "false");
+        contentEl.style.outline = "";
+        if (save) await this.document.update({ [field]: contentEl.innerHTML });
+        else contentEl.innerHTML = original;
+        this.render(false);
+      };
+      contentEl.addEventListener("blur", () => stop(true), { once: true });
+      contentEl.addEventListener("keydown", ev => {
+        if (ev.key === "Escape") { ev.preventDefault(); stop(false); }
+      });
+      return;
+    }
+
+    editorEl.classList.add("prosemirror-editing");
+
+    try {
+      const schema = PM.defaultSchema;
+      const menu = PM.ProseMirrorMenu.build(schema, {
+        destroyOnSave: true,
+        onSave: async () => {
+          setTimeout(() => this.render(false), 100);
+        }
+      });
+      const keyMaps = PM.ProseMirrorKeyMaps.build(schema, { onSave: () => {} });
+
+      await PM.ProseMirrorEditor.create(contentEl, currentValue, {
+        document:  this.document,
+        fieldName: field,
+        plugins:   { menu, keyMaps }
+      });
+    } catch (err) {
+      console.error("FLAIL | Failed to activate ProseMirror editor", err);
+      editorEl.classList.remove("prosemirror-editing");
+      ui.notifications?.error("Editor failed to open — see console.");
+    }
   }
 }

@@ -43,6 +43,8 @@ import { ensureThievingTalentsCompendium } from "./setup/import-thieving-talents
 import { ensureFlailRollTables, ensureFlailMacros } from "./setup/import-rolltables.mjs";
 import { ensureFlailBestiary } from "./setup/import-bestiary.mjs";
 import { ensureFlailUniqueItems } from "./setup/import-unique-items.mjs";
+import { ensureFlailScrolls } from "./setup/import-scrolls.mjs";
+import { ensureFlailPotions } from "./setup/import-potions.mjs";
 import { ensureDivinePrayersCompendium } from "./setup/import-prayers.mjs";
 import { ensureConditionsCompendium } from "./setup/import-conditions.mjs";
 import { ensureGuildsCompendium } from "./setup/import-guilds.mjs";
@@ -165,6 +167,30 @@ Hooks.once("init", () => {
       config: false,
       type: Number,
       default: 0
+    });
+    game.settings.register("flail", "scrollsVersion", {
+      name: "FLAIL Scrolls version",
+      hint: "Internal — last bundled scrolls version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "potionsVersion", {
+      name: "FLAIL Potions version",
+      hint: "Internal — last bundled potions version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "potionRecipes", {
+      name: "FLAIL Learned Potion Recipes",
+      hint: "Internal — map of ingredient combinations to brewed potions. Populated by the Brew Potion macro.",
+      scope: "world",
+      config: false,
+      type: Object,
+      default: {}
     });
     game.settings.register("flail", "divinePrayersVersion", {
       name: "FLAIL Divine Prayers version",
@@ -294,6 +320,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/actor/parts/conditions-strip.hbs",
         "systems/flail/templates/actor/parts/loose-items.hbs",
         "systems/flail/templates/actor/parts/biography.hbs",
+        "systems/flail/templates/actor/parts/notes-panel.hbs",
         "systems/flail/templates/item/parts/header.hbs",
         "systems/flail/templates/item/parts/body.hbs",
         "systems/flail/templates/item/types/weapon.hbs",
@@ -315,6 +342,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/chat/miracle-call.hbs",
         "systems/flail/templates/chat/rest.hbs",
         "systems/flail/templates/chat/shapeshift-start.hbs",
+        "systems/flail/templates/chat/shapeshift-round.hbs",
         "systems/flail/templates/chat/shapeshift-revert.hbs"
       ]).catch(err => console.warn(`${TAG} template preload skipped:`, err?.message ?? err));
     }
@@ -363,6 +391,20 @@ Hooks.once("i18nInit", () => {
 Hooks.once("setup",       () => console.log(`${TAG} setup`));
 Hooks.once("ready", async () => {
   console.log(`${TAG} ready`);
+
+  // Recipe-book socket: non-GM users emit here when Brew Potion
+  // discovers a new recipe. The GM's client persists the world setting.
+  game.socket.on("system.flail", async (data) => {
+    if (data?.type !== "savePotionRecipe" || !game.user?.isGM) return;
+    try {
+      const recipes = game.settings.get("flail", "potionRecipes") ?? {};
+      recipes[data.key] = data.value;
+      await game.settings.set("flail", "potionRecipes", recipes);
+    } catch (err) {
+      console.error(`${TAG} failed to save recipe from socket`, err);
+    }
+  });
+
   await ensureCommonItemsCompendium();
   await ensureDarkSpellsCompendium();
   await ensureWizardSpellsCompendium();
@@ -373,6 +415,8 @@ Hooks.once("ready", async () => {
   await ensureFlailMacros();
   await ensureFlailBestiary();
   await ensureFlailUniqueItems();
+  await ensureFlailScrolls();
+  await ensureFlailPotions();
   await ensureDivinePrayersCompendium();
   await ensureConditionsCompendium();
   await ensureGuildsCompendium();
@@ -394,6 +438,80 @@ Hooks.once("ready", async () => {
       await applyWitnessMeBuffFromSocket(source);
     }
   });
+
+  // Public API — exposed via game.flail for external modules (e.g. the
+  // Token Action HUD FLAIL companion module). Kept intentionally small:
+  // wrapper functions around the internal roll modules + a generic
+  // "trigger any sheet action" bridge. Any external caller should
+  // guard against `game.flail` being undefined (means the FLAIL system
+  // isn't active in this world).
+  game.flail = game.flail ?? {};
+  Object.assign(game.flail, {
+    /** Roll a save (STR/DEX/CHA/INT/LUCK) for the given actor. */
+    rollSave: (actor, attribute, options = {}) => rollSave({ actor, attribute, ...options }),
+
+    /** Roll a To-Hit attack for the actor with the given weapon Item. */
+    rollAttack: (actor, weapon, options = {}) => actor.rollAttack(weapon, options),
+
+    /** Roll a morale save for an NPC (delegates to rollSave with NPC.morale). */
+    rollMorale: (npc, options = {}) => {
+      const morale = npc?.system?.morale ?? 0;
+      // Morale mechanic: d6 roll-under vs morale score. Reuse rollSave
+      // wired to a synthetic attribute if it can accept one; otherwise
+      // implement inline. For now delegate to a Roll — the sheet's
+      // morale button also uses this pattern.
+      const roll = new Roll("1d6");
+      return roll.toMessage({
+        speaker: ChatMessage.getSpeaker({ actor: npc }),
+        flavor: `${npc.name} — Morale (target ≤ ${morale})`
+      });
+    },
+
+    /**
+     * Generic bridge: trigger any registered sheet action on the given
+     * actor's sheet. Handles rendering the sheet if it's not open, then
+     * calls the action handler with a synthesized event + target
+     * element carrying any data attributes passed in.
+     *
+     * The optional `eventOptions` bag lets callers set modifier-key
+     * flags (altKey, shiftKey, ctrlKey, metaKey) on the synthesized
+     * event — critical for handlers like #onRollAttack that branch on
+     * modifier state to show the roll-modifier dialog.
+     *
+     * Example:
+     *   game.flail.triggerSheetAction(actor, "shapeshiftRoll");
+     *   game.flail.triggerSheetAction(actor, "rollAttack",
+     *     { itemId: weapon.id }, { altKey: true });
+     */
+    triggerSheetAction: async (actor, actionName, dataAttrs = {}, eventOptions = {}) => {
+      if (!actor?.sheet) return;
+      const sheet = actor.sheet;
+      const handler = sheet.constructor?.DEFAULT_OPTIONS?.actions?.[actionName];
+      if (!handler) {
+        console.warn(`FLAIL | No action "${actionName}" registered on ${actor.name}'s sheet`);
+        return;
+      }
+      // Synthesize a target element with the provided data attributes
+      // so handlers that read from target.dataset get consistent data.
+      const target = document.createElement("button");
+      for (const [k, v] of Object.entries(dataAttrs)) target.dataset[k] = v;
+      // Synthesize a MouseEvent so modifier flags (altKey, shiftKey,
+      // etc.) can be attached — a plain Event doesn't accept them.
+      const event = new MouseEvent("click", {
+        altKey:   eventOptions.altKey   ?? false,
+        shiftKey: eventOptions.shiftKey ?? false,
+        ctrlKey:  eventOptions.ctrlKey  ?? false,
+        metaKey:  eventOptions.metaKey  ?? false,
+        bubbles: true
+      });
+      // NOTE: intentionally do NOT force-render the sheet. Handlers
+      // called via this bridge (rollAttack, rollSave, castSpell etc.)
+      // operate on actor data and don't need the sheet DOM. Rendering
+      // would visibly pop the sheet open on TAH clicks — undesirable.
+      // Any handler that DOES need the DOM should render itself.
+      return handler.call(sheet, event, target);
+    }
+  });
 });
 Hooks.on  ("canvasReady", () => console.log(`${TAG} canvasReady`));
 
@@ -412,6 +530,71 @@ Hooks.on  ("canvasReady", () => console.log(`${TAG} canvasReady`));
  * hook fires on every connected client, but the userId gate keeps
  * one browser from racing another.
  */
+// Tier 3 — combat tracker integration for shifted Druids. When a
+// combat turn advances and the newly-active combatant is a
+// shapeshifted Druid, whisper the owner a prompt (with an inline
+// button) that fires the same Roll Beast Round action as the sheet
+// button. Only the owner and GMs see it.
+Hooks.on("updateCombat", async (combat, changes, options, userId) => {
+  // Only the user who advanced the turn runs this — avoid duplicate
+  // prompts from every connected client.
+  if (userId !== game.user.id) return;
+  if (!("turn" in changes) && !("round" in changes)) return;
+  const combatant = combat?.combatant;
+  const actor = combatant?.actor;
+  if (!actor) return;
+  if (actor.type !== "character") return;
+  if (actor.system.class !== "druid") return;
+  if (!actor.system.shapeshift?.active) return;
+  const round = actor.system.shapeshift.roundNumber ?? 0;
+  const whisperTargets = [
+    ...game.users.filter(u => u.isGM).map(u => u.id),
+    ...game.users.filter(u => actor.testUserPermission(u, "OWNER") && !u.isGM).map(u => u.id)
+  ];
+  const content = `
+<div class="flail-chat-card shapeshift-turn-prompt" style="background:#f6f0e1;border:1px solid #b58b3e;border-radius:4px;padding:0.6em 0.9em;">
+  <p style="margin:0 0 0.4em 0;font-family:'Modesto Condensed','Cinzel',serif;font-size:1.05em;color:#6a4d0e;">
+    <i class="fas fa-paw"></i>
+    ${actor.name}'s beast round ${round + 1}
+  </p>
+  <p style="margin:0 0 0.6em 0;font-size:0.9em;">
+    Roll 1d6 to see how the beast form fares this round.
+  </p>
+  <button type="button"
+    data-flail-shift-roll="${actor.id}"
+    style="background:#b58b3e;color:#f6f0e1;border:none;border-radius:3px;padding:0.35em 0.8em;font-family:inherit;cursor:pointer;">
+    <i class="fas fa-dice-d6"></i> Roll Beast Round
+  </button>
+</div>`;
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    whisper: whisperTargets,
+    content
+  });
+});
+
+// FLAIL v1 rulebook (p.13) — Bard "Witness Me!" now lasts "for this
+// combat" instead of a single round. The Active Effect no longer has
+// a rounds duration, so we clean it up wholesale when the referenced
+// combat ends. Any character with an effect flagged
+// flags.flail.witnessMe.combatId === combat.id gets it deleted.
+Hooks.on("deleteCombat", async (combat, options, userId) => {
+  // Only the GM has permission to delete effects on actors they don't
+  // own. Non-GMs skip and rely on the GM being present at combat end.
+  if (!game.user.isGM) return;
+  if (userId !== game.user.id && !game.users.filter(u => u.isGM).some(u => u.id === game.user.id)) return;
+  const targetId = combat.id;
+  for (const actor of game.actors.filter(a => a.type === "character")) {
+    const stale = actor.effects.filter(e => {
+      const wm = e.getFlag("flail", "witnessMe");
+      return wm && wm.combatId === targetId;
+    });
+    if (stale.length) {
+      await actor.deleteEmbeddedDocuments("ActiveEffect", stale.map(e => e.id));
+    }
+  }
+});
+
 Hooks.on("updateActor", async (actor, changed, options, userId) => {
   if (userId !== game.user.id) return;
   if (actor.type !== "character") return;

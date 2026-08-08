@@ -1,53 +1,70 @@
 <div class="flail-chat-card shapeshift-revert-card">
   <header class="flail-chat-header shapeshift-header">
     <i class="fas fa-person"></i>
-    <span>{{localize "FLAIL.Shapeshift.RevertCardTitle"}}</span>
+    {{#if forced}}
+    <span>{{localize "FLAIL.Shapeshift.ForcedRevertTitle"}}</span>
+    {{else}}
+    <span>{{localize "FLAIL.Shapeshift.RevertTitle"}}</span>
+    {{/if}}
   </header>
   <div class="flail-chat-body">
-    <p class="revert-line">
-      <strong>{{actor.name}}</strong> {{localize "FLAIL.Shapeshift.RevertsFrom"}}
-      <strong class="beast-name">{{beastForm}}</strong>
+    <p class="shift-revert-line">
+      <strong>{{actor.name}}</strong>
+      {{#if forced}}
+        {{localize "FLAIL.Shapeshift.ForcedRevertLine"}}
+      {{else}}
+        {{localize "FLAIL.Shapeshift.RevertLine"}}
+      {{/if}}
+      <span class="beast-name">({{beastForm}})</span>
     </p>
 
-    {{#if hadSixes}}
-      <div class="mutation-saves">
-        <h4>{{localize "FLAIL.Shapeshift.MutationSaves"}}</h4>
-        <ul class="save-list">
-          {{#each saveOutcomes}}
-          <li class="save-row {{#if pass}}save-pass{{else}}save-fail{{/if}}">
-            <span class="save-attr">{{attributeLabel}}</span>
-            <span class="save-detail">
-              {{localize "FLAIL.Shapeshift.SaveDetail" score=score rolled=rolled}}
-            </span>
-            <span class="save-result">
-              {{#if pass}}
-              <i class="fas fa-check"></i> {{localize "FLAIL.Save.Success"}}
-              {{else}}
-              <i class="fas fa-times"></i> {{localize "FLAIL.Save.Fail"}}
-              {{/if}}
-            </span>
-          </li>
-          {{/each}}
-        </ul>
-      </div>
+    {{#if roundNumber}}
+    <div class="shift-run-summary">
+      <span class="stat stat-round"><strong>{{localize "FLAIL.Shapeshift.RoundsSpent"}}</strong> {{roundNumber}}</span>
+      <span class="stat stat-th"><strong>+TH</strong> {{thBonus}}</span>
+      <span class="stat stat-dmg"><strong>+DMG</strong> {{dmgBonus}}</span>
+    </div>
+    {{/if}}
 
-      {{#if losses.length}}
-      <div class="mutation-losses">
-        <strong>{{localize "FLAIL.Shapeshift.PermanentLosses"}}</strong>
-        <ul>
-          {{#each losses}}
-          <li>{{attributeLabel}} −{{amount}}</li>
-          {{/each}}
-        </ul>
+    {{#if rollHistory.length}}
+    <div class="shift-dice-history">
+      <h5>{{localize "FLAIL.Shapeshift.RoundHistory"}}</h5>
+      <div class="shift-dice-row">
+        {{#each rollHistory}}
+        <span class="shift-die shift-die-{{this}}">{{this}}</span>
+        {{/each}}
       </div>
-      {{else}}
-      <p class="mutation-clean">
-        <i class="fas fa-shield-heart"></i>
-        {{localize "FLAIL.Shapeshift.NoLosses"}}
+    </div>
+    {{/if}}
+
+    {{#if saveOutcome}}
+    <div class="shift-save">
+      <h5>{{localize "FLAIL.Shapeshift.SaveHeader"}}</h5>
+      <p class="shift-save-line">
+        <strong>{{saveOutcome.attributeLabel}}</strong>
+        ({{saveOutcome.score}})
+        —
+        {{#if saveOutcome.pass}}
+        <span class="save-pass">{{localize "FLAIL.Shapeshift.SavePass"}} ({{saveOutcome.rolled}})</span>
+        {{else}}
+        <span class="save-fail">{{localize "FLAIL.Shapeshift.SaveFail"}} ({{saveOutcome.rolled}})</span>
+        {{/if}}
       </p>
-      {{/if}}
-    {{else}}
-      <p class="mutation-none">{{localize "FLAIL.Shapeshift.NoRisks"}}</p>
+    </div>
+    {{/if}}
+
+    {{#if attrLoss}}
+    <p class="shift-loss">
+      <i class="fas fa-arrow-down"></i>
+      {{localize "FLAIL.Shapeshift.AttributeLoss" attribute=attrLoss.label amount=attrLoss.amount}}
+    </p>
+    {{/if}}
+
+    {{#if retire}}
+    <p class="shift-retire">
+      <i class="fas fa-skull"></i>
+      {{localize "FLAIL.Shapeshift.RetireNotice"}}
+    </p>
     {{/if}}
   </div>
 </div>

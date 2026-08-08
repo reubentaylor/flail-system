@@ -1,6 +1,16 @@
-{{!-- Guild body — read-only-friendly summary of the bundled guild data.
-     Most fields aren't expected to be edited by the player (they ship
-     baked into the compendium), but kept editable for GM tweaks. --}}
+{{!-- Guild body — blurb + sigil + two drop-zone lists.
+
+     Starting Talents accept talent items dropped from the sidebar or a
+     compendium; each drop is stored as a full item-data snapshot on
+     the guild. Special Actions accept feature items the same way.
+
+     When the guild is dropped onto a Cutthroat, both arrays are
+     materialised as embedded items on the actor.
+
+     Legacy fields (system.startingTalents string keys, system.specialActions
+     structured entries) are shown read-only if present and no items have
+     been dragged onto the sheet yet — so the bundled compendium guilds
+     display their canonical roster until a GM edits them. --}}
 <section class="card">
   <label class="block">{{localize "FLAIL.Field.Blurb"}}
     <input type="text" name="system.blurb" value="{{system.blurb}}" {{#unless editable}}disabled{{/unless}} />
@@ -8,19 +18,77 @@
   <label class="block">{{localize "FLAIL.Field.Sigil"}}
     <input type="text" name="system.sigil" value="{{system.sigil}}" {{#unless editable}}disabled{{/unless}} />
   </label>
+  <p class="guild-sigil-hint">
+    <i class="fas fa-circle-info"></i>
+    {{localize "FLAIL.Guild.SigilNamingHint"}}
+  </p>
+
+  {{!-- Starting Talents drop zone --}}
   <div class="block">
     <label>{{localize "FLAIL.Field.StartingTalents"}}</label>
-    <p class="muted">{{#each system.startingTalents as |t|}}{{t}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+    <div class="guild-drop-list" data-guild-drop="talent">
+      {{#if system.talentItems.length}}
+        {{#each system.talentItems as |entry idx|}}
+        <div class="guild-drop-row" data-guild-list="talent" data-idx="{{idx}}">
+          <img class="row-img" src="{{entry.img}}" alt="" />
+          <span class="row-name">{{entry.name}}</span>
+          {{#if ../editable}}
+          <button type="button" class="row-remove" data-action="removeGuildEntry" data-guild-list="talent" data-idx="{{idx}}" title="{{localize 'FLAIL.Guild.RemoveEntryHint'}}">
+            <i class="fas fa-times"></i>
+          </button>
+          {{/if}}
+        </div>
+        {{/each}}
+      {{else if system.startingTalents.length}}
+        {{#each system.startingTalents as |t|}}
+        <div class="guild-drop-row legacy">
+          <i class="fas fa-hashtag row-img legacy-icon"></i>
+          <span class="row-name">{{t}}</span>
+          <span class="row-legacy-tag">{{localize "FLAIL.Guild.LegacyTag"}}</span>
+        </div>
+        {{/each}}
+      {{else}}
+        <p class="guild-drop-empty">{{localize "FLAIL.Guild.TalentsEmpty"}}</p>
+      {{/if}}
+      {{#if editable}}
+      <p class="guild-drop-hint"><i class="fas fa-arrow-down"></i> {{localize "FLAIL.Guild.TalentsDropHint"}}</p>
+      {{/if}}
+    </div>
   </div>
+
+  {{!-- Special Actions drop zone --}}
   <div class="block">
     <label>{{localize "FLAIL.Field.SpecialActions"}}</label>
-    <ol class="guild-actions-edit">
-      {{#each system.specialActions as |a|}}
-      <li>
-        <strong>{{a.name}}:</strong>
-        <span>{{a.description}}</span>
-      </li>
-      {{/each}}
-    </ol>
+    <div class="guild-drop-list" data-guild-drop="action">
+      {{#if system.actionItems.length}}
+        {{#each system.actionItems as |entry idx|}}
+        <div class="guild-drop-row" data-guild-list="action" data-idx="{{idx}}">
+          <img class="row-img" src="{{entry.img}}" alt="" />
+          <span class="row-name">{{entry.name}}</span>
+          {{#if ../editable}}
+          <button type="button" class="row-remove" data-action="removeGuildEntry" data-guild-list="action" data-idx="{{idx}}" title="{{localize 'FLAIL.Guild.RemoveEntryHint'}}">
+            <i class="fas fa-times"></i>
+          </button>
+          {{/if}}
+        </div>
+        {{/each}}
+      {{else if system.specialActions.length}}
+        {{#each system.specialActions as |a|}}
+        <div class="guild-drop-row legacy">
+          <i class="fas fa-hand-fist row-img legacy-icon"></i>
+          <div class="row-name-desc">
+            <strong>{{a.name}}</strong>
+            <span class="row-desc">{{a.description}}</span>
+          </div>
+          <span class="row-legacy-tag">{{localize "FLAIL.Guild.LegacyTag"}}</span>
+        </div>
+        {{/each}}
+      {{else}}
+        <p class="guild-drop-empty">{{localize "FLAIL.Guild.ActionsEmpty"}}</p>
+      {{/if}}
+      {{#if editable}}
+      <p class="guild-drop-hint"><i class="fas fa-arrow-down"></i> {{localize "FLAIL.Guild.ActionsDropHint"}}</p>
+      {{/if}}
+    </div>
   </div>
 </section>

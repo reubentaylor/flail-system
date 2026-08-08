@@ -164,7 +164,7 @@ export const CONDITIONS = [
     "type": "condition",
     "img": "systems/flail/icons/conditions/starved.svg",
     "system": {
-      "description": "<p>No mechanical penalty in itself, but the rules call for more Starveds to accumulate over time without food.</p><p><em>Clear: eat grub.</em></p>",
+      "description": "<p>No mechanical penalty in itself, but the rules call for another Starved to accumulate every day without food.</p><p><em>Clear: eat grub.</em></p>",
       "location": "unequipped",
       "slotIndex": 0,
       "slotsRequired": 1,

@@ -39,7 +39,7 @@ FLAIL.classes = {
     specialSkills: [
       { name: "Jack of All Trades", desc: "At each level, add a Cutthroat talent, a Tinkerer's gadget, or a Wizard spell of choice. Use each once per day." },
       { name: "Silver Tongue", desc: "Advantage on CHA saves that involve persuasion, influence, or seducing." },
-      { name: "Witness Me!", desc: "When dealing damage in a To Hit while rolling a triplet, deal +d6 damage and allies gain +1 To Hit next round." },
+      { name: "Witness Me!", desc: "When dealing damage in a To Hit while rolling a triplet, deal +d6 damage and allies gain +1 To Hit for this combat." },
       { name: "Musical Talents", desc: "Add an instrument at levels 1, 3, 5. CHA save to play, then roll on the instrument's table." }
     ]
   },
@@ -192,7 +192,7 @@ FLAIL.religions = {
     prayers: [
       { name: "Bless",         text: "[LEVEL] allies Nearby get +1 To Hit in their next round of combat." },
       { name: "Commune",       text: "Ask God a yes-or-no question; use only [LEVEL] times per session." },
-      { name: "Holy Shield",   text: "[LEVEL] allies Nearby gain a radiant energy shield with 2d4 hit points." },
+      { name: "Holy Shield",   text: "[LEVEL] allies Nearby each gain a radiant energy shield with 2d4 hit points." },
       { name: "Locate Object", text: "Sense the location of a previously-touched object." },
       { name: "Quest",         text: "Command someone of same (or inferior) level to perform a specific task." },
       { name: "Recall",        text: "Mark location; may teleport to these coordinates within [LEVEL] + 2 turns." }
@@ -352,7 +352,7 @@ FLAIL.conditions = {
   injured:           { label: "FLAIL.Condition.Injured",          clear: "fullRest",      effect: "Player picks: -1 STR, -1 DEX, or -1 TH" },
   persistentInjury:  { label: "FLAIL.Condition.PersistentInjury", clear: "magicOrMiracle",effect: "-1 STR and -1 DEX" },
   poisoned:          { label: "FLAIL.Condition.Poisoned",         clear: "medicalHealing",effect: "Take a Poisoned each dawn" },
-  starved:           { label: "FLAIL.Condition.Starved",          clear: "meal",          effect: "Take more Starveds every two days" },
+  starved:           { label: "FLAIL.Condition.Starved",          clear: "meal",          effect: "Take another Starved every day" },
   petrified:         { label: "FLAIL.Condition.Petrified",        clear: "other",         effect: "Cannot move or take actions" }
 };
 
@@ -631,7 +631,7 @@ FLAIL.backgrounds = {
     { key: "1", label: "Human plague doctor accidentally possessed by a Lich, yet to reveal itself.",
       perk: "Undead puppets roll Morale saves with advantage." },
     { key: "2", label: "Human vampire entombed alive during the Great Purge, seeking revenge on those responsible.",
-      perk: "May use Bat Form gift (Druid)." },
+      perk: "May turn into a bat once per day for a number of turns equal to level." },
     { key: "3", label: "Human wizard who saw their family slain in the Hollow Massacre and turned to darker arcane arts.",
       perk: "Start with one Wizard spell of choice (use spirit to cast it)." },
     { key: "4", label: "Lizardman who never takes their mask off and has no recollection of their upbringing.",
@@ -726,6 +726,18 @@ FLAIL.backgrounds = {
       perk: "Start with an expert Brawler Mauler talent of choice (Warrior); add axes to weapon speciality." }
   ]
 };
+
+// Append a "custom" option to every class so players can author their
+// own background. The label and perk are placeholders — the character
+// sheet reads the actor's `system.customBackground.{label,perk}` when
+// this key is picked. See actor-character.mjs for the schema.
+for (const cls of Object.keys(FLAIL.backgrounds)) {
+  FLAIL.backgrounds[cls].push({
+    key: "custom",
+    label: "Custom",
+    perk: ""
+  });
+}
 
 /**
  * Construct improvements — rulebook page 32.

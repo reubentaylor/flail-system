@@ -51,7 +51,7 @@ export const TINKERER_GADGETS = [
     "img": "icons/magic/light/projectile-beam-yellow.webp",
     "folder": "d692345967a9f6dc",
     "system": {
-      "description": "Hits a target for d6 damage. On a 6, ricochets onto another random target.",
+      "description": "Hits a target for d8 damage. On an 8, ricochets onto another random target.",
       "gadgetType": "damage",
       "gadgetKey": "buzzsawDisk",
       "slotsRequired": 0,
@@ -74,7 +74,7 @@ export const TINKERER_GADGETS = [
     "img": "icons/magic/fire/explosion-fireball-large-orange.webp",
     "folder": "d692345967a9f6dc",
     "system": {
-      "description": "Walks erratically for one round, then explodes for d8 damage.",
+      "description": "Walks erratically for one round, then explodes for 3d6 damage to all Near it.",
       "gadgetType": "damage",
       "gadgetKey": "clockworkToy",
       "slotsRequired": 0,
@@ -97,7 +97,7 @@ export const TINKERER_GADGETS = [
     "img": "icons/magic/fire/projectile-fireball-smoke-orange.webp",
     "folder": "d692345967a9f6dc",
     "system": {
-      "description": "Cone of flame \u2014 d4 damage to up to two Nearby targets.",
+      "description": "Cone of flame \u2014 d10 damage to up to two Nearby targets.",
       "gadgetType": "damage",
       "gadgetKey": "fireSpitter",
       "slotsRequired": 0,
@@ -120,7 +120,7 @@ export const TINKERER_GADGETS = [
     "img": "icons/creatures/slimes/slime-movement-pseudopods-green.webp",
     "folder": "d692345967a9f6dc",
     "system": {
-      "description": "Attaches to a target; goes off on its next round for d8 damage to all Nearby.",
+      "description": "Attaches to a target; goes off on its next round for 2d8 damage to all Nearby.",
       "gadgetType": "damage",
       "gadgetKey": "gooBlast",
       "slotsRequired": 0,
@@ -143,7 +143,7 @@ export const TINKERER_GADGETS = [
     "img": "icons/magic/light/beams-rays-orange-purple-large.webp",
     "folder": "d692345967a9f6dc",
     "system": {
-      "description": "Hits any target for d4 electrical damage. On a 4, target is stunned.",
+      "description": "Hits any target for d6 electrical damage. On 4-6, target is stunned.",
       "gadgetType": "damage",
       "gadgetKey": "shockBolas",
       "slotsRequired": 0,
@@ -189,7 +189,7 @@ export const TINKERER_GADGETS = [
     "img": "icons/magic/movement/pinwheel-turning-blue.webp",
     "folder": "0fc5ac4de2fddf88",
     "system": {
-      "description": "All metal within Distant range is drawn to it.",
+      "description": "All small metal objects within Distant range are drawn to it.",
       "gadgetType": "control",
       "gadgetKey": "magneticOrb",
       "slotsRequired": 0,
@@ -212,7 +212,7 @@ export const TINKERER_GADGETS = [
     "img": "icons/creatures/slimes/slime-movement-swirling-green.webp",
     "folder": "0fc5ac4de2fddf88",
     "system": {
-      "description": "Fires to Distant range; target may save on their round to break free.",
+      "description": "Shoots to immobilise a target within Distant range.",
       "gadgetType": "control",
       "gadgetKey": "stickyNet",
       "slotsRequired": 0,
@@ -442,7 +442,7 @@ export const TINKERER_GADGETS = [
     "img": "icons/magic/defensive/shield-barrier-flaming-diamond-blue.webp",
     "folder": "60059ddda48ec64d",
     "system": {
-      "description": "Heals d4 HP on injection.",
+      "description": "Heals d4 HP on injection into self or an ally.",
       "gadgetType": "support",
       "gadgetKey": "healingInjector",
       "slotsRequired": 0,

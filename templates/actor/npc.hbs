@@ -1,8 +1,14 @@
-{{!-- NPC sheet template --}}
-<form class="flail-npc-sheet">
+{{!-- NPC sheet template.
+     NOTE: no outer <form> here. Foundry v13's ApplicationV2 with
+     HandlebarsApplicationMixin already wraps the entire sheet in its
+     own <form> element. A nested inner <form> silently breaks
+     submitOnChange: browsers assign input `name`s to the innermost
+     form, so the outer Foundry submit handler never sees the changed
+     fields and nothing persists. --}}
+<div class="flail-npc-sheet">
 
   <header class="npc-header">
-    <img class="profile" src="{{actor.img}}" data-edit="img" />
+    <img class="profile" src="{{actor.img}}" data-edit="img" data-action="editImage" title="{{localize 'FLAIL.Character.ChangePortrait'}}" />
     <div class="meta">
       <input type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'FLAIL.Field.Name'}}" {{#unless editable}}disabled{{/unless}} />
       <div class="row">
@@ -87,6 +93,14 @@
           <button type="button" data-action="itemEdit" data-item-id="{{w.id}}"><i class="fas fa-edit"></i></button>
           <button type="button" data-action="itemDelete" data-item-id="{{w.id}}"><i class="fas fa-trash"></i></button>
         </div>
+        {{!-- Special Attack Feature — free-form text on the weapon
+             item, shown under the name so the GM sees the mechanic
+             at a glance without opening the weapon sheet. --}}
+        {{#if w.system.specialFeature}}
+        <div class="attack-special-feature">
+          <span class="tk">{{localize "FLAIL.Field.SpecialFeature"}}:</span> {{{w.system.specialFeature}}}
+        </div>
+        {{/if}}
         {{!-- Attack trigger clauses — surfaced verbatim from the
              bestiary line so the GM can see them without opening the
              weapon sheet. Each is optional; blank ones don't render. --}}
@@ -120,4 +134,4 @@
     <header><h3>{{localize "FLAIL.Field.Description"}}</h3></header>
     {{editor system.description target="system.description" button=true editable=editable engine="prosemirror"}}
   </section>
-</form>
+</div>

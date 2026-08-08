@@ -10,7 +10,9 @@
         class="portrait-img"
         src="{{actor.img}}"
         alt="{{actor.name}}"
-        data-action="editPortrait"
+        data-edit="img"
+        data-action="editImage"
+        title="{{localize 'FLAIL.Character.ChangePortrait'}}"
       />
     </div>
     <div class="banner-left">
@@ -31,11 +33,36 @@
         >
           <option value="">{{localize "FLAIL.Placeholder.Background"}}</option>
           {{#each backgroundOptions as |opt|}}
-          <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{opt.key}}. {{opt.label}}</option>
+          <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{#if (flail-eq opt.key "custom")}}Custom Background{{else}}{{opt.key}}. {{opt.label}}{{/if}}</option>
           {{/each}}
         </select>
-        {{#if currentBackgroundPerk}}
-        <p class="char-background-perk">{{currentBackgroundPerk}}</p>
+        {{#if isCustomBackground}}
+          {{#if editable}}
+            {{!-- Editable custom: label input + rich-text perk editor. --}}
+            <input
+              type="text"
+              name="system.customBackground.label"
+              value="{{system.customBackground.label}}"
+              class="char-background-custom-label"
+              placeholder="{{localize 'FLAIL.Placeholder.CustomBackgroundLabel'}}"
+            />
+            <div class="char-background-custom-perk">
+              {{editor system.customBackground.perk target="system.customBackground.perk" button=true editable=editable engine="prosemirror"}}
+            </div>
+          {{else}}
+            {{!-- Read-only custom: show the actor's label + rendered HTML perk. --}}
+            {{#if currentBackgroundLabel}}
+            <div class="char-background-custom-label-view">{{currentBackgroundLabel}}</div>
+            {{/if}}
+            {{#if currentBackgroundPerk}}
+            <div class="char-background-perk">{{{currentBackgroundPerk}}}</div>
+            {{/if}}
+          {{/if}}
+        {{else}}
+          {{!-- Pre-defined background: read-only perk text (plain string). --}}
+          {{#if currentBackgroundPerk}}
+          <p class="char-background-perk">{{currentBackgroundPerk}}</p>
+          {{/if}}
         {{/if}}
       </div>
     </div>
