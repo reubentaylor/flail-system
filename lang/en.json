@@ -745,7 +745,7 @@
       "DeleteItemBody":  "Permanently delete <strong>{name}</strong>? This cannot be undone."
     },
     "Notify": {
-      "SelectTokens": "Select at least one token to apply damage.",
+      "SelectTokens": "Target or select at least one token first.",
       "NoGmForProxy": "Cannot apply to {name}: you don't own this actor and no GM is online to apply on your behalf.",
       "ZoneRejectsType": "{zone} only accepts {type} items.",
       "ZoneRejectsMissingFlag": "{zone} slots only accept items flagged as an adornment. Tick the Adornment checkbox on the {item} item sheet first.",

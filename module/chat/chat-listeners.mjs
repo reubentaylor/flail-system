@@ -72,12 +72,12 @@ async function onChatAction(event, message) {
 async function applyDamage(btn, flags) {
   const dmg = Number(btn.dataset.amount ?? flags.attackRoll?.damageDealt ?? 0);
   if (!dmg) return;
-  const targets = canvas.tokens.controlled;
-  if (!targets.length) {
+  const tokens = resolveApplyTokens();
+  if (!tokens.length) {
     ui.notifications.warn(game.i18n.localize("FLAIL.Notify.SelectTokens"));
     return;
   }
-  for (const t of targets) {
+  for (const t of tokens) {
     const actor = t.actor;
     if (!actor) continue;
     await applyWithPermissionFallback(actor, "applyDamage", dmg);
@@ -87,16 +87,35 @@ async function applyDamage(btn, flags) {
 async function applyHealing(btn, flags) {
   const amt = Number(btn.dataset.amount ?? 0);
   if (!amt) return;
-  const targets = canvas.tokens.controlled;
-  if (!targets.length) {
+  const tokens = resolveApplyTokens();
+  if (!tokens.length) {
     ui.notifications.warn(game.i18n.localize("FLAIL.Notify.SelectTokens"));
     return;
   }
-  for (const t of targets) {
+  for (const t of tokens) {
     const actor = t.actor;
     if (!actor) continue;
     await applyWithPermissionFallback(actor, "applyHealing", amt);
   }
+}
+
+/**
+ * Resolve which tokens an Apply button should affect.
+ *
+ * Prefers TARGETED tokens (game.user.targets — set via right-click or
+ * the T key). Players can target tokens they don't own, so this is
+ * the right primitive for cross-actor apply.
+ *
+ * Falls back to SELECTED tokens (canvas.tokens.controlled — clicked
+ * to control) if no targets exist. This preserves the GM's usual
+ * workflow of "click the token, click Apply."
+ *
+ * If both exist, targets win — keeps the pattern predictable.
+ */
+function resolveApplyTokens() {
+  const targeted = [...game.user.targets];
+  if (targeted.length > 0) return targeted;
+  return [...canvas.tokens.controlled];
 }
 
 /**
