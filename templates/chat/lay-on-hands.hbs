@@ -1,7 +1,14 @@
 {{!--
   Lay on Hands chat card.
-  Shows: actor + target, LUCK save roll, outcome, heal payload (success/crit
-  only), and religion-specific fumble text on a fumble.
+  Shows: actor + optional target, LUCK save roll, outcome, heal payload
+  (success/crit only), and religion-specific fumble text on a fumble.
+
+  Heal payload on success/crit shows the amount and formula, plus an
+  "Apply Healing" button. The button reads canvas.tokens.controlled
+  when clicked and calls actor.heal(amount) on each selected token,
+  matching the damage-roll pattern. This keeps healing under the
+  clicker's permission scope rather than trying to update a target
+  actor from the caster's user (which would fail for NPC allies).
 --}}
 <div class="flail-card cast-card prayer-card lay-on-hands-card outcome-{{outcome}}">
 
@@ -15,7 +22,9 @@
   </header>
 
   <div class="cast-meta">
+    {{#if hasTarget}}
     <span class="meta-chip"><i class="fas fa-user"></i> {{localize "FLAIL.LayOnHands.Target"}}: <strong>{{target.name}}</strong></span>
+    {{/if}}
     <span class="meta-chip"><i class="fas fa-dice-d20"></i> LUCK save: <strong>{{result}}</strong> vs {{luck}}</span>
     <span class="meta-chip">Fumble ≥ {{threshold}}</span>
     {{#if thresholdDropped}}
@@ -56,7 +65,12 @@
   <div class="cast-description heal-payload">
     <strong>{{localize "FLAIL.LayOnHands.Healed"}}:</strong>
     {{heal.amount}} hp ({{heal.formula}})
-    — {{target.name}}: {{heal.hpBefore}} → {{heal.hpAfter}}
+  </div>
+  <div class="card-actions">
+    <button type="button" data-flail-action="applyHealing" data-amount="{{heal.amount}}" title="{{localize 'FLAIL.Action.ApplyHealingHint'}}">
+      <i class="fas fa-heart"></i>
+      {{localize "FLAIL.Action.ApplyHealing"}} ({{heal.amount}})
+    </button>
   </div>
   {{/if}}
 

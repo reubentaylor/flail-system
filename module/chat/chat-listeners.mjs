@@ -62,6 +62,12 @@ async function onChatAction(event, message) {
 
 /**
  * Apply attack damage to all selected tokens.
+ *
+ * Permission model: if the clicking user owns the target actor, the
+ * change is applied directly. If not (e.g. cleric player healing an
+ * NPC ally, or PC damaging a monster), the request is forwarded via
+ * socket to the active GM's client, which has write permission on
+ * every actor.
  */
 async function applyDamage(btn, flags) {
   const dmg = Number(btn.dataset.amount ?? flags.attackRoll?.damageDealt ?? 0);
@@ -72,8 +78,9 @@ async function applyDamage(btn, flags) {
     return;
   }
   for (const t of targets) {
-    if (!t.actor) continue;
-    await t.actor.applyDamage(dmg);
+    const actor = t.actor;
+    if (!actor) continue;
+    await applyWithPermissionFallback(actor, "applyDamage", dmg);
   }
 }
 
@@ -81,8 +88,42 @@ async function applyHealing(btn, flags) {
   const amt = Number(btn.dataset.amount ?? 0);
   if (!amt) return;
   const targets = canvas.tokens.controlled;
-  if (!targets.length) return;
-  for (const t of targets) await t.actor?.heal?.(amt);
+  if (!targets.length) {
+    ui.notifications.warn(game.i18n.localize("FLAIL.Notify.SelectTokens"));
+    return;
+  }
+  for (const t of targets) {
+    const actor = t.actor;
+    if (!actor) continue;
+    await applyWithPermissionFallback(actor, "applyHealing", amt);
+  }
+}
+
+/**
+ * Owner-first, GM-proxy fallback for cross-actor updates.
+ *
+ * If the current user owns the actor, apply the change directly
+ * (fast path, no socket round-trip). Otherwise emit a socket event
+ * the active GM's client will pick up and process. If no GM is
+ * online, warn the user — the update can't be applied.
+ */
+async function applyWithPermissionFallback(actor, type, amount) {
+  if (actor.isOwner) {
+    if (type === "applyDamage")   return actor.applyDamage?.(amount);
+    if (type === "applyHealing")  return actor.heal?.(amount);
+    return;
+  }
+  if (!game.users.activeGM) {
+    ui.notifications.warn(
+      game.i18n.format("FLAIL.Notify.NoGmForProxy", { name: actor.name })
+    );
+    return;
+  }
+  game.socket.emit("system.flail", {
+    type,
+    actorUuid: actor.uuid,
+    amount
+  });
 }
 
 async function markWeaponUsage(flags) {

@@ -37,7 +37,11 @@ import { FLAIL } from "../helpers/config.mjs";
  * @returns {Promise<ChatMessage|null>}
  */
 export async function rollLayOnHands({ actor, target } = {}) {
-  if (!actor || !target) return null;
+  if (!actor) return null;
+  // target may be null — the player might roll without a token targeted
+  // (e.g. on a scene without tokens). The heal amount is rolled and
+  // shown in chat with an "Apply Healing" button; the target is
+  // resolved at click-time from selected tokens instead of at roll-time.
 
   /* ---------- 1. Resolve cleric + threshold ---------- */
   const luck = actor.system.attributes?.luck?.current
@@ -70,32 +74,26 @@ export async function rollLayOnHands({ actor, target } = {}) {
     await actor.update({ "system.resource.value": newThreshold });
   }
 
-  /* ---------- 4. On success, roll the heal and apply ---------- */
+  /* ---------- 4. On success, roll the heal amount (do NOT apply) ---------- */
+  // Previously this branch called `target.heal(...)` directly, which
+  // failed when the player didn't own the target actor (typical for
+  // NPC allies). Now we just roll the number and put an "Apply
+  // Healing" button on the chat card — the GM or a permitted user
+  // selects tokens and clicks the button to apply. Matches the
+  // damage-roll pattern used elsewhere in the system.
   let healRoll = null;
   let healAmount = 0;
-  let targetHpBefore = null;
-  let targetHpAfter  = null;
   if (outcome === "success" || outcome === "crit") {
     healRoll = new Roll(`1d6 + ${level}`);
     await healRoll.evaluate();
     healAmount = healRoll.total;
-    targetHpBefore = target.system?.hp?.value ?? 0;
-    // Use the actor's heal() helper if available (clamps at max HP).
-    if (typeof target.heal === "function") {
-      await target.heal(healAmount);
-    } else {
-      const max = target.system?.hp?.max ?? targetHpBefore;
-      await target.update({
-        "system.hp.value": Math.min(max, targetHpBefore + healAmount)
-      });
-    }
-    targetHpAfter = target.system?.hp?.value ?? targetHpBefore;
   }
 
   /* ---------- 5. Build chat card ---------- */
   const templateData = {
     actor:  { name: actor.name, img: actor.img, uuid: actor.uuid },
-    target: { name: target.name, img: target.img, uuid: target.uuid },
+    target: target ? { name: target.name, img: target.img, uuid: target.uuid } : null,
+    hasTarget: !!target,
     luck,
     level,
     threshold,
@@ -105,9 +103,7 @@ export async function rollLayOnHands({ actor, target } = {}) {
     outcome,
     heal: healRoll ? {
       formula: `1d6 + ${level}`,
-      amount: healAmount,
-      hpBefore: targetHpBefore,
-      hpAfter:  targetHpAfter
+      amount: healAmount
     } : null,
     fumbleText: outcome === "fumble"
       ? (religion?.layOnHandsFumble ?? "Suffer consequences as per the Cleric's religion.")
@@ -131,7 +127,7 @@ export async function rollLayOnHands({ actor, target } = {}) {
       flail: {
         layOnHands: {
           actorUuid: actor.uuid,
-          targetUuid: target.uuid,
+          targetUuid: target?.uuid ?? null,
           result,
           outcome,
           threshold,

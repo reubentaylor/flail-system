@@ -512,6 +512,34 @@ Hooks.once("ready", async () => {
       return handler.call(sheet, event, target);
     }
   });
+
+  // -------------------------------------------------------------
+  //  GM proxy socket — enables non-owning players to trigger
+  //  heal/damage on actors they don't have write permission on.
+  //
+  //  Pattern: player-side handlers (in chat-listeners.mjs) check
+  //  actor.isOwner. If owner → apply directly. If not → emit this
+  //  socket event, and the connected active GM's client processes
+  //  it with full permission. Needs a GM online.
+  //
+  //  The handler runs on every connected client, but only the
+  //  active GM (game.users.activeGM) processes the request. This
+  //  avoids double-application when multiple GMs are online.
+  // -------------------------------------------------------------
+  game.socket.on("system.flail", async (payload) => {
+    if (!payload || game.user !== game.users.activeGM) return;
+    try {
+      const actor = await fromUuid(payload.actorUuid);
+      if (!actor) return;
+      if (payload.type === "applyHealing" && typeof actor.heal === "function") {
+        await actor.heal(Number(payload.amount) || 0);
+      } else if (payload.type === "applyDamage" && typeof actor.applyDamage === "function") {
+        await actor.applyDamage(Number(payload.amount) || 0);
+      }
+    } catch (err) {
+      console.error("FLAIL | Socket proxy failed", err);
+    }
+  });
 });
 Hooks.on  ("canvasReady", () => console.log(`${TAG} canvasReady`));
 

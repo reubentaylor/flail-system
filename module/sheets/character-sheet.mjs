@@ -2664,19 +2664,17 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
    * notes the rest were ignored — Lay on Hands is a single-target touch.
    */
   static async #onLayOnHands(event, target) {
+    // Target resolution is best-effort. If the user has a token
+    // targeted, we pass it in for display on the chat card. If not,
+    // we roll anyway and the card shows the heal amount with an
+    // "Apply Healing" button — the GM or a permitted user then
+    // selects tokens and clicks the button to apply. Consistent
+    // with the damage-roll pattern.
     const targeted = [...game.user.targets];
-    if (!targeted.length) {
-      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.LayOnHandsNoTarget"));
-      return;
-    }
     if (targeted.length > 1) {
       ui.notifications?.info(game.i18n.localize("FLAIL.Notify.LayOnHandsMultipleTargets"));
     }
-    const targetActor = targeted[0]?.actor;
-    if (!targetActor) {
-      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.LayOnHandsNoActor"));
-      return;
-    }
+    const targetActor = targeted[0]?.actor ?? null;
 
     return rollLayOnHands({ actor: this.actor, target: targetActor });
   }

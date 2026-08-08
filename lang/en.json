@@ -406,6 +406,8 @@
       "MarkUsageHint":   "Mark one usage dot on the weapon used.",
       "ApplyDamage":     "Apply Damage",
       "ApplyDamageHint": "Apply this damage to all selected tokens.",
+      "ApplyHealing":     "Apply Healing",
+      "ApplyHealingHint": "Apply this healing to all selected tokens.",
       "NegateWithArmour":     "Negate with Armour",
       "NegateWithArmourHint": "Mark worn armour to negate 1s from this attack.",
       "ShareToChat":     "Share to chat"
@@ -744,6 +746,7 @@
     },
     "Notify": {
       "SelectTokens": "Select at least one token to apply damage.",
+      "NoGmForProxy": "Cannot apply to {name}: you don't own this actor and no GM is online to apply on your behalf.",
       "ZoneRejectsType": "{zone} only accepts {type} items.",
       "ZoneRejectsMissingFlag": "{zone} slots only accept items flagged as an adornment. Tick the Adornment checkbox on the {item} item sheet first.",
       "MultiSlotNoRoom":        "{item} takes more than one slot — not enough room at that position in the {zone} column.",
