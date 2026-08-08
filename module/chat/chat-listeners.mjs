@@ -128,6 +128,7 @@ function resolveApplyTokens() {
  */
 async function applyWithPermissionFallback(actor, type, amount) {
   if (actor.isOwner) {
+    console.log(`FLAIL | ${type} direct on ${actor.name} (owner path)`);
     if (type === "applyDamage")   return actor.applyDamage?.(amount);
     if (type === "applyHealing")  return actor.heal?.(amount);
     return;
@@ -138,7 +139,8 @@ async function applyWithPermissionFallback(actor, type, amount) {
     );
     return;
   }
-  game.socket.emit("system.flail", {
+  console.log(`FLAIL | ${type} emitting socket for ${actor.name} (uuid=${actor.uuid}, amount=${amount})`);
+  game.socket.emit("flail-gm-proxy", {
     type,
     actorUuid: actor.uuid,
     amount
