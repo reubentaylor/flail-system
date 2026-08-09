@@ -6,15 +6,18 @@
     * Every combination triggered (pair, triplet, full house, sequence, ...)
     * Apply-damage / mark-usage buttons
 --}}
-<div class="flail-card attack-card tier-{{tier.key}}">
+<div class="flail-card attack-card tier-{{tier.key}} {{#if (flail-gt advantage 0)}}has-advantage{{/if}} {{#if (flail-lt advantage 0)}}has-disadvantage{{/if}}">
 
   <header class="card-header">
     {{#if actor}}
       <img class="actor-img" src="{{actor.img}}" />
       <span class="actor-name">{{actor.name}}</span>
     {{/if}}
-    <h3 class="weapon-name">{{label}}</h3>
-    {{#if advantage}}<span class="adv-tag {{advantage}}">{{flail-cap advantage}}</span>{{/if}}
+    <div class="header-title-col">
+      <h3 class="weapon-name">{{label}}</h3>
+      {{#if (flail-gt advantage 0)}}<span class="adv-tag advantage"><i class="fas fa-arrow-up"></i> {{localize "FLAIL.Adv.Advantage"}}</span>{{/if}}
+      {{#if (flail-lt advantage 0)}}<span class="adv-tag disadvantage"><i class="fas fa-arrow-down"></i> {{localize "FLAIL.Adv.Disadvantage"}}</span>{{/if}}
+    </div>
   </header>
 
   {{#if flavor}}<p class="flavor">{{flavor}}</p>{{/if}}

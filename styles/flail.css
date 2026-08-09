@@ -2961,14 +2961,61 @@
   letter-spacing: 0.05em;
 }
 .flail-card .adv-tag {
-  font-size: 0.7rem;
-  padding: 0.1rem 0.3rem;
+  /* Small pill tag shown on chat cards when advantage/disadvantage
+     applies. Deliberately punchy — advantage is easy to miss on a
+     glance-scan. Icon (inline <i class="fas fa-arrow-up|down">) +
+     bold + uppercase + rounded pill shape combine to make it read
+     as a status banner. */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
   border: 1px solid var(--flail-rule);
+  border-radius: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
-.flail-card .adv-tag.advantage    { background: var(--flail-success); color: white; }
-.flail-card .adv-tag.disadvantage { background: var(--flail-fail);    color: white; }
+.flail-card .adv-tag i {
+  font-size: 0.85rem;
+}
+.flail-card .adv-tag.advantage    { background: var(--flail-success); color: white; border-color: var(--flail-success); }
+.flail-card .adv-tag.disadvantage { background: var(--flail-fail);    color: white; border-color: var(--flail-fail); }
+
+/* Header title column — groups the weapon/label with the advantage
+   pill so they stack vertically instead of competing for horizontal
+   space in the header. Prevents long weapon names ("Sword of Endless
+   Righteousness +1") from wrapping to multiple lines and squashing
+   the adv-tag beside them. */
+.flail-card .card-header .header-title-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.flail-card .card-header .header-title-col h3,
+.flail-card .card-header .header-title-col .weapon-name {
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Full-card accent stripe on the left when advantage/disadvantage is
+   in play. The header tag is prominent but easily missed on a fast
+   scan of the chat log — a colored vertical stripe on the entire
+   card is impossible to miss. Applied via `has-advantage` /
+   `has-disadvantage` classes added to the card root. */
+.flail-card.has-advantage {
+  border-left: 4px solid var(--flail-success);
+  padding-left: calc(0.75rem - 4px + 0.5rem);
+}
+.flail-card.has-disadvantage {
+  border-left: 4px solid var(--flail-fail);
+  padding-left: calc(0.75rem - 4px + 0.5rem);
+}
 .flail-card .flavor {
   font-style: italic;
   color: var(--flail-muted);
@@ -3160,7 +3207,30 @@
   background: var(--flail-paper);
   border-radius: 50%;
 }
-.flail-card .save-tray .d20.discarded { opacity: 0.4; text-decoration: line-through; }
+.flail-card .save-tray .d20.discarded {
+  /* When advantage/disadvantage rolled multiple d20s and one was
+     dropped by the keep-highest / keep-lowest rule, we still show it
+     for transparency — but heavily de-emphasised so the eye lands on
+     the kept die immediately. Diagonal strikethrough via linear-
+     gradient makes the "not this one" reading unmistakable. */
+  opacity: 0.35;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--flail-fail);
+  color: var(--flail-muted);
+  background: linear-gradient(135deg,
+    transparent 45%,
+    var(--flail-fail) 47%,
+    var(--flail-fail) 53%,
+    transparent 55%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.flail-card .save-tray .d20:not(.discarded) {
+  /* Kept die stands out: normal opacity plus a subtle ring so the
+     "this is the winning roll" die reads at a glance. */
+  font-weight: 700;
+}
 .flail-card .save-tray .vs { font-weight: 700; color: var(--flail-muted); }
 .flail-card .save-tray .target { font-weight: 700; }
 .flail-card .outcome-banner {

@@ -14,6 +14,8 @@ export function registerHandlebarsHelpers() {
   Handlebars.registerHelper("flail-eq", (a, b) => a === b);
   // {{flail-gt a b}} — greater-than for numeric comparisons.
   Handlebars.registerHelper("flail-gt", (a, b) => Number(a) > Number(b));
+  // {{flail-lt a b}} — less-than for numeric comparisons.
+  Handlebars.registerHelper("flail-lt", (a, b) => Number(a) < Number(b));
 
   // {{flail-or a b}} — falsy fallback.
   Handlebars.registerHelper("flail-or", (a, b) => a || b);

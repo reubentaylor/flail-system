@@ -7,7 +7,7 @@
     4. Conditional follow-up: either the player-choose-any prompt (crit)
        or the table-lookup roll + matched effect entry.
 --}}
-<div class="flail-card instrument-card outcome-{{outcome}}">
+<div class="flail-card instrument-card outcome-{{outcome}} {{#if (flail-eq advantage 1)}}has-advantage{{/if}} {{#if (flail-eq advantage -1)}}has-disadvantage{{/if}}">
   <header class="card-header">
     <img class="actor-img" src="{{actor.img}}" />
     <span class="actor-name">{{actor.name}}</span>
@@ -15,8 +15,8 @@
       <i class="fas fa-music"></i>
       {{localize "FLAIL.Roll.PlayInstrument"}}: {{instrument.name}}
     </h3>
-    {{#if (flail-eq advantage 1)}}<span class="adv-tag advantage">{{localize "FLAIL.Adv.Advantage"}}</span>{{/if}}
-    {{#if (flail-eq advantage -1)}}<span class="adv-tag disadvantage">{{localize "FLAIL.Adv.Disadvantage"}}</span>{{/if}}
+    {{#if (flail-eq advantage 1)}}<span class="adv-tag advantage"><i class="fas fa-arrow-up"></i> {{localize "FLAIL.Adv.Advantage"}}</span>{{/if}}
+    {{#if (flail-eq advantage -1)}}<span class="adv-tag disadvantage"><i class="fas fa-arrow-down"></i> {{localize "FLAIL.Adv.Disadvantage"}}</span>{{/if}}
   </header>
 
   <div class="save-tray">
