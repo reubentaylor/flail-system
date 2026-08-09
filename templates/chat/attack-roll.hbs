@@ -33,11 +33,22 @@
   {{!-- Tier banner --}}
   <div class="tier-banner tier-{{tier.key}}">
     <i class="fas {{tier.icon}}"></i>
-    <span class="tier-label">{{tier.label}}</span>
-    {{#if (flail-eq tier.key "minor")}}<span class="dmg">{{damageDealt}} {{localize "FLAIL.Field.Damage"}}</span>{{/if}}
-    {{#if (flail-eq tier.key "major")}}<span class="dmg">{{damageDealt}} {{localize "FLAIL.Field.Damage"}} (2× {{weaponDamage}})</span>{{/if}}
-    {{#if (flail-eq tier.key "deathBlow")}}<span class="dmg">{{localize "FLAIL.Hit.DeathBlowDesc"}}</span>{{/if}}
-    {{#if (flail-eq tier.key "fumble")}}<span class="dmg">{{localize "FLAIL.Hit.FumbleDesc"}}</span>{{/if}}
+    {{#if (flail-eq tier.key "fumble")}}
+      {{!-- Fumble uses a stacked layout: label on top, consequence
+           below. The consequence text ("hit an ally for d8 or mark
+           usage on a carried item") is long and reads badly when it
+           wraps side-by-side with the tier label in a narrow chat
+           panel. --}}
+      <div class="tier-banner-stack">
+        <span class="tier-label">{{tier.label}}</span>
+        <span class="fumble-consequence">{{localize "FLAIL.Hit.FumbleDesc"}}</span>
+      </div>
+    {{else}}
+      <span class="tier-label">{{tier.label}}</span>
+      {{#if (flail-eq tier.key "minor")}}<span class="dmg">{{damageDealt}} {{localize "FLAIL.Field.Damage"}}</span>{{/if}}
+      {{#if (flail-eq tier.key "major")}}<span class="dmg">{{damageDealt}} {{localize "FLAIL.Field.Damage"}} (2× {{weaponDamage}})</span>{{/if}}
+      {{#if (flail-eq tier.key "deathBlow")}}<span class="dmg">{{localize "FLAIL.Hit.DeathBlowDesc"}}</span>{{/if}}
+    {{/if}}
   </div>
 
   {{!-- Warrior — Fine Cuts (Blade Freak Basic): sequence of 3+ on a hit --}}

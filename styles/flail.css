@@ -3072,6 +3072,29 @@
 .flail-card .tier-banner.tier-fumble    { background: #5a2b22; color: var(--flail-accent-2); }
 .flail-card .tier-banner .dmg { margin-left: auto; font-weight: 800; }
 
+/* Fumble tier: label + consequence text stack vertically in a right
+   column while the skull icon stays on the left. The consequence
+   text ("hit an ally for d8 or mark usage on a carried item") is
+   too long to fit inline in a narrow chat panel, so stacking it
+   below the tier label lets it read as prose rather than wrap
+   awkwardly beside the label. */
+.flail-card .tier-banner .tier-banner-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.flail-card .tier-banner .fumble-consequence {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 1.3;
+  opacity: 0.95;
+}
+
 /* ----- Witness Me! banner ----- */
 .flail-card .witness-me-banner {
   margin-top: 0.4rem;
