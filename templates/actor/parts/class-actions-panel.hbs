@@ -4,8 +4,10 @@
   don't have to switch to the Class tab in the middle of combat.
 
   Each button dispatches to the same `data-action` handler the
-  full Class tab uses; no new backend code needed. This is purely
-  a visual duplication of the most-used actions per class.
+  full Class tab uses. Tooltip content uses `data-tooltip` (Foundry
+  native rich-tooltip attribute) with the same fields the Class tab
+  reads (s.tooltipText / gadget.description / j.description / etc.),
+  so hover popups on this panel match the Class tab exactly.
 
   Renders nothing for a class that has no notable Abilities-tab
   actions (or an unset class).
@@ -28,7 +30,7 @@
       {{#each combatTalents as |slot|}}
         {{#if slot.currentDisplay}}
         <div class="ca-info ca-talent-info"
-             title="{{slot.currentDisplay.desc}}">
+             data-tooltip="{{slot.currentDisplay.desc}}">
           <span class="ca-tier-badge ca-tier-{{slot.currentDisplay.tier}}">{{slot.currentDisplay.tier}}</span>
           <span class="ca-name">{{slot.currentDisplay.tree}}</span>
         </div>
@@ -36,14 +38,22 @@
       {{/each}}
     {{/if}}
 
-    {{!-- WIZARD — Cast each known spell ------------------------------ --}}
+    {{!-- WIZARD — Read Magic + cast each known spell -------------------- --}}
     {{#if isWizard}}
+      <button type="button"
+              class="ca-btn ca-read-magic"
+              data-action="readMagic"
+              title="{{localize 'FLAIL.Wizard.ReadMagicHint'}}"
+              {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-scroll ca-icon"></i>
+        <span class="ca-name">{{localize "FLAIL.Wizard.ReadMagicLabel"}}</span>
+      </button>
       {{#each knownWizardSpells as |s|}}
       <button type="button"
               class="ca-btn ca-spell wizard-spell-{{s.tradition}}"
               data-action="castWizardSpell"
               data-item-id="{{s.id}}"
-              title="{{localize 'FLAIL.Wizard.CastButtonHint'}}"
+              data-tooltip="{{s.tooltipText}}"
               {{#unless ../editable}}disabled{{/unless}}>
         <img class="ca-img" src="{{s.img}}" alt="" />
         <span class="ca-name">{{s.name}}</span>
@@ -55,11 +65,12 @@
       {{/unless}}
     {{/if}}
 
-    {{!-- BONE WHISPERER — Animate Dead + Dark Spells ----------------- --}}
+    {{!-- BONE WHISPERER — Animate Dead (INT save) + Dark Spells --------- --}}
     {{#if isBoneWhisperer}}
       <button type="button"
               class="ca-btn ca-summon"
-              data-action="summonPuppet"
+              data-action="rollSave"
+              data-attribute="int"
               title="{{localize 'FLAIL.BoneWhisperer.AnimateDead.Tooltip'}}"
               {{#unless editable}}disabled{{/unless}}>
         <i class="fas fa-skull ca-icon"></i>
@@ -70,7 +81,7 @@
               class="ca-btn ca-spell dark-spell"
               data-action="castDarkSpell"
               data-item-id="{{s.id}}"
-              title="{{localize 'FLAIL.BoneWhisperer.CastButtonHint'}}"
+              data-tooltip="{{s.tooltipText}}"
               {{#unless ../editable}}disabled{{/unless}}>
         <img class="ca-img" src="{{s.img}}" alt="" />
         <span class="ca-name">{{s.name}}</span>
@@ -79,11 +90,11 @@
       {{/each}}
     {{/if}}
 
-    {{!-- CLERIC — Prayers + Lay on Hands ------------------------------ --}}
+    {{!-- CLERIC — Lay on Hands + Prayers --------------------------------- --}}
     {{#if isCleric}}
       <button type="button"
               class="ca-btn ca-lay-on-hands"
-              data-action="rollLayOnHands"
+              data-action="layOnHands"
               title="{{localize 'FLAIL.LayOnHands.Tooltip'}}"
               {{#unless editable}}disabled{{/unless}}>
         <i class="fas fa-hand-holding-medical ca-icon"></i>
@@ -94,7 +105,7 @@
               class="ca-btn ca-prayer"
               data-action="castPrayer"
               data-item-id="{{p.id}}"
-              title="{{localize 'FLAIL.Prayer.CastTooltip'}}"
+              data-tooltip="{{p.tooltipText}}"
               {{#unless ../editable}}disabled{{/unless}}>
         <img class="ca-img" src="{{p.img}}" alt="" />
         <span class="ca-name">{{p.name}}</span>
@@ -110,7 +121,7 @@
                 class="ca-btn ca-guild-action"
                 data-action="spendGuildAction"
                 data-action-key="{{a.key}}"
-                title="Spend a guild token to trigger this action"
+                data-tooltip="{{a.description}}"
                 {{#unless ../editable}}disabled{{/unless}}>
           <i class="fas fa-fingerprint ca-icon"></i>
           <span class="ca-name">{{a.name}}</span>
@@ -121,11 +132,13 @@
       <button type="button"
               class="ca-btn ca-talent"
               data-action="rollTalent"
-              data-item-id="{{t.id}}"
-              title="Roll this talent"
+              data-talent="{{t.key}}"
+              data-tooltip="{{t.desc}}"
+              title="{{t.rollHint}}"
               {{#unless ../editable}}disabled{{/unless}}>
-        <img class="ca-img" src="{{t.img}}" alt="" />
-        <span class="ca-name">{{t.name}}</span>
+        <i class="fas fa-mask ca-icon"></i>
+        <span class="ca-name">{{t.label}}</span>
+        <span class="ca-badge ca-save-{{t.save}}">{{t.saveLabel}}</span>
       </button>
       {{/each}}
     {{/if}}
@@ -165,7 +178,7 @@
                 class="ca-btn ca-gift"
                 data-action="activateGift"
                 data-item-id="{{gift.id}}"
-                title="Activate this primal gift"
+                data-tooltip="{{gift.description}}"
                 {{#unless ../../editable}}disabled{{/unless}}>
           <img class="ca-img" src="{{gift.img}}" alt="" />
           <span class="ca-name">{{gift.name}}</span>
@@ -179,10 +192,11 @@
       {{#each knownGadgetsByCategory as |category|}}
         {{#each category.gadgets as |gadget|}}
         <button type="button"
-                class="ca-btn ca-gadget"
+                class="ca-btn ca-gadget {{#if gadget.used}}ca-gadget-used{{/if}}"
                 data-action="useDamageGadget"
                 data-item-id="{{gadget.id}}"
-                title="Use this gadget"
+                data-tooltip="{{gadget.description}}"
+                {{#if gadget.used}}disabled{{/if}}
                 {{#unless ../../editable}}disabled{{/unless}}>
           <img class="ca-img" src="{{gadget.img}}" alt="" />
           <span class="ca-name">{{gadget.name}}</span>
@@ -199,7 +213,7 @@
                 class="ca-btn ca-instrument"
                 data-action="rollInstrument"
                 data-item-id="{{slot.item.id}}"
-                title="{{localize 'FLAIL.Bard.PlayInstrumentHint'}}"
+                data-tooltip="{{slot.item.description}}"
                 {{#unless ../editable}}disabled{{/unless}}>
           <img class="ca-img" src="{{slot.item.img}}" alt="" />
           <span class="ca-name">{{slot.item.name}}</span>
@@ -208,10 +222,10 @@
       {{/each}}
       {{#each jackOfAllTradesItems as |j|}}
       <button type="button"
-              class="ca-btn ca-joat ca-joat-{{j.type}}"
+              class="ca-btn ca-joat ca-joat-{{j.type}} {{#if j.usedToday}}ca-joat-used{{/if}}"
               data-action="{{#if (flail-eq j.type 'spell')}}castJoatSpell{{else if (flail-eq j.type 'gadget')}}useDamageGadget{{else}}toggleJoatUsed{{/if}}"
               data-item-id="{{j.id}}"
-              title="{{localize 'FLAIL.Bard.UseJoatHint'}}"
+              data-tooltip="{{j.description}}"
               {{#unless ../editable}}disabled{{/unless}}>
         <img class="ca-img" src="{{j.img}}" alt="" />
         <span class="ca-name">{{j.name}}</span>

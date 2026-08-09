@@ -775,6 +775,12 @@
 .flail.sheet .class-actions-body .ca-weathered-available {
   background: rgba(120, 180, 90, 0.18);
 }
+.flail.sheet .class-actions-body .ca-weathered-available .ca-icon {
+  /* Bright green tick when Weathered is currently available. Overrides
+     the default ochre ca-icon colour so the "ready to use" state
+     reads at a glance. */
+  color: #4caf50;
+}
 .flail.sheet .class-actions-body .ca-weathered-unavailable {
   opacity: 0.7;
 }
