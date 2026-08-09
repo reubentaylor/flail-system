@@ -36,7 +36,7 @@ export class CombatTalentPicker extends HandlebarsApplicationMixin(ApplicationV2
     id: "flail-combat-talent-picker-{id}",
     tag: "div",
     classes: ["flail", "combat-talent-picker"],
-    position: { width: 640, height: "auto" },
+    position: { width: 640, height: 700 },
     window: {
       icon: "fa-solid fa-shield-halved",
       resizable: true
