@@ -199,25 +199,36 @@ export class CombatTalentPicker extends HandlebarsApplicationMixin(ApplicationV2
   /**
    * Click-to-commit shortcut. Same result as dragging a card onto the
    * slot, but always available and works with keyboard/screen readers.
+   *
+   * Writes the ENTIRE combatTalents array back rather than using a
+   * dotted-path update. Foundry v14 ArrayField updates via
+   * `system.combatTalents.N` don't merge cleanly when the on-disk
+   * array is shorter than N+1 — earlier slots' picks are lost. Reading
+   * the current array, padding to 5, mutating the target index, and
+   * writing the full array back preserves every slot's independent
+   * state.
    */
   static async #onChooseTalent(event, target) {
     const key = target.dataset.talentKey;
     if (!key) return;
     if (target.classList.contains("ct-unavailable")) return;
-    await this.actor.update({
-      [`system.combatTalents.${this.slotIndex}`]: key
-    });
+    const talents = [...(this.actor.system.combatTalents ?? [])];
+    while (talents.length < 5) talents.push("");
+    talents[this.slotIndex] = key;
+    await this.actor.update({ "system.combatTalents": talents });
     this.close();
   }
 
   /**
    * Clear the slot — sets it back to empty string. Useful for
    * "undo my pick" without needing to pick something else first.
+   * Uses the same full-array-write pattern as chooseTalent.
    */
   static async #onClearSlot(event, target) {
-    await this.actor.update({
-      [`system.combatTalents.${this.slotIndex}`]: ""
-    });
+    const talents = [...(this.actor.system.combatTalents ?? [])];
+    while (talents.length < 5) talents.push("");
+    talents[this.slotIndex] = "";
+    await this.actor.update({ "system.combatTalents": talents });
     this.close();
   }
 }

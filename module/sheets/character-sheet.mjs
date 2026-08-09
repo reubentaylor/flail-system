@@ -1427,16 +1427,15 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const slotIndex = Number(slot.dataset.slotIndex);
     if (!Number.isFinite(slotIndex)) return;
 
-    // Write the talent key into the slot. The context prep applies
-    // prerequisite gating at render time, but we don't re-validate
-    // here — the picker only made "available" cards draggable, so
-    // a drop can only carry a legal pick. If someone bypasses the
-    // picker (e.g. crafting a drag event by hand), the context prep
-    // will surface the invalid state via the talent-slot-invalid
-    // class on next render.
-    await this.actor.update({
-      [`system.combatTalents.${slotIndex}`]: payload.talentKey
-    });
+    // Write the talent key into the slot. See the note in the picker's
+    // #onChooseTalent — we mutate the full array and write it back, not
+    // a dotted-path update. Otherwise Foundry v14 ArrayField loses
+    // earlier picks when the on-disk array is shorter than the target
+    // index.
+    const talents = [...(this.actor.system.combatTalents ?? [])];
+    while (talents.length < 5) talents.push("");
+    talents[slotIndex] = payload.talentKey;
+    await this.actor.update({ "system.combatTalents": talents });
   }
 
   /**
