@@ -23,8 +23,17 @@ import { COMMON_ITEMS } from "./common-items-data.mjs";
  *       (Whistle_combustion.png), The Oak Leaf (Oakleaf_medallion.png),
  *       and Mutton Tunic (Tunic_crest.png). Same white-bg + 256px +
  *       WEBP processing pipeline.
+ *   15 — populated cost fields from the FLAIL v0.2 rulebook (pp.46-49).
+ *       All 87 shop-purchasable items now carry their canonical price
+ *       in coins: weapons, armour, exploration/travelling gear, gadgets,
+ *       instruments (all 20c, per "musical instrument: 2d20"). Items
+ *       that shouldn't be shop-purchasable (guild sigils, religion
+ *       focuses, class-starter items like Sparkle of Life, Coin Purse,
+ *       Gadget Belt) stay at cost 0. Items dragged from the compendium
+ *       to a sheet now carry their real price; GMs can still override
+ *       per instance via the item sheet.
  */
-export const COMMON_ITEMS_VERSION = 14;
+export const COMMON_ITEMS_VERSION = 15;
 
 const VERSION_SETTING = "commonItemsVersion";
 

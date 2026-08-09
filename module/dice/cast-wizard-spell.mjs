@@ -1,4 +1,5 @@
 import { FLAIL } from "../helpers/config.mjs";
+import { analyzePool } from "./poker.mjs";
 
 /**
  * Cast a wizard spell (FLAIL v0.2 Master Spellbook).
@@ -81,29 +82,26 @@ export async function rollWizardSpell({ actor, spell, mana, skipManaPool = false
    * "If Wizards roll a pair while spellcasting, they recover mana of
    * the same value of the pair (e.g. a pair of 3s recoups 3 mana)."
    *
-   * Interpreted per poker semantics — "a pair" = exactly two dice of
-   * the same face value. Triplets, four-of-a-kind, and five-of-a-kind
-   * do NOT count as pairs. In a full house (triplet + pair), the pair
-   * still recoups. In two-pair (two distinct pairs), each pair
-   * recoups its own face value.
+   * SUBSET SEMANTICS (per Andre Novoa): larger matches also count as
+   * pairs. A triplet of 3s recoups 3 mana (contains one pair of 3s).
+   * A four-of-a-kind of 3s recoups 6 mana (contains TWO non-overlapping
+   * pairs of 3s). Same logic scales — a six-of-a-kind of 3s = 9 mana.
    *
    * Example rolls (mana spent = dice rolled):
    *   [2,2,5]     → pair of 2s → +2 mana
    *   [3,3,4,4]   → pair of 3s + pair of 4s → +7 mana
-   *   [5,5,5,2,2] → pair of 2s only (5-5-5 is a triplet) → +2 mana
+   *   [5,5,5,2,2] → pair of 5s (from triplet) + pair of 2s → +7 mana
+   *   [3,3,3,3]   → two pairs of 3s (from fourKind) → +6 mana
    *   [6,6,3]     → pair of 6s → +6 mana AND Side Effect trigger fires
+   *
+   * Uses analyzePool's pairFaces list which is subset-inclusive: a
+   * face with N dice contributes floor(N/2) entries to pairFaces.
    *
    * The recouped mana is applied AFTER spending, so it can partially
    * or fully offset the cast cost. Total mana is still capped at max.
    */
-  const faceCounts = new Map();
-  for (const d of dieResults) {
-    faceCounts.set(d, (faceCounts.get(d) ?? 0) + 1);
-  }
-  const pairFaces = [...faceCounts.entries()]
-    .filter(([, count]) => count === 2)
-    .map(([face]) => face)
-    .sort((a, b) => a - b);
+  const analysis = analyzePool(dieResults);
+  const pairFaces = [...analysis.pairFaces].sort((a, b) => a - b);
   const arcaneResonance = pairFaces.length ? {
     pairs:    pairFaces,
     recouped: pairFaces.reduce((sum, f) => sum + f, 0)

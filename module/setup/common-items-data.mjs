@@ -20,7 +20,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed axe weapon. TH 4 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 10,
       "quantity": 1,
       "th": 4,
       "damage": 3,
@@ -56,7 +56,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed axe weapon. TH 6 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 40,
       "quantity": 1,
       "th": 6,
       "damage": 4,
@@ -93,7 +93,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Toothed iron snare.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -121,7 +121,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Wool roll, modest comfort.</p>",
-      "cost": 0,
+      "cost": 4,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -149,7 +149,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Brass bell that rings clear.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -177,7 +177,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Ranged missile weapon. TH 5 / DMG 2.</p>",
-      "cost": 0,
+      "cost": 10,
       "quantity": 1,
       "th": 5,
       "damage": 2,
@@ -215,7 +215,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bard instrument. To perform, make a CHA save and roll on the effect table.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "effectTable": [
         "",
@@ -255,7 +255,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>A bound book, blank or written.</p>",
-      "cost": 0,
+      "cost": 50,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -283,7 +283,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Small iron cage for small captives.</p>",
-      "cost": 0,
+      "cost": 10,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -311,7 +311,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Sharp iron stars that ruin a chase.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -339,7 +339,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Chain Mail. Mitigates 1s on To Hit; A-marker armour.</p>",
-      "cost": 0,
+      "cost": 80,
       "quantity": 1,
       "armourType": "light",
       "defence": 0
@@ -367,7 +367,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Heavy iron chain, ten feet.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -395,7 +395,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed club weapon. TH 4 / DMG 2.</p>",
-      "cost": 0,
+      "cost": 4,
       "quantity": 1,
       "th": 4,
       "damage": 2,
@@ -459,7 +459,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Brass compass — points north, mostly.</p>",
-      "cost": 0,
+      "cost": 30,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -487,7 +487,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Nested pots and a pan.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -579,7 +579,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Ranged bow weapon. TH 5 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 35,
       "quantity": 1,
       "th": 5,
       "damage": 4,
@@ -617,7 +617,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Pry doors, lids, and unwise heads.</p>",
-      "cost": 0,
+      "cost": 6,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -645,7 +645,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed blade weapon. TH 4 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 8,
       "quantity": 1,
       "th": 4,
       "damage": 3,
@@ -682,7 +682,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Ranged thrown weapon. TH 4 / DMG 2.</p>",
-      "cost": 0,
+      "cost": 1,
       "quantity": 1,
       "th": 4,
       "damage": 2,
@@ -752,7 +752,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Rod, line and hook.</p>",
-      "cost": 0,
+      "cost": 8,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -780,7 +780,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed flail weapon. TH 5 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "th": 5,
       "damage": 4,
@@ -816,7 +816,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Stoppered flask of lamp oil.</p>",
-      "cost": 0,
+      "cost": 8,
       "quantity": 1,
       "consumable": true,
       "tag": "fuel"
@@ -844,7 +844,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Empty stoppered flask.</p>",
-      "cost": 0,
+      "cost": 4,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -872,7 +872,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Strike for sparks and tinder.</p>",
-      "cost": 0,
+      "cost": 1,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -900,7 +900,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Full Plate Mail. Mitigates 1s on To Hit; A-marker armour.</p>",
-      "cost": 0,
+      "cost": 200,
       "quantity": 1,
       "armourType": "heavy",
       "defence": 0
@@ -956,7 +956,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed rogue weapon. TH 4 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 2,
       "quantity": 1,
       "th": 4,
       "damage": 3,
@@ -993,7 +993,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Iron hook, bites at edges and ledges.</p>",
-      "cost": 0,
+      "cost": 8,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -1021,7 +1021,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed blade weapon. TH 6 / DMG 5.</p>",
-      "cost": 0,
+      "cost": 50,
       "quantity": 1,
       "th": 6,
       "damage": 5,
@@ -1058,7 +1058,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>A day's rations.</p>",
-      "cost": 0,
+      "cost": 2,
       "quantity": 1,
       "consumable": true,
       "tag": "ration"
@@ -1086,7 +1086,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Heavy hammer for pegs and nails.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -1146,7 +1146,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bard instrument. To perform, make a CHA save and roll on the effect table.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "effectTable": [
         "",
@@ -1214,7 +1214,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Helmet. Mitigates 1s on To Hit; A-marker armour.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "armourType": "helmet",
       "defence": 0
@@ -1242,7 +1242,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bundle of useful or peculiar herbs.</p>",
-      "cost": 0,
+      "cost": 12,
       "quantity": 1,
       "consumable": true,
       "tag": "ration"
@@ -1270,7 +1270,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Hide Armour. Mitigates 1s on To Hit; A-marker armour.</p>",
-      "cost": 0,
+      "cost": 40,
       "quantity": 1,
       "armourType": "basic",
       "defence": 0
@@ -1298,7 +1298,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-glass timer.</p>",
-      "cost": 0,
+      "cost": 80,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -1326,7 +1326,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>For scribing notes, signatures, or scrolls.</p>",
-      "cost": 0,
+      "cost": 10,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -1354,7 +1354,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bundle of iron spikes.</p>",
-      "cost": 0,
+      "cost": 3,
       "quantity": 1,
       "consumable": true,
       "tag": "tool"
@@ -1382,7 +1382,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Folding wooden ladder.</p>",
-      "cost": 0,
+      "cost": 18,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -1410,7 +1410,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Hooded lantern; needs oil.</p>",
-      "cost": 0,
+      "cost": 15,
       "quantity": 1,
       "consumable": false,
       "tag": "lightSource"
@@ -1438,7 +1438,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Leather Armour. Mitigates 1s on To Hit; A-marker armour.</p>",
-      "cost": 0,
+      "cost": 40,
       "quantity": 1,
       "armourType": "basic",
       "defence": 0
@@ -1466,7 +1466,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>A small, locked iron box.</p>",
-      "cost": 0,
+      "cost": 25,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -1494,7 +1494,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed bow weapon. TH 6 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 40,
       "quantity": 1,
       "th": 6,
       "damage": 4,
@@ -1532,7 +1532,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bard instrument. To perform, make a CHA save and roll on the effect table.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "effectTable": [
         "",
@@ -1572,7 +1572,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed blunt weapon. TH 5 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 18,
       "quantity": 1,
       "th": 5,
       "damage": 4,
@@ -1609,7 +1609,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Iron wrist shackles with key.</p>",
-      "cost": 0,
+      "cost": 14,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -1637,7 +1637,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>A map of somewhere.</p>",
-      "cost": 0,
+      "cost": 150,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -1665,7 +1665,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bag of glass marbles.</p>",
-      "cost": 0,
+      "cost": 2,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -1693,7 +1693,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed blunt weapon. TH 6 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 25,
       "quantity": 1,
       "th": 6,
       "damage": 3,
@@ -1730,7 +1730,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Brass microscope for the very small.</p>",
-      "cost": 0,
+      "cost": 250,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -1758,7 +1758,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Polished hand mirror.</p>",
-      "cost": 0,
+      "cost": 12,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -1786,7 +1786,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed blunt weapon. TH 5 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 15,
       "quantity": 1,
       "th": 5,
       "damage": 3,
@@ -1851,7 +1851,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Weighted throwing net.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -1879,7 +1879,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Aromatic phial — masks scents, attracts trouble.</p>",
-      "cost": 0,
+      "cost": 22,
       "quantity": 1,
       "consumable": true,
       "tag": ""
@@ -1907,7 +1907,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>For mining and rough hewing.</p>",
-      "cost": 0,
+      "cost": 7,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -1935,7 +1935,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bard instrument. To perform, make a CHA save and roll on the effect table.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "effectTable": [
         "",
@@ -1975,7 +1975,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed polearm weapon. TH 4 / DMG 5.</p>",
-      "cost": 0,
+      "cost": 40,
       "quantity": 1,
       "th": 4,
       "damage": 5,
@@ -2011,7 +2011,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Single-use alchemical potion.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "consumable": true,
       "tag": ""
@@ -2039,7 +2039,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed blunt weapon. TH 5 / DMG 2.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "th": 5,
       "damage": 2,
@@ -2076,7 +2076,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Quiver of arrows or bolts.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": false,
       "tag": "ammo"
@@ -2104,7 +2104,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Fifty feet of hempen rope.</p>",
-      "cost": 0,
+      "cost": 1,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -2132,7 +2132,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Scale Mail. Mitigates 1s on To Hit; A-marker armour.</p>",
-      "cost": 0,
+      "cost": 80,
       "quantity": 1,
       "armourType": "light",
       "defence": 0
@@ -2160,7 +2160,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed blade weapon. TH 5 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 15,
       "quantity": 1,
       "th": 5,
       "damage": 4,
@@ -2197,7 +2197,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Single-use scroll. Cast the inscribed spell, then discard.</p>",
-      "cost": 0,
+      "cost": 100,
       "quantity": 1,
       "consumable": true,
       "tag": ""
@@ -2225,7 +2225,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed polearm weapon. TH 6 / DMG 2.</p>",
-      "cost": 0,
+      "cost": 16,
       "quantity": 1,
       "th": 6,
       "damage": 2,
@@ -2262,7 +2262,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Shield. Mitigates 1s on To Hit; A-marker armour.</p>",
-      "cost": 0,
+      "cost": 10,
       "quantity": 1,
       "armourType": "shield",
       "defence": 0
@@ -2290,7 +2290,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Ranged bow weapon. TH 5 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 25,
       "quantity": 1,
       "th": 5,
       "damage": 3,
@@ -2328,7 +2328,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed blade weapon. TH 5 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 15,
       "quantity": 1,
       "th": 5,
       "damage": 3,
@@ -2365,7 +2365,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Iron-shod shovel.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -2393,7 +2393,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bard instrument. To perform, make a CHA save and roll on the effect table.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "effectTable": [
         "",
@@ -2433,7 +2433,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Ranged missile weapon. TH 4 / DMG 2.</p>",
-      "cost": 0,
+      "cost": 2,
       "quantity": 1,
       "th": 4,
       "damage": 2,
@@ -2471,7 +2471,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Pipe and pouch of leaf.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -2527,7 +2527,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed polearm weapon. TH 5 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "th": 5,
       "damage": 4,
@@ -2564,7 +2564,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Wizard tome holding prepared spells.</p>",
-      "cost": 0,
+      "cost": 50,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -2592,7 +2592,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed chain weapon. TH 4 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 14,
       "quantity": 1,
       "th": 4,
       "damage": 4,
@@ -2629,7 +2629,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bone Whisperer's lantern that snares loose souls.</p>",
-      "cost": 0,
+      "cost": 15,
       "quantity": 1,
       "consumable": false,
       "tag": "lightSource"
@@ -2657,7 +2657,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Pocket telescope.</p>",
-      "cost": 0,
+      "cost": 100,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -2685,7 +2685,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Tripod telescope for the very far.</p>",
-      "cost": 0,
+      "cost": 350,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -2713,7 +2713,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>The classic ten-foot pole. Pokes things at length.</p>",
-      "cost": 0,
+      "cost": 6,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -2741,7 +2741,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-person canvas tent.</p>",
-      "cost": 0,
+      "cost": 25,
       "quantity": 1,
       "consumable": false,
       "tag": ""
@@ -2833,7 +2833,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Picks, pries and shims for the Cutthroat trade.</p>",
-      "cost": 0,
+      "cost": 25,
       "quantity": 1,
       "consumable": false,
       "tag": "tool"
@@ -2861,7 +2861,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Ranged thrown weapon. TH 4 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 10,
       "quantity": 1,
       "th": 4,
       "damage": 3,
@@ -2900,7 +2900,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bard instrument. To perform, make a CHA save and roll on the effect table.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "effectTable": [
         "",
@@ -2940,7 +2940,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bard instrument. To perform, make a CHA save and roll on the effect table.</p>",
-      "cost": 0,
+      "cost": 20,
       "quantity": 1,
       "effectTable": [
         "",
@@ -2980,7 +2980,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Bundle of pitch torches.</p>",
-      "cost": 0,
+      "cost": 5,
       "quantity": 1,
       "consumable": true,
       "tag": "lightSource"
@@ -3008,7 +3008,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed blade weapon. TH 5 / DMG 3.</p>",
-      "cost": 0,
+      "cost": 15,
       "quantity": 1,
       "th": 5,
       "damage": 3,
@@ -3082,7 +3082,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>Two-handed blunt weapon. TH 6 / DMG 4.</p>",
-      "cost": 0,
+      "cost": 35,
       "quantity": 1,
       "th": 6,
       "damage": 4,
@@ -3119,7 +3119,7 @@ export const COMMON_ITEMS = [
         "value": 0
       },
       "description": "<p>One-handed flail weapon. TH 4 / DMG 2.</p>",
-      "cost": 0,
+      "cost": 4,
       "quantity": 1,
       "th": 4,
       "damage": 2,
