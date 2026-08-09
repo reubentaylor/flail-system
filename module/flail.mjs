@@ -322,6 +322,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/actor/parts/loose-items.hbs",
         "systems/flail/templates/actor/parts/biography.hbs",
         "systems/flail/templates/actor/parts/notes-panel.hbs",
+        "systems/flail/templates/apps/combat-talent-picker.hbs",
         "systems/flail/templates/item/parts/header.hbs",
         "systems/flail/templates/item/parts/body.hbs",
         "systems/flail/templates/item/types/weapon.hbs",

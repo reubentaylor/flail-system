@@ -7180,6 +7180,240 @@
 }
 
 /* ============================================================
+   WARRIOR — Talent slot cards (new click-to-open picker UI)
+   The Slot header shows the level and a "Choose talent" button
+   (or "Change talent" when the slot is filled). Slots are also
+   drop targets — a hover from the picker window highlights the
+   slot; a drop commits the talent key. Locked slots refuse both
+   click and drop.
+   ============================================================ */
+
+.flail.sheet .combat-talents-card .talent-slot-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--flail-ink, #1a1410);
+  background: var(--flail-parchment, #f4ebd4);
+  border: 1px solid var(--flail-rule, #b58b3e);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+.flail.sheet .combat-talents-card .talent-slot-open-btn:hover:not(:disabled) {
+  background: var(--flail-parchment-hover, #ecdfbe);
+  border-color: var(--flail-ink, #1a1410);
+}
+.flail.sheet .combat-talents-card .talent-slot-open-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.flail.sheet .combat-talents-card .talent-slot-hint-empty {
+  margin: 0.35rem 0 0;
+  padding-top: 0.35rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.3);
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--flail-muted, #5a4810);
+}
+/* Drop-hover state — a valid talent is being dragged over an unlocked
+   slot. Bright warm border + slight glow signals "release here" to
+   commit the drop. */
+.flail.sheet .combat-talents-card .talent-slot-drag-hover {
+  border-color: var(--flail-success, #4c7d3a);
+  background: rgba(120, 180, 90, 0.12);
+  box-shadow: 0 0 0 2px rgba(76, 125, 58, 0.35) inset;
+}
+/* Filled vs empty subtle styling — filled slots get a darker
+   parchment tint, empty ones lighter so eyes skip past picks and
+   land on the still-empty slot. */
+.flail.sheet .combat-talents-card .talent-slot-empty {
+  background: rgba(255, 251, 232, 0.4);
+  border-style: dashed;
+}
+.flail.sheet .combat-talents-card .talent-slot-filled {
+  background: rgba(255, 250, 225, 0.85);
+}
+
+/* ============================================================
+   COMBAT TALENT PICKER — floating window with draggable talent
+   cards grouped by tree. Each tree column shows Basic on top,
+   then each Expert with its two Masters underneath.
+   ============================================================ */
+
+.combat-talent-picker .talent-picker-body {
+  padding: 0.5rem;
+  background: var(--flail-paper, #fbf3d9);
+  color: var(--flail-ink, #1a1410);
+  font-family: inherit;
+}
+.combat-talent-picker .talent-picker-intro {
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: rgba(139, 105, 20, 0.1);
+  border-left: 3px solid var(--flail-rule, #b58b3e);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+.combat-talent-picker .talent-picker-current-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.4rem;
+}
+.combat-talent-picker .talent-picker-clear-btn {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--flail-ink);
+  background: transparent;
+  border: 1px solid var(--flail-rule);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.combat-talent-picker .talent-picker-clear-btn:hover {
+  background: rgba(200, 60, 40, 0.15);
+  border-color: #a63e29;
+}
+.combat-talent-picker .talent-tree-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+.combat-talent-picker .talent-tree {
+  padding: 0.4rem;
+  background: rgba(255, 250, 225, 0.7);
+  border: 1px solid var(--flail-rule, #b58b3e);
+  border-radius: 4px;
+}
+.combat-talent-picker .talent-tree-header h3 {
+  margin: 0;
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--flail-accent, #6a4d0e);
+}
+.combat-talent-picker .talent-tree-header .tree-hint {
+  margin: 0 0 0.3rem;
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--flail-muted, #5a4810);
+}
+
+/* Talent card — the draggable/clickable unit. Common styling for
+   Basic, Expert, and Master; per-tier accent applied via the tier
+   badge and a border-left stripe. */
+.combat-talent-picker .ct-card {
+  padding: 0.35rem 0.45rem;
+  margin-bottom: 0.35rem;
+  border: 1px solid var(--flail-rule, #b58b3e);
+  border-left-width: 4px;
+  border-radius: 3px;
+  background: var(--flail-parchment, #f4ebd4);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, transform 0.05s;
+}
+.combat-talent-picker .ct-card-basic  { border-left-color: #6b4818; }
+.combat-talent-picker .ct-card-expert { border-left-color: #4a6b2a; margin-left: 0.4rem; }
+.combat-talent-picker .ct-card-master { border-left-color: #5a0f1a; }
+.combat-talent-picker .ct-masters-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  margin-left: 0.8rem;
+}
+.combat-talent-picker .ct-masters-row .ct-card {
+  margin-bottom: 0;
+}
+
+.combat-talent-picker .ct-card.ct-available:hover {
+  background: var(--flail-parchment-hover, #ecdfbe);
+  border-color: var(--flail-ink, #1a1410);
+}
+.combat-talent-picker .ct-card.ct-available[draggable="true"]:active {
+  cursor: grabbing;
+}
+.combat-talent-picker .ct-card.ct-dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+}
+.combat-talent-picker .ct-card.ct-unavailable {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: rgba(200, 200, 200, 0.2);
+}
+.combat-talent-picker .ct-card.ct-current {
+  outline: 2px solid var(--flail-success, #4c7d3a);
+  outline-offset: -2px;
+  background: rgba(120, 180, 90, 0.15);
+}
+
+.combat-talent-picker .ct-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.15rem;
+}
+.combat-talent-picker .ct-tier-badge {
+  padding: 0.05rem 0.35rem;
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.62rem;
+  border-radius: 2px;
+  color: #fff5d7;
+  flex: 0 0 auto;
+}
+.combat-talent-picker .ct-tier-basic  { background: #6b4818; }
+.combat-talent-picker .ct-tier-expert { background: #4a6b2a; }
+.combat-talent-picker .ct-tier-master { background: #5a0f1a; }
+.combat-talent-picker .ct-name {
+  font-weight: 700;
+  color: var(--flail-ink, #1a1410);
+  flex: 1 1 auto;
+}
+.combat-talent-picker .ct-current-mark {
+  color: var(--flail-success, #4c7d3a);
+  font-size: 0.85rem;
+}
+.combat-talent-picker .ct-desc {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--flail-ink, #1a1410);
+}
+.combat-talent-picker .ct-reason {
+  margin: 0.25rem 0 0;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.7rem;
+  font-style: italic;
+  color: #7a3418;
+  background: rgba(200, 60, 40, 0.08);
+  border-left: 2px solid rgba(200, 60, 40, 0.3);
+  border-radius: 2px;
+}
+.combat-talent-picker .ct-reason .fa-lock {
+  margin-right: 0.2rem;
+}
+.combat-talent-picker .talent-picker-footer {
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.3);
+  font-size: 0.72rem;
+  color: var(--flail-muted, #5a4810);
+  font-style: italic;
+}
+.combat-talent-picker .talent-picker-footer p {
+  margin: 0;
+}
+.combat-talent-picker .talent-picker-footer .fa-hand-pointer {
+  margin-right: 0.3rem;
+}
+
+/* ============================================================
    WARRIOR — Combat Talent triggers on the attack chat card
    ============================================================ */
 

@@ -6,6 +6,7 @@ import { rollPrayer } from "../dice/cast-prayer.mjs";
 import { rollLayOnHands } from "../dice/lay-on-hands.mjs";
 import { rollMiracleCall } from "../dice/miracle-call.mjs";
 import { resolveRest } from "../dice/rest.mjs";
+import { CombatTalentPicker } from "../apps/combat-talent-picker.mjs";
 import { WIZARD_SPELLS } from "../setup/wizard-spells-data.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -42,6 +43,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       rollAttack:      FlailCharacterSheet.#onRollAttack,
       rollIronFistAttack: FlailCharacterSheet.#onRollIronFistAttack,
       toggleWeathered: FlailCharacterSheet.#onToggleWeathered,
+      openTalentPicker: FlailCharacterSheet.#onOpenTalentPicker,
       toggleWizardMasterLock: FlailCharacterSheet.#onToggleWizardMasterLock,
       readMagic:              FlailCharacterSheet.#onReadMagic,
       rollInstrument:  FlailCharacterSheet.#onRollInstrument,
@@ -332,7 +334,14 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     //     the character's current level are greyed and disabled in
     //     the sheet so a level-3 Warrior can't reach ahead into
     //     level-4 or level-5 slots.
-    const rawTalents = sys.combatTalents ?? ["", "", "", "", ""];
+    // Existing warrior actors from before the 5-slot schema may have
+    // combatTalents arrays with fewer than 5 entries (or missing
+    // entirely). Pad to exactly 5 so the template always renders all
+    // level slots, with empty slots ready to receive picks. The pad
+    // is context-only; the on-disk array is only expanded when a slot
+    // gets filled, at which point Foundry auto-grows the ArrayField.
+    const rawTalents = [...(sys.combatTalents ?? [])];
+    while (rawTalents.length < 5) rawTalents.push("");
     const charLevel = sys.level ?? 1;
     ctx.combatTalents = rawTalents.map((currentKey, i) => {
       const level = i + 1;
@@ -1071,6 +1080,18 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       el.addEventListener("drop", this.#onDrop.bind(this));
     });
 
+    // Combat Talent slot drop zones (Warrior). Slots on the Class
+    // tab accept drops from the Combat Talent Picker window. The
+    // payload is a JSON object with type "flail-combat-talent" — we
+    // filter for that and ignore anything else. Locked slots (level
+    // > current) still receive events but the drop handler rejects
+    // them with a toast so a stray drag doesn't accidentally unlock.
+    root.querySelectorAll("[data-flail-drop-target='talentSlot']").forEach(el => {
+      el.addEventListener("dragover", this.#onTalentSlotDragOver.bind(this));
+      el.addEventListener("dragleave", this.#onTalentSlotDragLeave.bind(this));
+      el.addEventListener("drop",     this.#onTalentSlotDrop.bind(this));
+    });
+
     // Spell-list drop zones — currently the Bone Whisperer's Known Spells
     // panel. Accepts spell Items with tradition === "dark"; rejects
     // anything else with the "no entry" cursor.
@@ -1357,6 +1378,65 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
   #onSpellListDragOver(event) {
     event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+  }
+
+  /**
+   * Combat Talent slot — accept only "flail-combat-talent" payloads
+   * from the picker window. Adds a visual highlight while the drag
+   * hovers over an unlocked slot; rejects the drop on locked slots.
+   */
+  async #onTalentSlotDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    // Reject if this slot is locked (level > character level).
+    const slot = event.currentTarget;
+    if (slot.classList.contains("talent-slot-locked")) {
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
+      return;
+    }
+    slot.classList.add("talent-slot-drag-hover");
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+  }
+
+  async #onTalentSlotDragLeave(event) {
+    event.currentTarget.classList.remove("talent-slot-drag-hover");
+  }
+
+  async #onTalentSlotDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const slot = event.currentTarget;
+    slot.classList.remove("talent-slot-drag-hover");
+
+    if (slot.classList.contains("talent-slot-locked")) return;
+
+    let payload;
+    try { payload = JSON.parse(event.dataTransfer.getData("text/plain")); }
+    catch { return; }
+
+    // Only accept our own combat-talent payloads. Ignore stray item
+    // drags — those get handled by the inventory drop pipeline.
+    if (payload?.type !== "flail-combat-talent") return;
+    if (!payload.talentKey) return;
+    // Payload must be for THIS actor — cross-actor drags don't make
+    // sense (each actor has their own talent progression).
+    if (payload.actorUuid && payload.actorUuid !== this.actor.uuid) {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.TalentWrongActor"));
+      return;
+    }
+    const slotIndex = Number(slot.dataset.slotIndex);
+    if (!Number.isFinite(slotIndex)) return;
+
+    // Write the talent key into the slot. The context prep applies
+    // prerequisite gating at render time, but we don't re-validate
+    // here — the picker only made "available" cards draggable, so
+    // a drop can only carry a legal pick. If someone bypasses the
+    // picker (e.g. crafting a drag event by hand), the context prep
+    // will surface the invalid state via the talent-slot-invalid
+    // class on next render.
+    await this.actor.update({
+      [`system.combatTalents.${slotIndex}`]: payload.talentKey
+    });
   }
 
   /**
@@ -2206,6 +2286,22 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
   static async #onToggleWeathered(event, target) {
     const cur = !!this.actor.system.weatheredAvailable;
     await this.actor.update({ "system.weatheredAvailable": !cur });
+  }
+
+  /**
+   * Warrior — open the Combat Talent Picker for the clicked slot.
+   * The picker is a separate floating window (ApplicationV2) that
+   * renders every talent from every tree with prerequisite gating
+   * applied for THIS specific slot. Player can click a card in the
+   * picker to commit it, or drag a card onto the slot on the sheet.
+   * Locked slots (beyondCurrentLevel) block the click before we get
+   * here — the template omits the data-action on those elements.
+   */
+  static async #onOpenTalentPicker(event, target) {
+    const slotIndex = Number(target.dataset.slotIndex);
+    if (!Number.isFinite(slotIndex)) return;
+    const picker = new CombatTalentPicker(this.actor, slotIndex);
+    picker.render(true);
   }
 
   /**

@@ -1,0 +1,102 @@
+{{!--
+  Combat Talent Picker — floating window contents.
+
+  Structure per tree:
+    * Basic card at top
+    * Each Expert card below the Basic
+    * Under each Expert, its two Master cards side by side
+
+  Availability states:
+    * ct-available   — a legal pick for this slot; draggable + clickable
+    * ct-unavailable — fails a prerequisite; greyed with a reason line
+    * ct-current     — already the pick for this slot (visual highlight)
+
+  Every card carries data-action="chooseTalent" so the ApplicationV2
+  action framework handles click-to-commit. Drag handlers are wired in
+  _onRender on the same DOM.
+--}}
+<div class="talent-picker-body">
+  <p class="talent-picker-intro">
+    {{localize "FLAIL.CombatTalentPicker.Intro"}}
+  </p>
+
+  {{#if hasCurrent}}
+  <div class="talent-picker-current-row">
+    <button type="button" class="talent-picker-clear-btn" data-action="clearSlot">
+      <i class="fas fa-eraser"></i>
+      {{localize "FLAIL.CombatTalentPicker.ClearSlot"}}
+    </button>
+  </div>
+  {{/if}}
+
+  <div class="talent-tree-grid">
+    {{#each trees as |tree|}}
+    <section class="talent-tree">
+      <header class="talent-tree-header">
+        <h3>{{tree.label}}</h3>
+        <p class="tree-hint">{{tree.hint}}</p>
+      </header>
+
+      {{!-- Basic ------------------------------------------------ --}}
+      <div class="ct-card ct-card-basic
+                  {{#if tree.basic.available}}ct-available{{else}}ct-unavailable{{/if}}
+                  {{#if tree.basic.current}}ct-current{{/if}}"
+           {{#if tree.basic.available}}draggable="true"{{/if}}
+           data-action="chooseTalent"
+           data-talent-key="{{tree.basic.key}}"
+           data-tier="basic">
+        <div class="ct-card-head">
+          <span class="ct-tier-badge ct-tier-basic">{{localize "FLAIL.CombatTalentPicker.TierBasic"}}</span>
+          <span class="ct-name">{{tree.basic.label}}</span>
+          {{#if tree.basic.current}}<i class="fas fa-check-circle ct-current-mark" title="{{localize 'FLAIL.CombatTalentPicker.CurrentPick'}}"></i>{{/if}}
+        </div>
+        <p class="ct-desc">{{tree.basic.desc}}</p>
+        {{#if tree.basic.reason}}<p class="ct-reason"><i class="fas fa-lock"></i> {{tree.basic.reason}}</p>{{/if}}
+      </div>
+
+      {{!-- Experts + Masters ------------------------------------- --}}
+      {{#each tree.experts as |expert|}}
+      <div class="ct-card ct-card-expert
+                  {{#if expert.available}}ct-available{{else}}ct-unavailable{{/if}}
+                  {{#if expert.current}}ct-current{{/if}}"
+           {{#if expert.available}}draggable="true"{{/if}}
+           data-action="chooseTalent"
+           data-talent-key="{{expert.key}}"
+           data-tier="expert">
+        <div class="ct-card-head">
+          <span class="ct-tier-badge ct-tier-expert">{{localize "FLAIL.CombatTalentPicker.TierExpert"}}</span>
+          <span class="ct-name">{{expert.label}}</span>
+          {{#if expert.current}}<i class="fas fa-check-circle ct-current-mark"></i>{{/if}}
+        </div>
+        <p class="ct-desc">{{expert.desc}}</p>
+        {{#if expert.reason}}<p class="ct-reason"><i class="fas fa-lock"></i> {{expert.reason}}</p>{{/if}}
+      </div>
+
+      <div class="ct-masters-row">
+        {{#each expert.masters as |master|}}
+        <div class="ct-card ct-card-master
+                    {{#if master.available}}ct-available{{else}}ct-unavailable{{/if}}
+                    {{#if master.current}}ct-current{{/if}}"
+             {{#if master.available}}draggable="true"{{/if}}
+             data-action="chooseTalent"
+             data-talent-key="{{master.key}}"
+             data-tier="master">
+          <div class="ct-card-head">
+            <span class="ct-tier-badge ct-tier-master">{{localize "FLAIL.CombatTalentPicker.TierMaster"}}</span>
+            <span class="ct-name">{{master.label}}</span>
+            {{#if master.current}}<i class="fas fa-check-circle ct-current-mark"></i>{{/if}}
+          </div>
+          <p class="ct-desc">{{master.desc}}</p>
+          {{#if master.reason}}<p class="ct-reason"><i class="fas fa-lock"></i> {{master.reason}}</p>{{/if}}
+        </div>
+        {{/each}}
+      </div>
+      {{/each}}
+    </section>
+    {{/each}}
+  </div>
+
+  <footer class="talent-picker-footer">
+    <p><i class="fas fa-hand-pointer"></i> {{localize "FLAIL.CombatTalentPicker.Footer"}}</p>
+  </footer>
+</div>

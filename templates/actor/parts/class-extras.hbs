@@ -40,26 +40,33 @@
     <p class="hint">{{localize "FLAIL.Hint.CombatTalents"}}</p>
     <div class="talent-slot-list">
       {{#each combatTalents as |slot|}}
-      <div class="talent-slot {{#if slot.currentDisplay.invalid}}talent-slot-invalid{{/if}} {{#if slot.beyondCurrentLevel}}talent-slot-locked{{/if}}">
+      <div class="talent-slot
+                  {{#if slot.currentDisplay}}talent-slot-filled{{else}}talent-slot-empty{{/if}}
+                  {{#if slot.currentDisplay.invalid}}talent-slot-invalid{{/if}}
+                  {{#if slot.beyondCurrentLevel}}talent-slot-locked{{/if}}"
+           data-flail-drop-target="talentSlot"
+           data-slot-index="{{@index}}">
         <div class="talent-slot-header">
           <span class="talent-slot-level">
             Level {{slot.level}}
             {{#if slot.beyondCurrentLevel}}<i class="fas fa-lock talent-slot-lock-icon" title="Reach character level {{slot.level}} to unlock this slot."></i>{{/if}}
           </span>
-          <select name="system.combatTalents.{{@index}}" class="talent-select" {{#if slot.beyondCurrentLevel}}disabled{{else}}{{#unless ../editable}}disabled{{/unless}}{{/if}}>
-            <option value="" {{#unless slot.current}}selected{{/unless}}>— choose talent —</option>
-            {{#each slot.trees as |tree|}}
-            <optgroup label="{{tree.label}}">
-              {{#each tree.entries as |entry|}}
-              <option value="{{entry.key}}"
-                      {{#if entry.current}}selected{{/if}}
-                      {{#unless entry.available}}{{#unless entry.current}}disabled{{/unless}}{{/unless}}>
-                {{entry.label}}
-              </option>
-              {{/each}}
-            </optgroup>
-            {{/each}}
-          </select>
+          {{#unless slot.beyondCurrentLevel}}
+          <button type="button"
+                  class="talent-slot-open-btn"
+                  data-action="openTalentPicker"
+                  data-slot-index="{{@index}}"
+                  title="{{localize 'FLAIL.CombatTalentPicker.OpenPickerHint'}}"
+                  {{#unless ../editable}}disabled{{/unless}}>
+            {{#if slot.currentDisplay}}
+              <i class="fas fa-pen"></i>
+              <span>{{localize "FLAIL.CombatTalentPicker.Change"}}</span>
+            {{else}}
+              <i class="fas fa-plus"></i>
+              <span>{{localize "FLAIL.CombatTalentPicker.Choose"}}</span>
+            {{/if}}
+          </button>
+          {{/unless}}
         </div>
         {{#if slot.currentDisplay}}
         <div class="talent-slot-body">
@@ -70,6 +77,10 @@
           <p class="talent-invalid-warn"><i class="fas fa-triangle-exclamation"></i> Prerequisites not met by earlier slots — reshuffle or reselect.</p>
           {{/if}}
         </div>
+        {{else}}
+          {{#unless slot.beyondCurrentLevel}}
+          <p class="talent-slot-hint-empty">{{localize "FLAIL.CombatTalentPicker.EmptyHint"}}</p>
+          {{/unless}}
         {{/if}}
       </div>
       {{/each}}
