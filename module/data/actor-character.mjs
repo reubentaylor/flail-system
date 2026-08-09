@@ -42,8 +42,12 @@ export class FlailCharacterModel extends foundry.abstract.TypeDataModel {
       attributes: new fields.SchemaField(attributes),
 
       hp: new fields.SchemaField({
-        value: new fields.NumberField({ integer: true, min: 0, initial: 9 }),
-        max:   new fields.NumberField({ integer: true, min: 0, initial: 9 })
+        // Initial 14 matches the Warrior class default (the first
+        // class shown in the class picker), so a freshly-created
+        // character sheet reads consistently. Players switching to
+        // a different class enter the class's own HP manually.
+        value: new fields.NumberField({ integer: true, min: 0, initial: 14 }),
+        max:   new fields.NumberField({ integer: true, min: 0, initial: 14 })
       }),
 
       // Class-specific resource (Wizard mana, Bone Whisperer spirit, etc.).

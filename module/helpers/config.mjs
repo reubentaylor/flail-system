@@ -708,7 +708,7 @@ FLAIL.backgrounds = {
       perk: "Start with a random Legendary Weapon (from deceased master); +2 TH vs Trolls." },
     { key: "5", label: "Human exile from a distant kingdom, seeking to reclaim their lost throne.",
       perk: "Start with +50 coins and a signet ring (+1 CHA)." },
-    { key: "6", label: "Halfling gladiator champion from End's Meet who found a map to an ancient arena in a defeated rival.",
+    { key: "6", label: "Halfling gladiator champion from End's Meet who found a map to an ancient arena on a defeated rival.",
       perk: "Start with a map and +2 CHA." }
   ],
   wizard: [
