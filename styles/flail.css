@@ -643,6 +643,49 @@
   padding: 0 0.2rem 0.18rem;
 }
 
+/* Attribute adjust column — +/- buttons stacked with a padlock
+   toggle underneath. Sits inside the attribute box below the
+   base/current row so all 5 attributes remain the same box height.
+   The padlock defaults to locked (fa-lock, muted); unlocking
+   surfaces the +/- buttons as active. */
+.flail.sheet .attribute-box .attr-adjust {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 0 0.22rem 0.22rem;
+}
+.flail.sheet .attribute-box .attr-adjust-btn,
+.flail.sheet .attribute-box .attr-lock-btn {
+  padding: 0.15rem;
+  font-size: 0.65rem;
+  line-height: 1;
+  background: var(--flail-parchment, #f4ebd4);
+  color: var(--flail-ink);
+  border: 1px solid var(--flail-rule);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.flail.sheet .attribute-box .attr-adjust-btn:hover:not(:disabled),
+.flail.sheet .attribute-box .attr-lock-btn:hover:not(:disabled) {
+  background: var(--flail-parchment-hover, #ecdfbe);
+  border-color: var(--flail-ink);
+}
+.flail.sheet .attribute-box .attr-adjust-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.flail.sheet .attribute-box .attr-lock-btn {
+  grid-column: span 2;   /* padlock spans the full width beneath +/- */
+}
+.flail.sheet .attribute-box .attr-lock-locked {
+  color: var(--flail-muted, #5a4810);
+}
+.flail.sheet .attribute-box .attr-lock-unlocked {
+  color: var(--flail-success, #4c7d3a);
+  background: rgba(120, 180, 90, 0.15);
+}
+
 /* ============================================================
    MAIN ROW — vitals + inventory grid
    ============================================================ */

@@ -1,6 +1,14 @@
 {{!--
   Attribute strip. Five big bordered boxes — each is a clickable button
   that rolls a Save against that attribute. Shift = advantage, Ctrl/Cmd = disadvantage.
+
+  Each attribute also has:
+    * A "+" and "-" button pair to the right of the base/current display,
+      wired to adjust `system.attributes.<key>.mod` by ±1. This gives a
+      persistent delta that flows through the prep cycle into `current`.
+    * A padlock toggle below the +/- buttons. The +/- are disabled
+      unless the padlock is unlocked; the lock defaults to ON to
+      prevent accidental clicks changing scores mid-play.
 --}}
 <section class="attribute-strip">
   {{#each attributeList as |attr|}}
@@ -14,23 +22,59 @@
     >
       <span class="attr-name">{{attr.abbr}}</span>
     </button>
-    <div class="attr-values">
-      <input
-        type="number"
-        name="system.attributes.{{attr.key}}.base"
-        value="{{attr.base}}"
-        min="0"
-        max="20"
-        class="attr-base"
-        title="{{localize 'FLAIL.Field.Base'}}"
-        {{#unless ../editable}}disabled{{/unless}}
-      />
-      <span class="attr-slash">/</span>
-      <span class="attr-current">{{attr.current}}</span>
+    <div class="attr-body">
+      <div class="attr-values">
+        <input
+          type="number"
+          name="system.attributes.{{attr.key}}.base"
+          value="{{attr.base}}"
+          min="0"
+          max="20"
+          class="attr-base"
+          title="{{localize 'FLAIL.Field.Base'}}"
+          {{#unless ../editable}}disabled{{/unless}}
+        />
+        <span class="attr-slash">/</span>
+        <span class="attr-current">{{attr.current}}</span>
+      </div>
+      <div class="attr-labels">
+        <span>{{localize "FLAIL.Field.Base"}}</span>
+        <span>{{localize "FLAIL.Field.Current"}}</span>
+      </div>
     </div>
-    <div class="attr-labels">
-      <span>{{localize "FLAIL.Field.Base"}}</span>
-      <span>{{localize "FLAIL.Field.Current"}}</span>
+    <div class="attr-adjust">
+      <button
+        type="button"
+        class="attr-adjust-btn attr-adjust-up"
+        data-action="attributeAdjustUp"
+        data-attribute="{{attr.key}}"
+        title="Increase current {{attr.label}} by 1 (adjusts modifier)"
+        {{#if attr.locked}}disabled{{/if}}
+        {{#unless ../editable}}disabled{{/unless}}
+      >
+        <i class="fas fa-plus"></i>
+      </button>
+      <button
+        type="button"
+        class="attr-adjust-btn attr-adjust-down"
+        data-action="attributeAdjustDown"
+        data-attribute="{{attr.key}}"
+        title="Decrease current {{attr.label}} by 1 (adjusts modifier)"
+        {{#if attr.locked}}disabled{{/if}}
+        {{#unless ../editable}}disabled{{/unless}}
+      >
+        <i class="fas fa-minus"></i>
+      </button>
+      <button
+        type="button"
+        class="attr-lock-btn {{#if attr.locked}}attr-lock-locked{{else}}attr-lock-unlocked{{/if}}"
+        data-action="attributeToggleLock"
+        data-attribute="{{attr.key}}"
+        title="{{#if attr.locked}}Click to unlock {{attr.label}} adjustments{{else}}Click to lock {{attr.label}} adjustments{{/if}}"
+        {{#unless ../editable}}disabled{{/unless}}
+      >
+        <i class="fas {{#if attr.locked}}fa-lock{{else}}fa-lock-open{{/if}}"></i>
+      </button>
     </div>
   </div>
   {{/each}}

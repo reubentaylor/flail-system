@@ -44,6 +44,9 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       rollIronFistAttack: FlailCharacterSheet.#onRollIronFistAttack,
       toggleWeathered: FlailCharacterSheet.#onToggleWeathered,
       openTalentPicker: FlailCharacterSheet.#onOpenTalentPicker,
+      attributeAdjustUp:   FlailCharacterSheet.#onAttributeAdjustUp,
+      attributeAdjustDown: FlailCharacterSheet.#onAttributeAdjustDown,
+      attributeToggleLock: FlailCharacterSheet.#onAttributeToggleLock,
       toggleWizardMasterLock: FlailCharacterSheet.#onToggleWizardMasterLock,
       readMagic:              FlailCharacterSheet.#onReadMagic,
       rollInstrument:  FlailCharacterSheet.#onRollInstrument,
@@ -168,15 +171,23 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     }
 
     // Attributes — list form for handlebars iteration.
+    // Each attribute carries a per-attribute lock flag; the +/-
+    // adjustment buttons are disabled when locked. Locks default to
+    // TRUE so accidental page-clicks can't shift STR/DEX/etc. mid-
+    // combat. The player unlocks, adjusts, and re-locks manually.
+    const attrLocks = actor.getFlag("flail", "attrLocks") ?? {};
     ctx.attributeList = FLAIL.attributeKeys.map(key => {
       const attr = sys.attributes[key];
+      const locked = attrLocks[key] !== false; // default locked
       return {
         key,
         label: game.i18n.localize(FLAIL.attributes[key].label),
         abbr:  game.i18n.localize(FLAIL.attributes[key].abbr),
         base: attr.base,
         current: attr.current,
-        modified: attr.current !== attr.base
+        mod: attr.mod ?? 0,
+        modified: attr.current !== attr.base,
+        locked
       };
     });
 
@@ -2301,6 +2312,55 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     if (!Number.isFinite(slotIndex)) return;
     const picker = new CombatTalentPicker(this.actor, slotIndex);
     picker.render(true);
+  }
+
+  /**
+   * Attribute +/- adjustment. Wired to the "+" and "-" buttons next
+   * to each attribute value in the attribute strip.
+   *
+   * Modifies `system.attributes.<key>.mod` rather than `.current` —
+   * current is recomputed each prep cycle from `base + mod`, so a
+   * direct write to current would evaporate on the next render.
+   * Adjusting mod gives a persistent delta from base that survives
+   * refresh, rest, and sheet reopens; the total shows up in current
+   * as expected.
+   *
+   * A lock guard checks `flags.flail.attrLocks[key]` — if the lock
+   * is set (default), the button is disabled at render time and
+   * shouldn't fire, but we defensively re-check here.
+   */
+  static async #onAttributeAdjustUp(event, target) {
+    return FlailCharacterSheet.#adjustAttribute.call(this, target, +1);
+  }
+  static async #onAttributeAdjustDown(event, target) {
+    return FlailCharacterSheet.#adjustAttribute.call(this, target, -1);
+  }
+  static async #adjustAttribute(target, delta) {
+    const key = target.dataset.attribute;
+    if (!key) return;
+    const attrLocks = this.actor.getFlag("flail", "attrLocks") ?? {};
+    if (attrLocks[key] !== false) return; // locked (default)
+    const cur = this.actor.system.attributes?.[key]?.mod ?? 0;
+    await this.actor.update({ [`system.attributes.${key}.mod`]: cur + delta });
+  }
+
+  /**
+   * Padlock toggle beneath each attribute's +/- buttons. Flips the
+   * per-attribute lock flag; the sheet re-renders and the buttons
+   * enable/disable accordingly.
+   *
+   * Lock state is per-actor + per-attribute, stored under the flag
+   * `flags.flail.attrLocks` = { str: bool, dex: bool, ... }. A
+   * missing entry defaults to LOCKED — safer than unlocked.
+   */
+  static async #onAttributeToggleLock(event, target) {
+    const key = target.dataset.attribute;
+    if (!key) return;
+    const attrLocks = { ...(this.actor.getFlag("flail", "attrLocks") ?? {}) };
+    // Interpret "missing" as locked. Toggle produces the OPPOSITE.
+    const currentlyLocked = attrLocks[key] !== false;
+    attrLocks[key] = !currentlyLocked ? true : false;
+    await this.actor.setFlag("flail", "attrLocks", attrLocks);
   }
 
   /**
