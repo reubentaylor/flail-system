@@ -1,0 +1,40 @@
+{{!--
+  Combat Talent item sheet body. Beyond name + description (rich),
+  this exposes tree/tier/prerequisite so GMs building custom trees
+  can wire relationships between talents.
+--}}
+<section class="card">
+  <div class="row">
+    <label>{{localize "FLAIL.Field.Tree"}}
+      <input type="text" name="system.tree" value="{{system.tree}}" {{#unless editable}}disabled{{/unless}} placeholder="bladeFreak" />
+    </label>
+    <label>{{localize "FLAIL.Field.TreeLabel"}}
+      <input type="text" name="system.treeLabel" value="{{system.treeLabel}}" {{#unless editable}}disabled{{/unless}} placeholder="Blade Freak" />
+    </label>
+  </div>
+  <div class="row">
+    <label>{{localize "FLAIL.Field.Tier"}}
+      <select name="system.tier" {{#unless editable}}disabled{{/unless}}>
+        <option value="basic"  {{#if (flail-eq system.tier 'basic')}}selected{{/if}}>Basic</option>
+        <option value="expert" {{#if (flail-eq system.tier 'expert')}}selected{{/if}}>Expert</option>
+        <option value="master" {{#if (flail-eq system.tier 'master')}}selected{{/if}}>Master</option>
+      </select>
+    </label>
+    <label>{{localize "FLAIL.Field.Prerequisite"}}
+      <input type="text" name="system.prerequisite" value="{{system.prerequisite}}" {{#unless editable}}disabled{{/unless}} placeholder="bladeFreak.basic" />
+    </label>
+  </div>
+  <div class="row">
+    <label class="checkbox">
+      <input type="checkbox" name="system.isCustomTemplate" {{#if system.isCustomTemplate}}checked{{/if}} {{#unless editable}}disabled{{/unless}} />
+      {{localize "FLAIL.Field.CustomTemplate"}}
+    </label>
+  </div>
+  {{#if system.sourceKey}}
+  <div class="row">
+    <label class="muted">
+      {{localize "FLAIL.Field.SourceKey"}}: <span class="mono">{{system.sourceKey}}</span>
+    </label>
+  </div>
+  {{/if}}
+</section>

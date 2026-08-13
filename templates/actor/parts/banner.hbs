@@ -30,9 +30,10 @@
           Background picker trigger + drop-target slot. Clicking the
           "Background:" header opens the picker window; the player can
           click a card in the picker OR drag one onto the slot below.
-          When the slot is filled, the current label + perk render
-          inline (custom backgrounds render the label input + rich
-          perk editor when editable, or their read-only view otherwise).
+          When the slot is filled, the perk renders inline from the
+          embedded background item's description. Editing the label +
+          perk of a custom background is done via the item sheet
+          (double-click the slot).
         --}}
         <div class="char-background-header">
           <button type="button"
@@ -43,48 +44,23 @@
             <i class="fas fa-scroll"></i>
             <span>{{localize "FLAIL.BackgroundPicker.HeaderLabel"}}:</span>
           </button>
-          <div class="char-background-slot {{#if currentBackgroundKey}}bg-slot-filled{{else}}bg-slot-empty{{/if}}"
-               data-flail-drop-target="background">
-            {{#if currentBackgroundKey}}
+          <div class="char-background-slot {{#if hasBackgroundItem}}bg-slot-filled{{else}}bg-slot-empty{{/if}}"
+               data-flail-drop-target="background"
+               {{#if hasBackgroundItem}}data-action="openBackgroundItem" data-item-id="{{backgroundItemId}}" title="{{localize 'FLAIL.BackgroundPicker.OpenSheetHint'}}"{{/if}}>
+            {{#if hasBackgroundItem}}
               {{#if isCustomBackground}}
                 <span class="bg-slot-key"><i class="fas fa-user-edit"></i></span>
-                <span class="bg-slot-label">{{localize "FLAIL.BackgroundPicker.CustomLabel"}}</span>
-              {{else}}
+              {{else if currentBackgroundKey}}
                 <span class="bg-slot-key">{{currentBackgroundKey}}</span>
-                <span class="bg-slot-label">{{currentBackgroundLabel}}</span>
               {{/if}}
+              <span class="bg-slot-label">{{currentBackgroundLabel}}</span>
             {{else}}
               <span class="bg-slot-placeholder">{{localize "FLAIL.BackgroundPicker.EmptySlotHint"}}</span>
             {{/if}}
           </div>
         </div>
-        {{#if isCustomBackground}}
-          {{#if editable}}
-            {{!-- Editable custom: label input + rich-text perk editor. --}}
-            <input
-              type="text"
-              name="system.customBackground.label"
-              value="{{system.customBackground.label}}"
-              class="char-background-custom-label"
-              placeholder="{{localize 'FLAIL.Placeholder.CustomBackgroundLabel'}}"
-            />
-            <div class="char-background-custom-perk">
-              {{editor system.customBackground.perk target="system.customBackground.perk" button=true editable=editable engine="prosemirror"}}
-            </div>
-          {{else}}
-            {{!-- Read-only custom: show the actor's label + rendered HTML perk. --}}
-            {{#if currentBackgroundLabel}}
-            <div class="char-background-custom-label-view">{{currentBackgroundLabel}}</div>
-            {{/if}}
-            {{#if currentBackgroundPerk}}
-            <div class="char-background-perk">{{{currentBackgroundPerk}}}</div>
-            {{/if}}
-          {{/if}}
-        {{else}}
-          {{!-- Pre-defined background: read-only perk text (plain string). --}}
-          {{#if currentBackgroundPerk}}
-          <p class="char-background-perk">{{currentBackgroundPerk}}</p>
-          {{/if}}
+        {{#if currentBackgroundPerk}}
+        <div class="char-background-perk">{{{currentBackgroundPerk}}}</div>
         {{/if}}
       </div>
     </div>

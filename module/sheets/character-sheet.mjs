@@ -46,6 +46,8 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       toggleWeathered: FlailCharacterSheet.#onToggleWeathered,
       openTalentPicker: FlailCharacterSheet.#onOpenTalentPicker,
       openBackgroundPicker: FlailCharacterSheet.#onOpenBackgroundPicker,
+      openBackgroundItem: FlailCharacterSheet.#onOpenBackgroundItem,
+      openCombatTalentItem: FlailCharacterSheet.#onOpenCombatTalentItem,
       attributeAdjustUp:   FlailCharacterSheet.#onAttributeAdjustUp,
       attributeAdjustDown: FlailCharacterSheet.#onAttributeAdjustDown,
       attributeToggleLock: FlailCharacterSheet.#onAttributeToggleLock,
@@ -121,6 +123,18 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const actor = this.actor;
     const sys = actor.system;
 
+    // Auto-migrate legacy background + combat talent data to items.
+    // Runs once per actor: the migration sets `flags.flail.itemMigrationV1`
+    // when complete. GM-only (owns write permission on actors).
+    if (game.user?.isGM
+        && !actor.getFlag("flail", "itemMigrationV1")
+        && (sys.background || (sys.combatTalents ?? []).some(k => k))) {
+      // Fire-and-forget; the sheet re-renders when the actor updates.
+      this.constructor.#migrateLegacyToItems(actor).catch(err => {
+        console.error("FLAIL | Migration to items failed for actor", actor.name, err);
+      });
+    }
+
     ctx.actor = actor;
     ctx.system = sys;
     ctx.config = FLAIL;
@@ -148,30 +162,23 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       { label: game.i18n.localize(`${labelBase}.Gear`),       value: game.i18n.localize(`${detailsBase}.Gear`) }
     ];
 
-    // Background dropdown — entries from the class's Instant Backstory table.
-    // If the stored key doesn't match any current option (e.g. class was
-    // changed), the dropdown shows the placeholder, the stored value is
-    // preserved, and the perk line is hidden.
-    const bgList = FLAIL.backgrounds?.[classKey] ?? [];
-    const bgKey = sys.background ?? "";
-    ctx.backgroundOptions = bgList.map(b => ({
-      key: b.key,
-      label: b.label,
-      selected: b.key === bgKey
-    }));
-    const currentBg = bgList.find(b => b.key === bgKey);
-    ctx.isCustomBackground = bgKey === "custom";
-    ctx.currentBackgroundKey = bgKey;
-    if (ctx.isCustomBackground) {
-      // Custom background — read the actor's own label + perk. Blank
-      // strings are fine (the sheet renders the editor for the player
-      // to fill in).
-      ctx.currentBackgroundLabel = sys.customBackground?.label ?? "";
-      ctx.currentBackgroundPerk  = sys.customBackground?.perk ?? "";
-    } else {
-      ctx.currentBackgroundLabel = currentBg?.label ?? "";
-      ctx.currentBackgroundPerk  = currentBg?.perk ?? "";
-    }
+    // Background display — item-based (v0.4.30+).
+    //
+    // The character's background is an embedded Item of type "background".
+    // The BackgroundPicker embeds a copy from the compendium on pick; the
+    // Custom Background template also embeds a copy that the player edits
+    // via the item sheet. There's at most ONE background item on a character
+    // by convention (the picker removes any existing one before embedding).
+    //
+    // For the banner display we surface the current item's id + name + perk.
+    // The picker window uses class-based filtering; the banner just shows.
+    const bgItem = actor.items.find(i => i.type === "background");
+    ctx.hasBackgroundItem      = !!bgItem;
+    ctx.backgroundItemId       = bgItem?.id ?? "";
+    ctx.currentBackgroundLabel = bgItem?.name ?? "";
+    ctx.currentBackgroundKey   = bgItem?.system?.sourceKey ?? "";
+    ctx.currentBackgroundPerk  = bgItem?.system?.description ?? "";
+    ctx.isCustomBackground     = !!bgItem?.system?.isCustomTemplate;
 
     // Attributes — list form for handlebars iteration.
     // Each attribute carries a per-attribute lock flag; the +/-
@@ -338,107 +345,39 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     // Bard / Cutthroat / Tinkerer / Warrior show no tracker; Special Skills card spans full width.
     ctx.hasTracker = ctx.isBoneWhisperer || ctx.isCleric || ctx.isDruid || ctx.isWizard || ctx.isCutthroat;
 
-    // Combat Talents (Warrior). Build per-slot context including:
-    //   - the currently-picked key + its display metadata (for the
-    //     description panel below the dropdown)
-    //   - a nested option list grouped by tree, each entry flagged
-    //     with `available` per the slot's position in the sequence
-    //     (prerequisites must be met by picks in EARLIER slots).
-    //   - a `beyondCurrentLevel` flag — slots whose level exceeds
-    //     the character's current level are greyed and disabled in
-    //     the sheet so a level-3 Warrior can't reach ahead into
-    //     level-4 or level-5 slots.
-    // Existing warrior actors from before the 5-slot schema may have
-    // combatTalents arrays with fewer than 5 entries (or missing
-    // entirely). Pad to exactly 5 so the template always renders all
-    // level slots, with empty slots ready to receive picks. The pad
-    // is context-only; the on-disk array is only expanded when a slot
-    // gets filled, at which point Foundry auto-grows the ArrayField.
-    const rawTalents = [...(sys.combatTalents ?? [])];
-    while (rawTalents.length < 5) rawTalents.push("");
+    // Combat Talents (Warrior) — item-based (v0.4.30+).
+    //
+    // Talents are now first-class Item documents embedded on the actor.
+    // Each embedded combatTalent item carries `system.slotIndex` marking
+    // which level slot (0-4) it fills. This context builds one row per
+    // level slot (5 rows total), populated with the item currently in
+    // that slot, or an empty placeholder + "Choose..." button.
+    //
+    // Prerequisite validation moved into the CombatTalentPicker itself
+    // (opens per-slot). The sheet context just displays what's already
+    // there — nothing to filter here.
     const charLevel = sys.level ?? 1;
-    ctx.combatTalents = rawTalents.map((currentKey, i) => {
+    const embeddedTalents = actor.items.filter(i => i.type === "combatTalent");
+    const talentsBySlot = new Map();
+    for (const t of embeddedTalents) {
+      const idx = t.system?.slotIndex ?? 0;
+      if (!talentsBySlot.has(idx)) talentsBySlot.set(idx, t);
+    }
+    ctx.combatTalents = Array.from({ length: 5 }, (_, i) => {
       const level = i + 1;
       const beyondCurrentLevel = level > charLevel;
-      // Picks in prior slots (used to test prerequisites for THIS slot's
-      // options). Slot 1 has no priors — only Basics are ever valid.
-      const priorPicks = rawTalents.slice(0, i).filter(Boolean);
-      // Picks in ALL other slots — used to block duplicates.
-      const otherPicks = rawTalents.filter((k, idx) => idx !== i && k);
-
-      const availabilityOf = (key, tier) => {
-        // Already picked in another slot → block regardless of tier.
-        if (otherPicks.includes(key)) return false;
-        // Slot 1 → only Basics ever qualify.
-        if (level === 1) return tier === "basic";
-        // Basic: any tree, so long as this tree's Basic isn't already
-        // picked in a prior slot. (Duplicate check above covers all
-        // other slots; here we specifically ensure it's not upstream.)
-        if (tier === "basic") return !priorPicks.includes(key);
-        // Expert: this tree's Basic must be in a prior slot.
-        if (tier === "expert") {
-          const info = FLAIL.getCombatTalent(key);
-          return !!info && priorPicks.includes(info.tree.basic.key);
-        }
-        // Master: the parent Expert must be in a prior slot.
-        if (tier === "master") {
-          const info = FLAIL.getCombatTalent(key);
-          return !!info && priorPicks.includes(info.parent.key);
-        }
-        return false;
-      };
-
-      const trees = FLAIL.combatTalents.trees.map(tree => ({
-        key: tree.key,
-        label: tree.label,
-        hint: tree.hint,
-        entries: [
-          // Basic
-          {
-            key: tree.basic.key,
-            label: `Basic — ${tree.basic.label}`,
-            tier: "basic",
-            available: availabilityOf(tree.basic.key, "basic"),
-            current: tree.basic.key === currentKey
-          },
-          // Experts + their Masters, alternating so the tree is
-          // visually flat in the dropdown but reads top-to-bottom.
-          ...tree.experts.flatMap(expert => [
-            {
-              key: expert.key,
-              label: `Expert — ${expert.label}`,
-              tier: "expert",
-              available: availabilityOf(expert.key, "expert"),
-              current: expert.key === currentKey
-            },
-            ...expert.masters.map(master => ({
-              key: master.key,
-              label: `Master — ${master.label}`,
-              tier: "master",
-              available: availabilityOf(master.key, "master"),
-              current: master.key === currentKey
-            }))
-          ])
-        ]
-      }));
-
-      const info = currentKey ? FLAIL.getCombatTalent(currentKey) : null;
-      const currentDisplay = info ? {
-        label: info.talent.label,
-        tree: info.tree.label,
-        tier: info.tier,
-        desc: info.talent.desc,
-        // If the current pick is somehow invalid at this slot's
-        // position (e.g. the player reshuffled level order), surface
-        // that so the sheet can warn without silently ignoring it.
-        invalid: !availabilityOf(currentKey, info.tier)
+      const item = talentsBySlot.get(i) ?? null;
+      const currentDisplay = item ? {
+        itemId: item.id,
+        label: item.name,
+        tree: item.system?.treeLabel ?? item.system?.tree ?? "",
+        tier: item.system?.tier ?? "basic",
+        desc: item.system?.description ?? ""
       } : null;
-
       return {
         level,
-        current: currentKey,
+        current: item?.id ?? "",
         currentDisplay,
-        trees,
         beyondCurrentLevel
       };
     });
@@ -1437,35 +1376,40 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     try { payload = JSON.parse(event.dataTransfer.getData("text/plain")); }
     catch { return; }
 
-    // Only accept our own combat-talent payloads. Ignore stray item
-    // drags — those get handled by the inventory drop pipeline.
-    if (payload?.type !== "flail-combat-talent") return;
-    if (!payload.talentKey) return;
-    // Payload must be for THIS actor — cross-actor drags don't make
-    // sense (each actor has their own talent progression).
-    if (payload.actorUuid && payload.actorUuid !== this.actor.uuid) {
-      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.TalentWrongActor"));
+    // Accept standard Foundry item drops. Payload from the CT Picker
+    // additionally carries `flailTalentSlotIndex` — but the slot's
+    // own data-slot-index is authoritative here (drop location wins).
+    if (payload?.type !== "Item") return;
+
+    const source = await Item.implementation.fromDropData(payload);
+    if (!source) return;
+    if (source.type !== "combatTalent") {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.TalentWrongType"));
       return;
     }
+
     const slotIndex = Number(slot.dataset.slotIndex);
     if (!Number.isFinite(slotIndex)) return;
 
-    // Write the talent key into the slot. See the note in the picker's
-    // #onChooseTalent — we mutate the full array and write it back, not
-    // a dotted-path update. Otherwise Foundry v14 ArrayField loses
-    // earlier picks when the on-disk array is shorter than the target
-    // index.
-    const talents = [...(this.actor.system.combatTalents ?? [])];
-    while (talents.length < 5) talents.push("");
-    talents[slotIndex] = payload.talentKey;
-    await this.actor.update({ "system.combatTalents": talents });
+    // Delete any existing combatTalent(s) in this slot, then embed a
+    // fresh copy with slotIndex set.
+    const existing = this.actor.items
+      .filter(i => i.type === "combatTalent" && (i.system?.slotIndex ?? -1) === slotIndex)
+      .map(i => i.id);
+    if (existing.length) {
+      await this.actor.deleteEmbeddedDocuments("Item", existing);
+    }
+
+    const data = source.toObject();
+    delete data._id;
+    data.system = { ...(data.system ?? {}), slotIndex };
+    await this.actor.createEmbeddedDocuments("Item", [data]);
   }
 
   /**
-   * Background slot — accepts drops from the Background Picker.
-   * Payload is `{ type: "flail-background", backgroundKey, actorUuid }`.
-   * We highlight on hover, verify the actor UUID matches, and write
-   * the key to system.background on drop.
+   * Background slot drop — accepts standard Foundry item drops.
+   * The dropped item must be of type "background". Replaces any
+   * existing embedded background.
    */
   async #onBackgroundDragOver(event) {
     event.preventDefault();
@@ -1487,13 +1431,24 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     try { payload = JSON.parse(event.dataTransfer.getData("text/plain")); }
     catch { return; }
 
-    if (payload?.type !== "flail-background") return;
-    if (!payload.backgroundKey) return;
-    if (payload.actorUuid && payload.actorUuid !== this.actor.uuid) {
-      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.BackgroundWrongActor"));
+    if (payload?.type !== "Item") return;
+
+    const source = await Item.implementation.fromDropData(payload);
+    if (!source) return;
+    if (source.type !== "background") {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.BackgroundWrongType"));
       return;
     }
-    await this.actor.update({ "system.background": payload.backgroundKey });
+
+    // One background per character — remove any existing first.
+    const existing = this.actor.items.filter(i => i.type === "background").map(i => i.id);
+    if (existing.length) {
+      await this.actor.deleteEmbeddedDocuments("Item", existing);
+    }
+
+    const data = source.toObject();
+    delete data._id;
+    await this.actor.createEmbeddedDocuments("Item", [data]);
   }
 
   /**
@@ -2367,9 +2322,118 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
    * card at the top. Player picks by click or drag; the sheet writes
    * the picked key into system.background and re-renders.
    */
+  /**
+   * One-shot migration: convert legacy `system.background` (string
+   * key) + `system.combatTalents` (array of string keys) into
+   * embedded Items of type `background` and `combatTalent`, copied
+   * from the compendia.
+   *
+   * Idempotent — checks the `itemMigrationV1` flag and no-ops if
+   * already run. Clears the legacy string fields once migrated so
+   * subsequent reads use the item pipeline exclusively.
+   */
+  static async #migrateLegacyToItems(actor) {
+    if (actor.getFlag("flail", "itemMigrationV1")) return;
+
+    const bgPack = game.packs.get("world.flail-backgrounds");
+    const ctPack = game.packs.get("world.flail-combat-talents");
+    if (!bgPack && !ctPack) return; // compendia not yet built; try again next open
+
+    const toEmbed = [];
+    const sys = actor.system;
+
+    // Background: sys.background is a rulebook key ("1"-"6") or "custom".
+    // The compendium item's sourceKey matches. Look up by classKey + sourceKey.
+    if (sys.background && !actor.items.some(i => i.type === "background")) {
+      const classKey = sys.class ?? "";
+      if (bgPack) {
+        const bgItems = await bgPack.getDocuments();
+        const match = bgItems.find(it =>
+          it.system?.sourceKey === sys.background
+          && (it.system?.classKey === classKey || sys.background === "custom")
+        );
+        if (match) {
+          const data = match.toObject();
+          delete data._id;
+          // For custom, copy the actor's stored label + perk into the item.
+          if (sys.background === "custom") {
+            const label = sys.customBackground?.label ?? "Custom Background";
+            const perk  = sys.customBackground?.perk ?? "";
+            data.name = label;
+            data.system.description = perk;
+          }
+          toEmbed.push(data);
+        }
+      }
+    }
+
+    // Combat talents: array of sourceKeys (5-slot). Each non-empty entry
+    // becomes an embedded item with slotIndex set.
+    const rawTalents = sys.combatTalents ?? [];
+    const alreadyEmbeddedIndexes = new Set(
+      actor.items.filter(i => i.type === "combatTalent").map(i => i.system?.slotIndex ?? 0)
+    );
+    if (ctPack && rawTalents.some(k => k)) {
+      const ctItems = await ctPack.getDocuments();
+      for (let i = 0; i < rawTalents.length; i++) {
+        const key = rawTalents[i];
+        if (!key || alreadyEmbeddedIndexes.has(i)) continue;
+        const match = ctItems.find(it => it.system?.sourceKey === key);
+        if (match) {
+          const data = match.toObject();
+          delete data._id;
+          data.system = { ...(data.system ?? {}), slotIndex: i };
+          toEmbed.push(data);
+        }
+      }
+    }
+
+    if (toEmbed.length) {
+      await actor.createEmbeddedDocuments("Item", toEmbed);
+    }
+
+    // Clear the legacy fields so subsequent reads use only the items.
+    await actor.update({
+      "system.background": "",
+      "system.customBackground.label": "",
+      "system.customBackground.perk": "",
+      "system.combatTalents": ["", "", "", "", ""]
+    });
+
+    await actor.setFlag("flail", "itemMigrationV1", true);
+    ui.notifications?.info(
+      `FLAIL: migrated ${actor.name} — ${toEmbed.length} background/talent item(s) embedded.`
+    );
+  }
+
   static async #onOpenBackgroundPicker(event, target) {
     const picker = new BackgroundPicker(this.actor);
     picker.render(true);
+  }
+
+  /**
+   * Open the embedded background item's sheet. Used when clicking
+   * the filled slot in the banner — lets the player rename + rewrite
+   * the perk (especially useful for a Custom Background).
+   */
+  static async #onOpenBackgroundItem(event, target) {
+    const id = target.dataset.itemId;
+    if (!id) return;
+    const item = this.actor.items.get(id);
+    if (!item) return;
+    item.sheet?.render(true);
+  }
+
+  /**
+   * Open the sheet of an embedded combatTalent item — used from the
+   * per-slot "inspect" button.
+   */
+  static async #onOpenCombatTalentItem(event, target) {
+    const id = target.dataset.itemId;
+    if (!id) return;
+    const item = this.actor.items.get(id);
+    if (!item) return;
+    item.sheet?.render(true);
   }
 
   /**

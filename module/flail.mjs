@@ -16,7 +16,9 @@ import {
   FlailFeatureModel,
   FlailConditionModel,
   FlailInstrumentModel,
-  FlailGuildModel
+  FlailGuildModel,
+  FlailBackgroundModel,
+  FlailCombatTalentModel
 } from "./data/items.mjs";
 
 import { FlailActor } from "./documents/actor.mjs";
@@ -35,6 +37,8 @@ import { analyzePool } from "./dice/poker.mjs";
 import { registerHandlebarsHelpers } from "./helpers/handlebars.mjs";
 import { registerChatListeners }     from "./chat/chat-listeners.mjs";
 import { ensureCommonItemsCompendium } from "./setup/import-common-items.mjs";
+import { ensureBackgroundsCompendium } from "./setup/import-backgrounds.mjs";
+import { ensureCombatTalentsCompendium } from "./setup/import-combat-talents.mjs";
 import { ensureDarkSpellsCompendium } from "./setup/import-dark-spells.mjs";
 import { ensureWizardSpellsCompendium } from "./setup/import-wizard-spells.mjs";
 import { ensurePrimalGiftsCompendium } from "./setup/import-primal-gifts.mjs";
@@ -91,6 +95,22 @@ Hooks.once("init", () => {
     game.settings.register("flail", "commonItemsVersion", {
       name: "FLAIL Common Items version",
       hint: "Internal — last bundled-items version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "backgroundsVersion", {
+      name: "FLAIL Backgrounds version",
+      hint: "Internal — last bundled-backgrounds version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "combatTalentsVersion", {
+      name: "FLAIL Combat Talents version",
+      hint: "Internal — last bundled-combat-talents version this world synced from. Do not edit.",
       scope: "world",
       config: false,
       type: Number,
@@ -251,18 +271,20 @@ Hooks.once("init", () => {
       construct: FlailConstructModel
     };
     CONFIG.Item.dataModels = {
-      weapon:     FlailWeaponModel,
-      armour:     FlailArmourModel,
-      gear:       FlailGearModel,
-      spell:      FlailSpellModel,
-      prayer:     FlailPrayerModel,
-      gift:       FlailGiftModel,
-      talent:     FlailTalentModel,
-      gadget:     FlailGadgetModel,
-      feature:    FlailFeatureModel,
-      condition:  FlailConditionModel,
-      instrument: FlailInstrumentModel,
-      guild:      FlailGuildModel
+      weapon:       FlailWeaponModel,
+      armour:       FlailArmourModel,
+      gear:         FlailGearModel,
+      spell:        FlailSpellModel,
+      prayer:       FlailPrayerModel,
+      gift:         FlailGiftModel,
+      talent:       FlailTalentModel,
+      gadget:       FlailGadgetModel,
+      feature:      FlailFeatureModel,
+      condition:    FlailConditionModel,
+      instrument:   FlailInstrumentModel,
+      guild:        FlailGuildModel,
+      background:   FlailBackgroundModel,
+      combatTalent: FlailCombatTalentModel
     };
     console.log(`${TAG} init — data models registered`);
 
@@ -338,6 +360,8 @@ Hooks.once("init", () => {
         "systems/flail/templates/item/types/condition.hbs",
         "systems/flail/templates/item/types/instrument.hbs",
         "systems/flail/templates/item/types/guild.hbs",
+        "systems/flail/templates/item/types/background.hbs",
+        "systems/flail/templates/item/types/combat-talent.hbs",
         "systems/flail/templates/chat/attack-roll.hbs",
         "systems/flail/templates/chat/save-roll.hbs",
         "systems/flail/templates/chat/cast-prayer.hbs",
@@ -409,6 +433,8 @@ Hooks.once("ready", async () => {
   });
 
   await ensureCommonItemsCompendium();
+  await ensureBackgroundsCompendium();
+  await ensureCombatTalentsCompendium();
   await ensureDarkSpellsCompendium();
   await ensureWizardSpellsCompendium();
   await ensurePrimalGiftsCompendium();

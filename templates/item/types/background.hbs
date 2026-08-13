@@ -1,0 +1,34 @@
+{{!--
+  Background item sheet body. Standard editor picks up the name
+  and description (perk) automatically. This body just adds the
+  classKey selector so GMs know which class picker the background
+  appears in, plus a read-only sourceKey line and the custom flag.
+--}}
+<section class="card">
+  <div class="row">
+    <label>{{localize "FLAIL.Field.ClassKey"}}
+      <select name="system.classKey" {{#unless editable}}disabled{{/unless}}>
+        <option value=""              {{#if (flail-eq system.classKey '')}}selected{{/if}}>— any class —</option>
+        <option value="bard"          {{#if (flail-eq system.classKey 'bard')}}selected{{/if}}>Bard</option>
+        <option value="boneWhisperer" {{#if (flail-eq system.classKey 'boneWhisperer')}}selected{{/if}}>Bone Whisperer</option>
+        <option value="cleric"        {{#if (flail-eq system.classKey 'cleric')}}selected{{/if}}>Cleric</option>
+        <option value="cutthroat"     {{#if (flail-eq system.classKey 'cutthroat')}}selected{{/if}}>Cutthroat</option>
+        <option value="druid"         {{#if (flail-eq system.classKey 'druid')}}selected{{/if}}>Druid</option>
+        <option value="tinkerer"      {{#if (flail-eq system.classKey 'tinkerer')}}selected{{/if}}>Tinkerer</option>
+        <option value="warrior"       {{#if (flail-eq system.classKey 'warrior')}}selected{{/if}}>Warrior</option>
+        <option value="wizard"        {{#if (flail-eq system.classKey 'wizard')}}selected{{/if}}>Wizard</option>
+      </select>
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="system.isCustomTemplate" {{#if system.isCustomTemplate}}checked{{/if}} {{#unless editable}}disabled{{/unless}} />
+      {{localize "FLAIL.Field.CustomTemplate"}}
+    </label>
+  </div>
+  {{#if system.sourceKey}}
+  <div class="row">
+    <label class="muted">
+      {{localize "FLAIL.Field.SourceKey"}}: <span class="mono">{{system.sourceKey}}</span>
+    </label>
+  </div>
+  {{/if}}
+</section>

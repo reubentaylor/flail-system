@@ -310,3 +310,92 @@ export class FlailGuildModel extends foundry.abstract.TypeDataModel {
     };
   }
 }
+
+/* -------------------------------------------- */
+/*  Background — Instant Backstory entry        */
+/* -------------------------------------------- */
+
+/**
+ * Background item — represents an Instant Backstory entry from the
+ * FLAIL rulebook, or a custom origin defined by the player.
+ *
+ * Backgrounds are class-specific in the rulebook, but there's no
+ * hard code enforcement — a player CAN embed a Bard background on
+ * a Warrior if the GM allows it. The Background Picker filters by
+ * classKey for the standard flow; drops from the compendium can
+ * bypass that filter freely.
+ *
+ * The perk text lives in system.description (HTMLField) so it
+ * renders in the standard item sheet body with rich editing.
+ *
+ * Backgrounds don't need inventory/usage/price fields — they're not
+ * carried gear. Kept minimal.
+ */
+export class FlailBackgroundModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      ...descriptionField(),
+      // Which class this background is written for. Empty = neutral,
+      // appears in every class's picker.
+      classKey: new fields.StringField({ required: false, blank: true, initial: "" }),
+      // Original rulebook key ("1"-"6") or "custom". Used by the
+      // compendium importer to identify + upsert entries on version
+      // bump; also lets us keep the rulebook numbering in the UI.
+      sourceKey: new fields.StringField({ required: false, blank: true, initial: "" }),
+      // True for the "Custom Background" template card in the picker.
+      // When picked, a copy is embedded on the actor and the player
+      // renames it + writes their own perk via the item sheet.
+      isCustomTemplate: new fields.BooleanField({ initial: false })
+    };
+  }
+}
+
+/* -------------------------------------------- */
+/*  Combat Talent — Warrior's tree-of-3-tiers   */
+/* -------------------------------------------- */
+
+/**
+ * Combat Talent item — one talent (basic, expert, or master) from
+ * a tree. When embedded on a Warrior, carries a `slotIndex` marking
+ * which level slot it fills (0 = level 1, ..., 4 = level 5).
+ *
+ * The picker validates prerequisites at pick time:
+ *   * basic  → no prereq, valid in any unlocked slot
+ *   * expert → requires the tree's Basic in an earlier slot
+ *   * master → requires the specific parent Expert in an earlier slot
+ *
+ * Prerequisites are stored as `sourceKey` strings and matched
+ * against sourceKeys of items already embedded on the actor. That
+ * keeps the reference stable across compendium re-syncs.
+ */
+export class FlailCombatTalentModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      ...descriptionField(),
+      // Tree key: "bladeFreak", "brawlerMauler", "archerMaster",
+      // "martialArtist", or a homebrew name.
+      tree: new fields.StringField({ required: false, blank: true, initial: "" }),
+      // Human-readable tree label ("Blade Freak") for at-a-glance UI.
+      treeLabel: new fields.StringField({ required: false, blank: true, initial: "" }),
+      // Tier gates the picker's availability logic.
+      tier: new fields.StringField({
+        required: true,
+        blank: false,
+        initial: "basic",
+        choices: ["basic", "expert", "master"]
+      }),
+      // Prerequisite talent's sourceKey. Empty for Basic. For Expert:
+      // the tree's Basic sourceKey. For Master: the parent Expert's
+      // sourceKey.
+      prerequisite: new fields.StringField({ required: false, blank: true, initial: "" }),
+      // Original rulebook key (e.g. "bladeFreak.basic", "bladeFreak.exp1").
+      // Stable identifier used for lookups and prerequisite matching.
+      sourceKey: new fields.StringField({ required: false, blank: true, initial: "" }),
+      // When embedded on a Warrior: level slot this talent fills.
+      // 0 = level 1, ..., 4 = level 5. Ignored on compendium items.
+      slotIndex: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+      // True for the "Custom Combat Talent" template card in the picker.
+      isCustomTemplate: new fields.BooleanField({ initial: false })
+    };
+  }
+}

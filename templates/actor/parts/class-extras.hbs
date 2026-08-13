@@ -70,12 +70,19 @@
         </div>
         {{#if slot.currentDisplay}}
         <div class="talent-slot-body">
-          <span class="talent-tier-badge talent-tier-{{slot.currentDisplay.tier}}">{{slot.currentDisplay.tier}}</span>
-          <span class="talent-tree-name">{{slot.currentDisplay.tree}}</span>
-          <p class="talent-desc">{{slot.currentDisplay.desc}}</p>
-          {{#if slot.currentDisplay.invalid}}
-          <p class="talent-invalid-warn"><i class="fas fa-triangle-exclamation"></i> Prerequisites not met by earlier slots — reshuffle or reselect.</p>
-          {{/if}}
+          <div class="talent-slot-body-head">
+            <span class="talent-tier-badge talent-tier-{{slot.currentDisplay.tier}}">{{slot.currentDisplay.tier}}</span>
+            <span class="talent-name">{{slot.currentDisplay.label}}</span>
+            {{#if slot.currentDisplay.tree}}<span class="talent-tree-name">({{slot.currentDisplay.tree}})</span>{{/if}}
+            <button type="button"
+                    class="talent-slot-inspect-btn"
+                    data-action="openCombatTalentItem"
+                    data-item-id="{{slot.currentDisplay.itemId}}"
+                    title="{{localize 'FLAIL.CombatTalentPicker.OpenSheetHint'}}">
+              <i class="fas fa-external-link-alt"></i>
+            </button>
+          </div>
+          <div class="talent-desc">{{{slot.currentDisplay.desc}}}</div>
         </div>
         {{else}}
           {{#unless slot.beyondCurrentLevel}}

@@ -30,9 +30,9 @@
       {{#each combatTalents as |slot|}}
         {{#if slot.currentDisplay}}
         <div class="ca-info ca-talent-info"
-             data-tooltip="{{slot.currentDisplay.desc}}">
+             data-tooltip="{{slot.currentDisplay.label}}">
           <span class="ca-tier-badge ca-tier-{{slot.currentDisplay.tier}}">{{slot.currentDisplay.tier}}</span>
-          <span class="ca-name">{{slot.currentDisplay.tree}}</span>
+          <span class="ca-name">{{slot.currentDisplay.label}}</span>
         </div>
         {{/if}}
       {{/each}}

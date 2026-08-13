@@ -1,34 +1,32 @@
-import { FLAIL } from "../helpers/config.mjs";
-
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
+const COMBAT_TALENTS_PACK = "world.flail-combat-talents";
+
 /**
- * Combat Talent Picker.
+ * Combat Talent Picker (item-based).
  *
- * Floating window opened when the player clicks a Warrior combat-talent
- * slot on the Class tab. Presents every talent from every tree grouped
- * by tree — Basic on top, its Experts underneath, each Expert's two
- * Masters as leaves. Talents that are legal picks for the target slot
- * (per the slot's index and the prior picks) are highlighted and
- * draggable. Talents that fail a prerequisite are shown greyed with a
- * short reason.
+ * Reads from the world Combat Talents compendium. Each entry is a
+ * first-class Item of type "combatTalent" with schema fields for
+ * tree / tier / prerequisite / sourceKey.
  *
  * Two commit paths:
- *   A. Drag a card onto the slot — the sheet's talent-slot drop
- *      handler reads the JSON payload and writes the talent key into
- *      `system.combatTalents[slotIndex]`.
- *   B. Click a card — same result, useful for keyboard/screen-reader
- *      accessibility. The picker closes itself on click.
+ *   A. Drag a card onto the target slot on the sheet — payload uses
+ *      Foundry's standard `{ type: "Item", uuid }` shape plus a
+ *      slotIndex hint (via the drop handler's slot data attribute).
+ *   B. Click a card in the picker — embeds a copy immediately.
  *
- * The picker doesn't own any state; it reads from the actor at
- * render time and writes back via `actor.update`. Reopening always
- * shows the current picture.
+ * Prerequisite gating (unchanged from the pre-item picker):
+ *   * Basic: valid in any unlocked slot.
+ *   * Expert: requires the SAME tree's Basic in an earlier slot.
+ *   * Master: requires the specific parent Expert in an earlier slot.
  *
- * Extensibility: talent trees are read from `FLAIL.combatTalents.trees`.
- * A world macro or module can push additional trees onto that array
- * before rendering the picker to introduce custom trees. Each tree
- * needs the shape `{ key, label, hint, basic, experts: [...] }` — see
- * `helpers/config.mjs` for the reference structure.
+ * The picker matches prerequisites by comparing the compendium item's
+ * sourceKey against the sourceKeys of embedded combatTalent items
+ * already on the actor (in prior slots).
+ *
+ * Custom template: picking the "Custom Combat Talent" item embeds an
+ * editable copy that the player can fully rewrite via the item sheet
+ * (tree, tier, prerequisite, description all editable there).
  */
 export class CombatTalentPicker extends HandlebarsApplicationMixin(ApplicationV2) {
 
@@ -53,20 +51,19 @@ export class CombatTalentPicker extends HandlebarsApplicationMixin(ApplicationV2
 
   /**
    * @param {Actor}  actor
-   * @param {number} slotIndex   0-based slot index (level 1 → 0, level 2 → 1, …)
-   * @param {object} [options]
+   * @param {number} slotIndex   0-based (level 1 → 0, ..., level 5 → 4)
    */
   constructor(actor, slotIndex, options = {}) {
     super(options);
     this.actor = actor;
     this.slotIndex = slotIndex;
+    this._items = [];
   }
 
-  /** @inheritdoc */
   get title() {
     return game.i18n.format("FLAIL.CombatTalentPicker.Title", {
-      level:  this.slotIndex + 1,
-      actor:  this.actor.name
+      level: this.slotIndex + 1,
+      actor: this.actor.name
     });
   }
 
@@ -74,113 +71,168 @@ export class CombatTalentPicker extends HandlebarsApplicationMixin(ApplicationV2
   /*  Data                                        */
   /* -------------------------------------------- */
 
-  /** @inheritdoc */
   async _prepareContext(options) {
-    const sys = this.actor.system;
-    const rawTalents = [...(sys.combatTalents ?? [])];
-    while (rawTalents.length < 5) rawTalents.push("");
-
-    const priorPicks = rawTalents.slice(0, this.slotIndex).filter(Boolean);
-    const otherPicks = rawTalents.filter((k, i) => i !== this.slotIndex && k);
-    const currentKey = rawTalents[this.slotIndex];
     const level = this.slotIndex + 1;
 
-    // Return { available, reason } for each candidate.
-    const status = (key, tier) => {
-      if (key === currentKey) return { available: true, current: true };
-      if (otherPicks.includes(key)) {
+    // What talents are already embedded, and which slot does each fill?
+    const embedded = this.actor.items.filter(i => i.type === "combatTalent");
+    // Talents in slots STRICTLY less than this one (already chosen at earlier levels).
+    const priorSourceKeys = embedded
+      .filter(i => (i.system?.slotIndex ?? 0) < this.slotIndex)
+      .map(i => i.system?.sourceKey)
+      .filter(Boolean);
+    // Talents in slots OTHER than this one (used to prevent duplicates).
+    const otherSourceKeys = embedded
+      .filter(i => (i.system?.slotIndex ?? -1) !== this.slotIndex)
+      .map(i => i.system?.sourceKey)
+      .filter(Boolean);
+    // What's currently in THIS slot?
+    const currentInSlot = embedded.find(i => (i.system?.slotIndex ?? -1) === this.slotIndex);
+    const currentSourceKey = currentInSlot?.system?.sourceKey ?? "";
+
+    // Load compendium items.
+    const pack = game.packs.get(COMBAT_TALENTS_PACK);
+    const packItems = pack ? await pack.getDocuments() : [];
+    this._items = packItems;
+
+    // Per-item availability calculation.
+    const status = (item) => {
+      const sourceKey = item.system?.sourceKey ?? "";
+      const tier = item.system?.tier ?? "basic";
+      const prereq = item.system?.prerequisite ?? "";
+      const isCustom = !!item.system?.isCustomTemplate;
+
+      if (sourceKey && sourceKey === currentSourceKey) {
+        return { available: true, current: true };
+      }
+      if (sourceKey && otherSourceKeys.includes(sourceKey)) {
         return { available: false, reason: game.i18n.localize("FLAIL.CombatTalentPicker.ReasonDuplicate") };
       }
+      // Custom is always available in any slot — the player edits the
+      // tier + prerequisite on the item sheet after embedding.
+      if (isCustom) return { available: true };
       if (level === 1 && tier !== "basic") {
         return { available: false, reason: game.i18n.localize("FLAIL.CombatTalentPicker.ReasonLevel1Basic") };
       }
       if (tier === "basic") {
-        if (priorPicks.includes(key)) {
-          return { available: false, reason: game.i18n.localize("FLAIL.CombatTalentPicker.ReasonBasicPriorSlot") };
-        }
+        // Duplicate check upstream covers "same basic in earlier slot".
         return { available: true };
       }
       if (tier === "expert") {
-        const info = FLAIL.getCombatTalent(key);
-        if (!info) return { available: false, reason: "Unknown talent." };
-        if (!priorPicks.includes(info.tree.basic.key)) {
-          return { available: false, reason: game.i18n.format("FLAIL.CombatTalentPicker.ReasonExpertNeedsBasic", { basic: info.tree.basic.label }) };
+        if (!priorSourceKeys.includes(prereq)) {
+          // Find the prereq item's name for the reason string.
+          const prereqItem = packItems.find(i => i.system?.sourceKey === prereq);
+          return {
+            available: false,
+            reason: game.i18n.format("FLAIL.CombatTalentPicker.ReasonExpertNeedsBasic",
+              { basic: prereqItem?.name ?? prereq })
+          };
         }
         return { available: true };
       }
       if (tier === "master") {
-        const info = FLAIL.getCombatTalent(key);
-        if (!info) return { available: false, reason: "Unknown talent." };
-        if (!priorPicks.includes(info.parent.key)) {
-          return { available: false, reason: game.i18n.format("FLAIL.CombatTalentPicker.ReasonMasterNeedsExpert", { expert: info.parent.label }) };
+        if (!priorSourceKeys.includes(prereq)) {
+          const prereqItem = packItems.find(i => i.system?.sourceKey === prereq);
+          return {
+            available: false,
+            reason: game.i18n.format("FLAIL.CombatTalentPicker.ReasonMasterNeedsExpert",
+              { expert: prereqItem?.name ?? prereq })
+          };
         }
         return { available: true };
       }
       return { available: false };
     };
 
-    const trees = FLAIL.combatTalents.trees.map(tree => {
-      const basic = {
-        key:   tree.basic.key,
-        label: tree.basic.label,
-        desc:  tree.basic.desc,
-        tier:  "basic",
-        ...status(tree.basic.key, "basic")
+    // Group by tree, sorted so custom template appears first, then
+    // stock trees alphabetically. Basic → Experts → Masters within each.
+    const customItem = packItems.find(i => i.system?.isCustomTemplate);
+    const stockItems = packItems.filter(i => !i.system?.isCustomTemplate);
+
+    const trees = new Map();
+    for (const item of stockItems) {
+      const treeKey = item.system?.tree ?? "unknown";
+      if (!trees.has(treeKey)) {
+        trees.set(treeKey, {
+          key: treeKey,
+          label: item.system?.treeLabel ?? treeKey,
+          basic: null,
+          experts: new Map()
+        });
+      }
+      const tree = trees.get(treeKey);
+      const cardData = {
+        uuid: item.uuid,
+        sourceKey: item.system?.sourceKey ?? "",
+        key: item.system?.sourceKey ?? item.id,
+        label: item.name,
+        desc: item.system?.description ?? "",
+        tier: item.system?.tier ?? "basic",
+        ...status(item)
       };
-      const experts = tree.experts.map(expert => ({
-        key:     expert.key,
-        label:   expert.label,
-        desc:    expert.desc,
-        tier:    "expert",
-        ...status(expert.key, "expert"),
-        masters: expert.masters.map(master => ({
-          key:   master.key,
-          label: master.label,
-          desc:  master.desc,
-          tier:  "master",
-          ...status(master.key, "master")
-        }))
-      }));
-      return {
-        key:     tree.key,
-        label:   tree.label,
-        hint:    tree.hint,
-        basic,
-        experts
-      };
-    });
+      if (item.system?.tier === "basic") {
+        tree.basic = cardData;
+      } else if (item.system?.tier === "expert") {
+        if (!tree.experts.has(item.system.sourceKey)) {
+          tree.experts.set(item.system.sourceKey, { ...cardData, masters: [] });
+        } else {
+          Object.assign(tree.experts.get(item.system.sourceKey), cardData);
+        }
+      } else if (item.system?.tier === "master") {
+        // Attach to parent Expert by prerequisite sourceKey.
+        const parentKey = item.system?.prerequisite ?? "";
+        if (!tree.experts.has(parentKey)) {
+          // Placeholder in case master appears before its expert.
+          tree.experts.set(parentKey, { masters: [] });
+        }
+        tree.experts.get(parentKey).masters.push(cardData);
+      }
+    }
+
+    // Serialize trees for the template.
+    const treeList = [...trees.values()].map(t => ({
+      key: t.key,
+      label: t.label,
+      basic: t.basic,
+      experts: [...t.experts.values()].filter(e => e.uuid).map(e => ({
+        ...e,
+        masters: e.masters ?? []
+      }))
+    }));
 
     return {
-      slotIndex:   this.slotIndex,
-      slotLevel:   level,
-      currentKey,
-      hasCurrent:  !!currentKey,
-      trees,
-      actorId:     this.actor.id,
-      actorUuid:   this.actor.uuid
+      slotIndex: this.slotIndex,
+      slotLevel: level,
+      currentSourceKey,
+      hasCurrent: !!currentSourceKey,
+      customCard: customItem ? {
+        uuid: customItem.uuid,
+        label: customItem.name,
+        desc: customItem.system?.description ?? "",
+        ...status(customItem)
+      } : null,
+      trees: treeList,
+      packMissing: !pack
     };
   }
 
   /* -------------------------------------------- */
-  /*  Render                                       */
+  /*  Render                                      */
   /* -------------------------------------------- */
 
-  /** @inheritdoc */
   _onRender(context, options) {
     super._onRender?.(context, options);
-
-    // Wire up dragstart on every available talent card. The dataTransfer
-    // payload is a JSON object with a distinctive `type` string so the
-    // sheet's drop handler can filter for talent drops specifically and
-    // ignore any other document/text drags landing on the same slot.
+    // Draggable cards use Foundry's standard item drag format plus a
+    // custom `slotIndex` field that the sheet's drop handler reads.
     const cards = this.element.querySelectorAll(".ct-card.ct-available");
     for (const card of cards) {
       card.addEventListener("dragstart", ev => {
+        const uuid = card.dataset.itemUuid;
+        if (!uuid) return;
         const payload = {
-          type:       "flail-combat-talent",
-          talentKey:  card.dataset.talentKey,
-          slotIndex:  this.slotIndex,
-          actorUuid:  this.actor.uuid
+          type: "Item",
+          uuid,
+          flailTalentSlotIndex: this.slotIndex
         };
         ev.dataTransfer.setData("text/plain", JSON.stringify(payload));
         ev.dataTransfer.effectAllowed = "copy";
@@ -197,38 +249,44 @@ export class CombatTalentPicker extends HandlebarsApplicationMixin(ApplicationV2
   /* -------------------------------------------- */
 
   /**
-   * Click-to-commit shortcut. Same result as dragging a card onto the
-   * slot, but always available and works with keyboard/screen readers.
-   *
-   * Writes the ENTIRE combatTalents array back rather than using a
-   * dotted-path update. Foundry v14 ArrayField updates via
-   * `system.combatTalents.N` don't merge cleanly when the on-disk
-   * array is shorter than N+1 — earlier slots' picks are lost. Reading
-   * the current array, padding to 5, mutating the target index, and
-   * writing the full array back preserves every slot's independent
-   * state.
+   * Click-to-commit shortcut. Removes any existing talent in the
+   * target slot, then embeds a fresh copy of the compendium item
+   * with slotIndex set.
    */
   static async #onChooseTalent(event, target) {
-    const key = target.dataset.talentKey;
-    if (!key) return;
     if (target.classList.contains("ct-unavailable")) return;
-    const talents = [...(this.actor.system.combatTalents ?? [])];
-    while (talents.length < 5) talents.push("");
-    talents[this.slotIndex] = key;
-    await this.actor.update({ "system.combatTalents": talents });
+    const uuid = target.dataset.itemUuid;
+    if (!uuid) return;
+    const source = await fromUuid(uuid);
+    if (!source) return;
+
+    // Remove anything currently in this slot.
+    const existingInSlot = this.actor.items
+      .filter(i => i.type === "combatTalent" && (i.system?.slotIndex ?? -1) === this.slotIndex)
+      .map(i => i.id);
+    if (existingInSlot.length) {
+      await this.actor.deleteEmbeddedDocuments("Item", existingInSlot);
+    }
+
+    // Embed a copy with slotIndex set.
+    const data = source.toObject();
+    delete data._id;
+    data.system = { ...(data.system ?? {}), slotIndex: this.slotIndex };
+    await this.actor.createEmbeddedDocuments("Item", [data]);
     this.close();
   }
 
   /**
-   * Clear the slot — sets it back to empty string. Useful for
-   * "undo my pick" without needing to pick something else first.
-   * Uses the same full-array-write pattern as chooseTalent.
+   * Clear this slot — deletes the embedded combatTalent item(s)
+   * marked with slotIndex === this.slotIndex.
    */
   static async #onClearSlot(event, target) {
-    const talents = [...(this.actor.system.combatTalents ?? [])];
-    while (talents.length < 5) talents.push("");
-    talents[this.slotIndex] = "";
-    await this.actor.update({ "system.combatTalents": talents });
+    const toDelete = this.actor.items
+      .filter(i => i.type === "combatTalent" && (i.system?.slotIndex ?? -1) === this.slotIndex)
+      .map(i => i.id);
+    if (toDelete.length) {
+      await this.actor.deleteEmbeddedDocuments("Item", toDelete);
+    }
     this.close();
   }
 }
