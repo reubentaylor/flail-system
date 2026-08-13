@@ -361,7 +361,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/item/types/instrument.hbs",
         "systems/flail/templates/item/types/guild.hbs",
         "systems/flail/templates/item/types/background.hbs",
-        "systems/flail/templates/item/types/combat-talent.hbs",
+        "systems/flail/templates/item/types/combatTalent.hbs",
         "systems/flail/templates/chat/attack-roll.hbs",
         "systems/flail/templates/chat/save-roll.hbs",
         "systems/flail/templates/chat/cast-prayer.hbs",

@@ -2883,6 +2883,14 @@
   font-family: "Signika", "Roboto", system-ui, sans-serif;
   color: var(--flail-ink);
 }
+/* Scroll the window-content when the NPC body is taller than the
+   window. Without this, tall NPCs (many attacks, long descriptions)
+   extend off the bottom with no way to reach the buried content.
+   `overflow-y: auto` shows a scrollbar only when needed. */
+.flail.sheet.npc .window-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 /* NPC sheet window header — same parchment/ink override so the
    "NPC: <name>" title stays readable in dark theme. */
 .flail.sheet.npc .window-header {

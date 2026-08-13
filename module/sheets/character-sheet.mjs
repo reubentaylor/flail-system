@@ -1045,6 +1045,24 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       el.addEventListener("drop",     this.#onTalentSlotDrop.bind(this));
     });
 
+    // Backup direct-click wiring for the per-slot "inspect" button
+    // (opens the embedded combatTalent item's sheet). ApplicationV2's
+    // action dispatcher should route data-action="openCombatTalentItem"
+    // via the class DEFAULT_OPTIONS.actions, but explicit wiring here
+    // guards against any dispatch failure when the button is inside a
+    // drop-target parent. stopPropagation prevents the click bubbling
+    // to the containing slot which would confuse the picker.
+    root.querySelectorAll(".talent-slot-inspect-btn").forEach(btn => {
+      btn.addEventListener("click", ev => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const id = btn.dataset.itemId;
+        if (!id) return;
+        const item = this.actor.items.get(id);
+        if (item) item.sheet?.render(true);
+      });
+    });
+
     // Background slot drop zone (banner). Accepts drops from the
     // Background Picker window. Payload type "flail-background";
     // any other drag is ignored.
