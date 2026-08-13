@@ -7,6 +7,7 @@ import { rollLayOnHands } from "../dice/lay-on-hands.mjs";
 import { rollMiracleCall } from "../dice/miracle-call.mjs";
 import { resolveRest } from "../dice/rest.mjs";
 import { CombatTalentPicker } from "../apps/combat-talent-picker.mjs";
+import { BackgroundPicker } from "../apps/background-picker.mjs";
 import { WIZARD_SPELLS } from "../setup/wizard-spells-data.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -44,6 +45,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       rollIronFistAttack: FlailCharacterSheet.#onRollIronFistAttack,
       toggleWeathered: FlailCharacterSheet.#onToggleWeathered,
       openTalentPicker: FlailCharacterSheet.#onOpenTalentPicker,
+      openBackgroundPicker: FlailCharacterSheet.#onOpenBackgroundPicker,
       attributeAdjustUp:   FlailCharacterSheet.#onAttributeAdjustUp,
       attributeAdjustDown: FlailCharacterSheet.#onAttributeAdjustDown,
       attributeToggleLock: FlailCharacterSheet.#onAttributeToggleLock,
@@ -159,6 +161,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     }));
     const currentBg = bgList.find(b => b.key === bgKey);
     ctx.isCustomBackground = bgKey === "custom";
+    ctx.currentBackgroundKey = bgKey;
     if (ctx.isCustomBackground) {
       // Custom background — read the actor's own label + perk. Blank
       // strings are fine (the sheet renders the editor for the player
@@ -1103,6 +1106,15 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       el.addEventListener("drop",     this.#onTalentSlotDrop.bind(this));
     });
 
+    // Background slot drop zone (banner). Accepts drops from the
+    // Background Picker window. Payload type "flail-background";
+    // any other drag is ignored.
+    root.querySelectorAll("[data-flail-drop-target='background']").forEach(el => {
+      el.addEventListener("dragover",  this.#onBackgroundDragOver.bind(this));
+      el.addEventListener("dragleave", this.#onBackgroundDragLeave.bind(this));
+      el.addEventListener("drop",      this.#onBackgroundDrop.bind(this));
+    });
+
     // Spell-list drop zones — currently the Bone Whisperer's Known Spells
     // panel. Accepts spell Items with tradition === "dark"; rejects
     // anything else with the "no entry" cursor.
@@ -1447,6 +1459,41 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     while (talents.length < 5) talents.push("");
     talents[slotIndex] = payload.talentKey;
     await this.actor.update({ "system.combatTalents": talents });
+  }
+
+  /**
+   * Background slot — accepts drops from the Background Picker.
+   * Payload is `{ type: "flail-background", backgroundKey, actorUuid }`.
+   * We highlight on hover, verify the actor UUID matches, and write
+   * the key to system.background on drop.
+   */
+  async #onBackgroundDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.classList.add("bg-slot-drag-hover");
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+  }
+
+  async #onBackgroundDragLeave(event) {
+    event.currentTarget.classList.remove("bg-slot-drag-hover");
+  }
+
+  async #onBackgroundDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.classList.remove("bg-slot-drag-hover");
+
+    let payload;
+    try { payload = JSON.parse(event.dataTransfer.getData("text/plain")); }
+    catch { return; }
+
+    if (payload?.type !== "flail-background") return;
+    if (!payload.backgroundKey) return;
+    if (payload.actorUuid && payload.actorUuid !== this.actor.uuid) {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.BackgroundWrongActor"));
+      return;
+    }
+    await this.actor.update({ "system.background": payload.backgroundKey });
   }
 
   /**
@@ -2311,6 +2358,17 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const slotIndex = Number(target.dataset.slotIndex);
     if (!Number.isFinite(slotIndex)) return;
     const picker = new CombatTalentPicker(this.actor, slotIndex);
+    picker.render(true);
+  }
+
+  /**
+   * Open the Background Picker window. Shows every Instant Backstory
+   * entry for the character's current class, plus a Custom Background
+   * card at the top. Player picks by click or drag; the sheet writes
+   * the picked key into system.background and re-renders.
+   */
+  static async #onOpenBackgroundPicker(event, target) {
+    const picker = new BackgroundPicker(this.actor);
     picker.render(true);
   }
 

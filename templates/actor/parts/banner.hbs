@@ -26,16 +26,38 @@
         {{#unless editable}}disabled{{/unless}}
       />
       <div class="char-background">
-        <select
-          name="system.background"
-          class="char-background-select"
-          {{#unless editable}}disabled{{/unless}}
-        >
-          <option value="">{{localize "FLAIL.Placeholder.Background"}}</option>
-          {{#each backgroundOptions as |opt|}}
-          <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{#if (flail-eq opt.key "custom")}}Custom Background{{else}}{{opt.key}}. {{opt.label}}{{/if}}</option>
-          {{/each}}
-        </select>
+        {{!--
+          Background picker trigger + drop-target slot. Clicking the
+          "Background:" header opens the picker window; the player can
+          click a card in the picker OR drag one onto the slot below.
+          When the slot is filled, the current label + perk render
+          inline (custom backgrounds render the label input + rich
+          perk editor when editable, or their read-only view otherwise).
+        --}}
+        <div class="char-background-header">
+          <button type="button"
+                  class="char-background-open-btn"
+                  data-action="openBackgroundPicker"
+                  title="{{localize 'FLAIL.BackgroundPicker.OpenPickerHint'}}"
+                  {{#unless editable}}disabled{{/unless}}>
+            <i class="fas fa-scroll"></i>
+            <span>{{localize "FLAIL.BackgroundPicker.HeaderLabel"}}:</span>
+          </button>
+          <div class="char-background-slot {{#if currentBackgroundKey}}bg-slot-filled{{else}}bg-slot-empty{{/if}}"
+               data-flail-drop-target="background">
+            {{#if currentBackgroundKey}}
+              {{#if isCustomBackground}}
+                <span class="bg-slot-key"><i class="fas fa-user-edit"></i></span>
+                <span class="bg-slot-label">{{localize "FLAIL.BackgroundPicker.CustomLabel"}}</span>
+              {{else}}
+                <span class="bg-slot-key">{{currentBackgroundKey}}</span>
+                <span class="bg-slot-label">{{currentBackgroundLabel}}</span>
+              {{/if}}
+            {{else}}
+              <span class="bg-slot-placeholder">{{localize "FLAIL.BackgroundPicker.EmptySlotHint"}}</span>
+            {{/if}}
+          </div>
+        </div>
         {{#if isCustomBackground}}
           {{#if editable}}
             {{!-- Editable custom: label input + rich-text perk editor. --}}

@@ -190,6 +190,18 @@
       "ReasonExpertNeedsBasic":  "Requires {basic} (Basic, this tree) in an earlier slot.",
       "ReasonMasterNeedsExpert": "Requires {expert} (Expert) in an earlier slot."
     },
+    "BackgroundPicker": {
+      "Title":            "Background — {actor}",
+      "HeaderLabel":      "Background",
+      "OpenPickerHint":   "Open the background picker.",
+      "Intro":            "Pick an Instant Backstory entry for",
+      "Footer":           "Drag a card onto the background slot, or click a card to commit it directly.",
+      "ClearBackground":  "Clear background",
+      "EmptySlotHint":    "No background — click 'Background:' to pick.",
+      "CustomLabel":      "Custom Background",
+      "CustomHint":       "Define your own origin. Label + perk are edited on the sheet after picking.",
+      "PerkLabel":        "Perk"
+    },
     "Attribute": {
       "Str":  { "long": "Strength",     "abbr": "STR" },
       "Dex":  { "long": "Dexterity",    "abbr": "DEX" },
@@ -769,6 +781,7 @@
       "ApplyNeedsOwner": "Cannot apply to {name}: only {owner} can apply this. Ask them to click the button.",
       "NoOwnerFound": "the GM",
       "TalentWrongActor": "This talent card was opened from a different character's picker. Close it and open the picker from this character's slot.",
+      "BackgroundWrongActor": "This background card was opened from a different character's picker. Close it and open the picker from this character's slot.",
       "ZoneRejectsType": "{zone} only accepts {type} items.",
       "ZoneRejectsMissingFlag": "{zone} slots only accept items flagged as an adornment. Tick the Adornment checkbox on the {item} item sheet first.",
       "MultiSlotNoRoom":        "{item} takes more than one slot — not enough room at that position in the {zone} column.",

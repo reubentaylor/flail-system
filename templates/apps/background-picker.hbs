@@ -1,0 +1,65 @@
+{{!--
+  Background Picker — floating window contents.
+
+  Layout:
+    * Intro line naming the class (helps orient when picking, since
+      backgrounds are class-specific).
+    * "Custom Background" card at the top — a special draggable that
+      commits the "custom" key, which the sheet then expands into
+      the inline label + rich-text perk editor.
+    * Numbered background cards below — one per Instant Backstory
+      entry from the class's list, showing key number, label, perk.
+    * Currently-selected background gets a green outline so the
+      player sees at a glance which is theirs.
+--}}
+<div class="background-picker-body">
+  <p class="background-picker-intro">
+    {{localize "FLAIL.BackgroundPicker.Intro"}}
+    <strong>{{className}}</strong>.
+  </p>
+
+  {{#if hasCurrent}}
+  <div class="background-picker-current-row">
+    <button type="button" class="background-picker-clear-btn" data-action="clearBackground">
+      <i class="fas fa-eraser"></i>
+      {{localize "FLAIL.BackgroundPicker.ClearBackground"}}
+    </button>
+  </div>
+  {{/if}}
+
+  {{#if customCard}}
+  <div class="bg-card bg-card-custom {{#if customCard.current}}bg-current{{/if}}"
+       draggable="true"
+       data-action="chooseBackground"
+       data-background-key="{{customCard.key}}">
+    <div class="bg-card-head">
+      <i class="fas fa-user-edit bg-icon"></i>
+      <span class="bg-name">{{localize "FLAIL.BackgroundPicker.CustomLabel"}}</span>
+      {{#if customCard.current}}<i class="fas fa-check-circle bg-current-mark"></i>{{/if}}
+    </div>
+    <p class="bg-desc">{{localize "FLAIL.BackgroundPicker.CustomHint"}}</p>
+  </div>
+  {{/if}}
+
+  <div class="bg-list">
+    {{#each backgrounds as |bg|}}
+    <div class="bg-card {{#if bg.current}}bg-current{{/if}}"
+         draggable="true"
+         data-action="chooseBackground"
+         data-background-key="{{bg.key}}">
+      <div class="bg-card-head">
+        <span class="bg-key-badge">{{bg.key}}</span>
+        <span class="bg-name">{{bg.label}}</span>
+        {{#if bg.current}}<i class="fas fa-check-circle bg-current-mark"></i>{{/if}}
+      </div>
+      {{#if bg.perk}}
+      <p class="bg-desc"><strong>{{localize "FLAIL.BackgroundPicker.PerkLabel"}}:</strong> {{bg.perk}}</p>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+
+  <footer class="background-picker-footer">
+    <p><i class="fas fa-hand-pointer"></i> {{localize "FLAIL.BackgroundPicker.Footer"}}</p>
+  </footer>
+</div>

@@ -263,6 +263,214 @@
   font-style: italic;
   line-height: 1.25;
 }
+
+/* Background header + drop-target slot.
+   Replaces the old <select> dropdown UI. The header button opens
+   the Background Picker window; the slot beside it is a drop target
+   that accepts drags from that picker. Two rows visually — a
+   subtle italic header + a bordered slot that reads as an item. */
+.flail.sheet .char-background-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0;
+}
+.flail.sheet .char-background-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.35rem;
+  background: transparent;
+  color: var(--flail-muted);
+  border: none;
+  border-bottom: 1px dashed var(--flail-muted);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color 0.1s, border-color 0.1s;
+}
+.flail.sheet .char-background-open-btn:hover:not(:disabled) {
+  color: var(--flail-ink);
+  border-bottom-color: var(--flail-ink);
+}
+.flail.sheet .char-background-open-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.flail.sheet .char-background-slot {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--flail-rule, #b58b3e);
+  border-radius: 3px;
+  background: var(--flail-parchment, #f4ebd4);
+  font-size: 0.78rem;
+  color: var(--flail-ink);
+  overflow: hidden;
+  min-height: 1.7rem;
+}
+.flail.sheet .char-background-slot.bg-slot-empty {
+  background: rgba(255, 251, 232, 0.4);
+  border-style: dashed;
+  color: var(--flail-muted);
+  font-style: italic;
+}
+.flail.sheet .char-background-slot.bg-slot-drag-hover {
+  border-color: var(--flail-success, #4c7d3a);
+  background: rgba(120, 180, 90, 0.12);
+  box-shadow: 0 0 0 2px rgba(76, 125, 58, 0.35) inset;
+}
+.flail.sheet .char-background-slot .bg-slot-key {
+  flex: 0 0 auto;
+  padding: 0 0.35rem;
+  background: var(--flail-accent, #6a4d0e);
+  color: #fff5d7;
+  border-radius: 2px;
+  font-weight: 900;
+  font-size: 0.7rem;
+}
+.flail.sheet .char-background-slot .bg-slot-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.flail.sheet .char-background-slot .bg-slot-placeholder {
+  flex: 1 1 auto;
+}
+
+/* ============================================================
+   BACKGROUND PICKER — floating window with draggable cards
+   ============================================================ */
+
+.background-picker .background-picker-body {
+  padding: 0.6rem;
+  background: var(--flail-paper, #fbf3d9);
+  color: var(--flail-ink, #1a1410);
+  font-family: inherit;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.background-picker .background-picker-intro {
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: rgba(139, 105, 20, 0.1);
+  border-left: 3px solid var(--flail-rule, #b58b3e);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+.background-picker .background-picker-current-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.4rem;
+}
+.background-picker .background-picker-clear-btn {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--flail-ink);
+  background: transparent;
+  border: 1px solid var(--flail-rule);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.background-picker .background-picker-clear-btn:hover {
+  background: rgba(200, 60, 40, 0.15);
+  border-color: #a63e29;
+}
+.background-picker .bg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.background-picker .bg-card {
+  padding: 0.45rem 0.55rem;
+  background: var(--flail-parchment, #f4ebd4);
+  border: 1px solid var(--flail-rule, #b58b3e);
+  border-left-width: 4px;
+  border-left-color: #6b4818;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, transform 0.05s;
+}
+.background-picker .bg-card:hover {
+  background: var(--flail-parchment-hover, #ecdfbe);
+  border-color: var(--flail-ink);
+}
+.background-picker .bg-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+.background-picker .bg-card.bg-dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+}
+.background-picker .bg-card.bg-current {
+  outline: 2px solid var(--flail-success, #4c7d3a);
+  outline-offset: -2px;
+  background: rgba(120, 180, 90, 0.15);
+}
+.background-picker .bg-card-custom {
+  border-left-color: #5a0f1a;
+  margin-bottom: 0.5rem;
+}
+.background-picker .bg-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.2rem;
+}
+.background-picker .bg-key-badge {
+  padding: 0.05rem 0.4rem;
+  background: var(--flail-accent, #6a4d0e);
+  color: #fff5d7;
+  border-radius: 2px;
+  font-weight: 900;
+  font-size: 0.72rem;
+  flex: 0 0 auto;
+}
+.background-picker .bg-icon {
+  color: #5a0f1a;
+  font-size: 0.85rem;
+  flex: 0 0 auto;
+}
+.background-picker .bg-name {
+  font-weight: 700;
+  color: var(--flail-ink);
+  flex: 1 1 auto;
+  line-height: 1.25;
+}
+.background-picker .bg-current-mark {
+  color: var(--flail-success, #4c7d3a);
+  font-size: 0.85rem;
+}
+.background-picker .bg-desc {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--flail-ink);
+}
+.background-picker .background-picker-footer {
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.3);
+  font-size: 0.72rem;
+  color: var(--flail-muted, #5a4810);
+  font-style: italic;
+}
+.background-picker .background-picker-footer p {
+  margin: 0;
+}
+.background-picker .background-picker-footer .fa-hand-pointer {
+  margin-right: 0.3rem;
+}
 /* Custom background — editable input + read-only display. Text input
    matches the sheet's other inline fields; the label-view is styled
    like a small heading over the perk. */
