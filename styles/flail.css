@@ -622,6 +622,13 @@
   color: var(--flail-muted);
   font-family: inherit;
 }
+/* Locked base input — visually reads as "not editable now" while
+   still keeping the value legible. Matches the greyed-out state of
+   the +/- buttons when the padlock is closed. */
+.flail.sheet .attribute-box .attr-base-locked {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
 .flail.sheet .attribute-box .attr-slash {
   font-size: 1.2rem;
   color: var(--flail-muted);
