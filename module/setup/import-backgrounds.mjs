@@ -2,13 +2,15 @@ import { buildBackgroundsData } from "./backgrounds-data.mjs";
 
 /**
  * Version stamp for the bundled backgrounds. Bump when the data
- * (perk text, class assignment, etc.) changes so existing worlds
- * re-import updated entries instead of sticking with stale copies.
+ * (perk text, class assignment, grants, etc.) changes so existing
+ * worlds re-sync updated entries instead of sticking with stale copies.
  *
- *   1 — initial bundle. 48 stock backgrounds (6 per class × 8) plus
- *       one Custom Background template.
+ *   1 — initial bundle. 48 stock backgrounds + Custom template.
+ *   2 — added `system.grants` records to backgrounds with clear
+ *       mechanical hooks (Cleric 1/2/3/4/5/6, Bard 3/4/5/6,
+ *       Bone Whisperer 1-6). Others remain grant-free (perk text only).
  */
-export const BACKGROUNDS_VERSION = 1;
+export const BACKGROUNDS_VERSION = 2;
 
 const VERSION_SETTING = "backgroundsVersion";
 const PACK_NAME  = "flail-backgrounds";

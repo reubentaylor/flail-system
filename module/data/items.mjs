@@ -345,7 +345,36 @@ export class FlailBackgroundModel extends foundry.abstract.TypeDataModel {
       // True for the "Custom Background" template card in the picker.
       // When picked, a copy is embedded on the actor and the player
       // renames it + writes their own perk via the item sheet.
-      isCustomTemplate: new fields.BooleanField({ initial: false })
+      isCustomTemplate: new fields.BooleanField({ initial: false }),
+      // Grants — structured records describing "on character creation,
+      // apply these effects." Not fired automatically; the character
+      // sheet surfaces an "Apply Grants" button which walks the player
+      // through each grant with checkboxes + explicit confirm.
+      //
+      // Each grant has a `type` and type-specific fields:
+      //   * "attribute": attrKey ("str"/"dex"/...) + attrDelta (+1/-1)
+      //   * "item": itemName (searched across all Item compendiums)
+      //   * "crossClass": crossClassSource ("wizard") + crossClassType
+      //     ("spell"/"prayer"/"gift"/"talent") — opens a picker
+      //     dialog listing that class's compendium items for the
+      //     player to choose from
+      //   * "note": no automation — a bookkeeping checkbox with
+      //     descriptive text ("start with a family heirloom (GM: define)")
+      // `applied` flips true when the grant has been executed once
+      // on a specific character. Prevents double-apply on re-click.
+      grants: new fields.ArrayField(new fields.SchemaField({
+        type: new fields.StringField({
+          required: true, blank: false, initial: "note",
+          choices: ["item", "attribute", "crossClass", "note"]
+        }),
+        itemName: new fields.StringField({ blank: true, initial: "" }),
+        attrKey: new fields.StringField({ blank: true, initial: "" }),
+        attrDelta: new fields.NumberField({ integer: true, initial: 0 }),
+        crossClassSource: new fields.StringField({ blank: true, initial: "" }),
+        crossClassType: new fields.StringField({ blank: true, initial: "" }),
+        description: new fields.StringField({ blank: true, initial: "" }),
+        applied: new fields.BooleanField({ initial: false })
+      }), { initial: () => [] })
     };
   }
 }

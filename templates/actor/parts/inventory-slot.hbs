@@ -17,7 +17,7 @@
     {{!-- Occupied: render item.
          Layout: img + name + attack-btn on the top row, usage pips
          pinned bottom-left, hover meta (edit / mark / delete) bottom-right. --}}
-    <div class="slot-item" draggable="true" data-item-id="{{slot.item.id}}">
+    <div class="slot-item {{#if slot.itemUsedOut}}slot-item-used-out{{/if}}" draggable="true" data-item-id="{{slot.item.id}}">
       <img src="{{slot.item.img}}" alt="{{slot.item.name}}" />
       <span class="slot-item-name">{{slot.item.name}}</span>
       {{#if (flail-eq slot.item.type "weapon")}}
@@ -39,10 +39,12 @@
              appears next to it so the Bard can manually reset when
              a new combat or social scene begins. Any rest also
              clears the flag automatically. --}}
-        {{#if slot.item.flags.flail.usedOut}}
-        <button type="button" class="slot-action play-btn is-used-out" disabled title="{{localize 'FLAIL.Roll.InstrumentUsedOutHint'}}">
-          <i class="fas fa-ban"></i>
-        </button>
+        {{#if slot.itemUsedOut}}
+        {{!-- Used-out: single reset button (green ⟲) positioned in
+             the bottom-right slot corner where play-btn normally
+             lives. Image gets dimmed via .is-used-out class on the
+             slot wrapper so the state reads at a glance without
+             needing a second button. --}}
         <button type="button" class="slot-action reset-btn" data-action="resetInstrumentUsedOut" data-item-id="{{slot.item.id}}" title="{{localize 'FLAIL.Roll.InstrumentResetHint'}}">
           <i class="fas fa-rotate-left"></i>
         </button>

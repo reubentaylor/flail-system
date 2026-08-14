@@ -1,0 +1,37 @@
+{{!--
+  Background Grants Apply dialog. Lists each unapplied grant as a
+  checkbox (default checked). Confirm executes each; unchecked ones
+  stay unapplied for a future apply.
+--}}
+<div class="bg-grants-dialog-body">
+  <p class="bg-grants-intro">
+    <strong>{{backgroundName}}</strong> — {{localize "FLAIL.Background.ApplyDialogIntro"}}
+  </p>
+  {{#if hasUnapplied}}
+  <ul class="bg-grants-checklist">
+    {{#each unapplied as |g|}}
+    <li class="bg-grant-check-row">
+      <label>
+        <input type="checkbox" class="bg-grant-check" data-grant-index="{{g.index}}" checked />
+        <span class="bg-grant-typechip bg-grant-type-{{g.type}}">{{g.typeLabel}}</span>
+        <span class="bg-grant-desc-text">
+          {{#if g.description}}{{g.description}}{{else}}
+            {{#if (flail-eq g.type 'attribute')}}{{g.attrKey}} {{g.attrDelta}}{{/if}}
+            {{#if (flail-eq g.type 'item')}}Item: {{g.itemName}}{{/if}}
+            {{#if (flail-eq g.type 'crossClass')}}Pick one {{g.crossClassSource}} {{g.crossClassType}}{{/if}}
+            {{#if (flail-eq g.type 'note')}}(no description — acknowledgment)  {{/if}}
+          {{/if}}
+        </span>
+      </label>
+    </li>
+    {{/each}}
+  </ul>
+  <footer class="bg-grants-dialog-footer">
+    <button type="button" data-action="applyGrants">
+      <i class="fas fa-check"></i> {{localize "FLAIL.Background.ApplyConfirm"}}
+    </button>
+  </footer>
+  {{else}}
+  <p class="bg-grants-empty">{{localize "FLAIL.Background.ApplyNone"}}</p>
+  {{/if}}
+</div>

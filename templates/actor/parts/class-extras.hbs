@@ -593,7 +593,6 @@
     {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
     <section class="tabbed-card instruments-card">
       <header class="tab-label">{{localize "FLAIL.Section.Instruments"}}</header>
-      <p class="hint">{{localize "FLAIL.Hint.InstrumentSlots"}}</p>
       <div class="instrument-slots inventory-zone" data-zone="instruments">
         {{#each inventory.instruments.slots as |slot|}}
         {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone="instruments" }}

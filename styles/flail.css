@@ -271,8 +271,8 @@
    subtle italic header + a bordered slot that reads as an item. */
 .flail.sheet .char-background-header {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  align-items: flex-start;
+  gap: 0.35rem;
   padding: 0.15rem 0;
 }
 .flail.sheet .char-background-open-btn {
@@ -301,19 +301,34 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* Icon-only variant of the open-picker button — no text label,
+   no underline. Compact so the slot beside it takes the full
+   remaining width for maximum background-text readability. */
+.flail.sheet .char-background-open-btn-iconic {
+  padding: 0.2rem 0.35rem;
+  border-bottom: none;
+  color: var(--flail-accent, #6a4d0e);
+  font-size: 0.95rem;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-top: 0.15rem;
+}
+.flail.sheet .char-background-open-btn-iconic:hover:not(:disabled) {
+  color: var(--flail-ink);
+  transform: scale(1.08);
+}
 .flail.sheet .char-background-slot {
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
-  padding: 0.2rem 0.4rem;
+  padding: 0.25rem 0.5rem;
   border: 1px solid var(--flail-rule, #b58b3e);
   border-radius: 3px;
   background: var(--flail-parchment, #f4ebd4);
   font-size: 0.78rem;
   color: var(--flail-ink);
-  overflow: hidden;
   min-height: 1.7rem;
 }
 .flail.sheet .char-background-slot.bg-slot-empty {
@@ -321,6 +336,7 @@
   border-style: dashed;
   color: var(--flail-muted);
   font-style: italic;
+  align-items: center;
 }
 .flail.sheet .char-background-slot.bg-slot-drag-hover {
   border-color: var(--flail-success, #4c7d3a);
@@ -329,19 +345,26 @@
 }
 .flail.sheet .char-background-slot .bg-slot-key {
   flex: 0 0 auto;
-  padding: 0 0.35rem;
+  padding: 0.05rem 0.4rem;
   background: var(--flail-accent, #6a4d0e);
   color: #fff5d7;
   border-radius: 2px;
   font-weight: 900;
   font-size: 0.7rem;
+  align-self: center;
 }
+/* Label wraps to as many lines as the text needs — the whole point
+   of dropping the "Background:" text was to give the label maximum
+   readable width. Truncation with ellipsis (previous behaviour)
+   would defeat that: long background names like "Halfling gladiator
+   champion from End's Meet who found a map to an ancient arena on a
+   defeated rival." would be cut off. */
 .flail.sheet .char-background-slot .bg-slot-label {
   flex: 1 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-weight: 600;
+  line-height: 1.3;
+  white-space: normal;
+  word-break: break-word;
 }
 .flail.sheet .char-background-slot .bg-slot-placeholder {
   flex: 1 1 auto;
@@ -976,6 +999,22 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* Used-out instrument in the Class Actions panel — button becomes
+   a reactivate control. Dimmed image + green rotate icon signals
+   "used but click to bring back". Distinct from disabled so the
+   click is clearly available. */
+.flail.sheet .class-actions-body .ca-instrument-used-out {
+  background: rgba(120, 180, 90, 0.15);
+  border-color: var(--flail-success, #4c7d3a);
+}
+.flail.sheet .class-actions-body .ca-instrument-used-out .ca-img {
+  opacity: 0.5;
+  filter: grayscale(0.7);
+}
+.flail.sheet .class-actions-body .ca-instrument-used-out .ca-name .fa-rotate-left {
+  color: var(--flail-success, #4c7d3a);
+  margin-right: 0.2rem;
+}
 .flail.sheet .class-actions-body .ca-img {
   width: 22px;
   height: 22px;
@@ -1566,6 +1605,53 @@
 .flail.sheet .slot-item .slot-action.play-btn .fa-music {
   display: block;
   line-height: 1;
+}
+
+/* Reset button — bottom-right slot corner (same footprint as play-btn),
+   saturated green so it reads clearly against darker instrument
+   artwork. z-index sits above the image + usage pips + name overlay.
+   Subtle outer glow adds contrast on dark backgrounds without being
+   loud. */
+.flail.sheet .slot-item .slot-action.reset-btn {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  z-index: 4;
+  background: #3ea34a;
+  color: white;
+  border: 1px solid #2a7834;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    0 0 6px rgba(62, 163, 74, 0.55);
+}
+.flail.sheet .slot-item .slot-action.reset-btn:hover {
+  background: #4dbf5b;
+  filter: brightness(1.05);
+}
+.flail.sheet .slot-item .slot-action.reset-btn .fa-rotate-left {
+  display: block;
+  line-height: 1;
+}
+/* Dim the item image on used-out slots so the state reads before the
+   reset button even needs to be found. */
+.flail.sheet .slot-item.slot-item-used-out img {
+  opacity: 0.5;
+  filter: grayscale(0.7);
+}
+.flail.sheet .slot-item.slot-item-used-out .slot-item-name {
+  opacity: 0.6;
+  text-decoration: line-through;
+  text-decoration-color: rgba(200, 60, 40, 0.7);
 }
 
 /* Usage pips — overlaid bottom-left, in front of the artwork. Each pip
@@ -9937,4 +10023,192 @@
 .flail.sheet .attack-special-feature p {
   margin: 0.15rem 0;
   display: inline;
+}
+
+/* ============================================================
+   BACKGROUND — grants editor (item sheet)
+   ============================================================ */
+
+.flail.sheet.item .bg-grants-editor {
+  margin-top: 0.6rem;
+}
+.flail.sheet.item .bg-grants-header h3 {
+  margin: 0;
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--flail-accent, #6a4d0e);
+}
+.flail.sheet.item .bg-grants-header .hint {
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--flail-muted);
+}
+.flail.sheet.item .bg-grants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.flail.sheet.item .bg-grant-row {
+  padding: 0.35rem;
+  background: rgba(255, 251, 232, 0.5);
+  border: 1px solid var(--flail-rule, #b58b3e);
+  border-left-width: 3px;
+  border-radius: 3px;
+}
+.flail.sheet.item .bg-grant-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+.flail.sheet.item .bg-grant-line select,
+.flail.sheet.item .bg-grant-line input[type="text"],
+.flail.sheet.item .bg-grant-line input[type="number"] {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.3rem;
+}
+.flail.sheet.item .bg-grant-num { width: 3.5rem; }
+.flail.sheet.item .bg-grant-desc { flex: 1 1 12rem; }
+.flail.sheet.item .bg-grant-applied {
+  font-size: 0.72rem;
+  color: var(--flail-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.flail.sheet.item .bg-grant-remove {
+  padding: 0.2rem 0.4rem;
+  background: transparent;
+  border: 1px solid var(--flail-rule);
+  border-radius: 2px;
+  color: #a63e29;
+  cursor: pointer;
+  font-size: 0.72rem;
+}
+.flail.sheet.item .bg-grant-remove:hover {
+  background: rgba(200, 60, 40, 0.15);
+}
+.flail.sheet.item .bg-grant-add {
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--flail-parchment, #f4ebd4);
+  border: 1px solid var(--flail-rule);
+  border-radius: 3px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.flail.sheet.item .bg-grant-add:hover {
+  background: var(--flail-parchment-hover, #ecdfbe);
+}
+
+/* Banner "Apply grants" button — pop of green so it reads as a
+   pending action tied to the background slot above. */
+.flail.sheet .char-background-apply-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  background: var(--flail-success, #4c7d3a);
+  color: white;
+  border: 1px solid var(--flail-success, #4c7d3a);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+.flail.sheet .char-background-apply-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+.flail.sheet .char-background-apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   BACKGROUND GRANTS — apply dialog
+   ============================================================ */
+
+.background-grants-dialog .bg-grants-dialog-body {
+  padding: 0.6rem;
+  background: var(--flail-paper, #fbf3d9);
+  color: var(--flail-ink);
+  font-family: inherit;
+}
+.background-grants-dialog .bg-grants-intro {
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: rgba(139, 105, 20, 0.1);
+  border-left: 3px solid var(--flail-rule);
+  font-size: 0.85rem;
+}
+.background-grants-dialog .bg-grants-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0.3rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.background-grants-dialog .bg-grant-check-row {
+  padding: 0.35rem 0.5rem;
+  background: var(--flail-parchment, #f4ebd4);
+  border: 1px solid var(--flail-rule);
+  border-radius: 3px;
+}
+.background-grants-dialog .bg-grant-check-row label {
+  display: flex;
+  gap: 0.4rem;
+  align-items: flex-start;
+  cursor: pointer;
+}
+.background-grants-dialog .bg-grant-typechip {
+  padding: 0.05rem 0.4rem;
+  border-radius: 2px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: white;
+  flex: 0 0 auto;
+  align-self: center;
+}
+.background-grants-dialog .bg-grant-type-attribute   { background: #6b4818; }
+.background-grants-dialog .bg-grant-type-item        { background: #4a6b2a; }
+.background-grants-dialog .bg-grant-type-crossClass  { background: #5a0f1a; }
+.background-grants-dialog .bg-grant-type-note        { background: #5a4810; }
+.background-grants-dialog .bg-grant-desc-text {
+  flex: 1 1 auto;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.background-grants-dialog .bg-grants-empty {
+  padding: 0.6rem;
+  font-style: italic;
+  color: var(--flail-muted);
+  text-align: center;
+}
+.background-grants-dialog .bg-grants-dialog-footer {
+  margin-top: 0.6rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.3);
+  text-align: right;
+}
+.background-grants-dialog .bg-grants-dialog-footer button {
+  padding: 0.35rem 0.75rem;
+  background: var(--flail-success, #4c7d3a);
+  color: white;
+  border: 1px solid var(--flail-success);
+  border-radius: 3px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.background-grants-dialog .bg-grants-dialog-footer button:hover {
+  filter: brightness(1.1);
 }

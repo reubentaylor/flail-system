@@ -209,15 +209,32 @@
     {{#if isBard}}
       {{#each inventory.instruments.slots as |slot|}}
         {{#if slot.item}}
-        <button type="button"
-                class="ca-btn ca-instrument"
-                data-action="rollInstrument"
-                data-item-id="{{slot.item.id}}"
-                data-tooltip="{{slot.item.description}}"
-                {{#unless ../editable}}disabled{{/unless}}>
-          <img class="ca-img" src="{{slot.item.img}}" alt="" />
-          <span class="ca-name">{{slot.item.name}}</span>
-        </button>
+          {{#if slot.itemUsedOut}}
+          {{!-- Used-out this scene: button flips role from "play" to
+               "reactivate" so the Bard can bring the instrument back
+               without hunting for the tiny reset in the dedicated
+               inventory zone. Green tint + rotate icon signals "ready
+               to reset" state. --}}
+          <button type="button"
+                  class="ca-btn ca-instrument ca-instrument-used-out"
+                  data-action="resetInstrumentUsedOut"
+                  data-item-id="{{slot.item.id}}"
+                  data-tooltip="{{localize 'FLAIL.Roll.InstrumentResetHint'}}"
+                  {{#unless ../editable}}disabled{{/unless}}>
+            <img class="ca-img" src="{{slot.item.img}}" alt="" />
+            <span class="ca-name"><i class="fas fa-rotate-left"></i> {{slot.item.name}}</span>
+          </button>
+          {{else}}
+          <button type="button"
+                  class="ca-btn ca-instrument"
+                  data-action="rollInstrument"
+                  data-item-id="{{slot.item.id}}"
+                  data-tooltip="{{slot.item.description}}"
+                  {{#unless ../editable}}disabled{{/unless}}>
+            <img class="ca-img" src="{{slot.item.img}}" alt="" />
+            <span class="ca-name">{{slot.item.name}}</span>
+          </button>
+          {{/if}}
         {{/if}}
       {{/each}}
       {{#each jackOfAllTradesItems as |j|}}

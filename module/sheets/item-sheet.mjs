@@ -16,9 +16,45 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
       removeGuildEntry: FlailItemSheet.#onRemoveGuildEntry,
-      editImage:        FlailItemSheet.#onEditImage
+      editImage:        FlailItemSheet.#onEditImage,
+      bgGrantAdd:       FlailItemSheet.#onBgGrantAdd,
+      bgGrantRemove:    FlailItemSheet.#onBgGrantRemove
     }
   };
+
+  /**
+   * Background item — add a blank grant row. Grants are per-item;
+   * write the full array back (Foundry ArrayField dotted-path updates
+   * don't merge cleanly, see character-sheet.mjs notes).
+   */
+  static async #onBgGrantAdd(event, target) {
+    if (this.item.type !== "background") return;
+    const grants = [...(this.item.system.grants ?? [])];
+    grants.push({
+      type: "note",
+      itemName: "",
+      attrKey: "",
+      attrDelta: 0,
+      crossClassSource: "",
+      crossClassType: "",
+      description: "",
+      applied: false
+    });
+    await this.item.update({ "system.grants": grants });
+  }
+
+  /**
+   * Background item — remove a grant row by index.
+   */
+  static async #onBgGrantRemove(event, target) {
+    if (this.item.type !== "background") return;
+    const idx = Number(target.dataset.grantIndex);
+    if (!Number.isFinite(idx)) return;
+    const grants = [...(this.item.system.grants ?? [])];
+    if (idx < 0 || idx >= grants.length) return;
+    grants.splice(idx, 1);
+    await this.item.update({ "system.grants": grants });
+  }
 
   /**
    * Remove an entry from a guild item's talentItems or actionItems

@@ -214,6 +214,25 @@
       "CustomHint":       "Define your own origin. Label + perk are edited on the sheet after picking.",
       "PerkLabel":        "Perk"
     },
+    "Background": {
+      "GrantsHeader":     "Grants (on character creation)",
+      "GrantsHint":       "Define per-grant effects. The character sheet's Apply Grants button walks the player through each with confirmation.",
+      "GrantsAdd":        "Add grant",
+      "ApplyButton":      "Apply grants ({count})",
+      "ApplyDialogTitle": "Apply background grants",
+      "ApplyDialogIntro": "Check the grants to apply. Each executes once — unchecking a grant leaves it unapplied.",
+      "ApplyConfirm":     "Apply selected",
+      "ApplyCancel":      "Cancel",
+      "ApplyNone":        "No unapplied grants — everything's already been applied.",
+      "AppliedToast":     "Applied {n} grant(s) from '{name}'.",
+      "ItemNotFound":     "Grant refers to item '{name}' — not found in any compendium. Grant this manually.",
+      "CrossClassPickTitle": "Pick one — {source} {type}",
+      "CrossClassEmpty":  "No {source} {type} items found in compendiums.",
+      "GrantTypeAttribute": "Attribute modifier",
+      "GrantTypeItem":      "Grant item",
+      "GrantTypeCrossClass":"Cross-class pick",
+      "GrantTypeNote":      "Note"
+    },
     "Attribute": {
       "Str":  { "long": "Strength",     "abbr": "STR" },
       "Dex":  { "long": "Dexterity",    "abbr": "DEX" },

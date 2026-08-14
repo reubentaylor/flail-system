@@ -346,6 +346,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/actor/parts/notes-panel.hbs",
         "systems/flail/templates/apps/combat-talent-picker.hbs",
         "systems/flail/templates/apps/background-picker.hbs",
+        "systems/flail/templates/apps/background-grants-dialog.hbs",
         "systems/flail/templates/item/parts/header.hbs",
         "systems/flail/templates/item/parts/body.hbs",
         "systems/flail/templates/item/types/weapon.hbs",
@@ -621,6 +622,66 @@ Hooks.on("deleteCombat", async (combat, options, userId) => {
     if (stale.length) {
       await actor.deleteEmbeddedDocuments("ActiveEffect", stale.map(e => e.id));
     }
+  }
+});
+
+/**
+ * End of Combat: clear the `usedOut` flag on every embedded
+ * instrument for actors that were in this combat.
+ *
+ * Bard instruments flag `flags.flail.usedOut = true` when played to
+ * a fail or fumble (see instrument-play.mjs). The flag persists per
+ * scene/encounter until a rest OR a manual reset. Since "encounter
+ * end" is the natural time to bring instruments back, ending combat
+ * from the tracker triggers this reset automatically.
+ *
+ * Only reactivates instruments on actors that were in THIS combat —
+ * a Bard not in the fight keeps their unrelated instrument state.
+ * If a Bard played in a non-combat social scene, they can still use
+ * the manual reset button (or rest).
+ *
+ * GM-only for permission reasons; the flag lives on items on player
+ * actors that non-GMs typically can't mutate cross-actor.
+ */
+Hooks.on("deleteCombat", async (combat, options, userId) => {
+  if (!game.user.isGM) return;
+  if (userId !== game.user.id && !game.users.filter(u => u.isGM).some(u => u.id === game.user.id)) return;
+
+  console.log("FLAIL | deleteCombat hook — resetting used-out instruments");
+
+  // Iterate ALL character actors, not just combat.combatants. The
+  // combatants collection can be empty at delete time (Foundry
+  // clears it as part of teardown), and "instrument used-out"
+  // semantics are "encounter over" — any bard with a used-out
+  // instrument when combat ends is safe to reset. If a bard used
+  // an instrument in a social scene and combat also fires nearby,
+  // their instrument resets a bit early — acceptable trade-off.
+  const affected = [];
+  for (const actor of game.actors.filter(a => a.type === "character")) {
+    const toReset = actor.items.filter(i =>
+      i.type === "instrument" && i.getFlag("flail", "usedOut")
+    );
+    if (!toReset.length) continue;
+    const updates = toReset.map(i => ({
+      _id: i.id,
+      "flags.flail.usedOut": false
+    }));
+    try {
+      await actor.updateEmbeddedDocuments("Item", updates);
+      affected.push({ actor: actor.name, count: toReset.length });
+      console.log(`FLAIL | Reset ${toReset.length} instrument(s) on ${actor.name}`);
+    } catch (err) {
+      console.error(`FLAIL | Failed to reset instruments on ${actor.name}`, err);
+    }
+  }
+  if (affected.length) {
+    const lines = affected.map(a => `${a.actor}: ${a.count} instrument(s)`);
+    ChatMessage.create({
+      whisper: game.users.filter(u => u.isGM).map(u => u.id),
+      content: `<p><strong>Combat ended.</strong> Reactivated used-out instruments for:</p><ul><li>${lines.join("</li><li>")}</li></ul>`
+    });
+  } else {
+    console.log("FLAIL | deleteCombat — no used-out instruments to reset");
   }
 });
 

@@ -1,8 +1,9 @@
 {{!--
-  Background item sheet body. Standard editor picks up the name
-  and description (perk) automatically. This body just adds the
-  classKey selector so GMs know which class picker the background
-  appears in, plus a read-only sourceKey line and the custom flag.
+  Background item sheet body.
+
+  Two sections:
+    * Metadata (classKey, custom flag) — same as before
+    * Grants editor — array of structured grant records
 --}}
 <section class="card">
   <div class="row">
@@ -30,5 +31,73 @@
       {{localize "FLAIL.Field.SourceKey"}}: <span class="mono">{{system.sourceKey}}</span>
     </label>
   </div>
+  {{/if}}
+</section>
+
+<section class="card bg-grants-editor">
+  <header class="bg-grants-header">
+    <h3>{{localize "FLAIL.Background.GrantsHeader"}}</h3>
+    <p class="hint">{{localize "FLAIL.Background.GrantsHint"}}</p>
+  </header>
+  <div class="bg-grants-list">
+    {{#each system.grants as |g i|}}
+    <div class="bg-grant-row" data-grant-index="{{i}}">
+      <div class="bg-grant-line">
+        <select name="system.grants.{{i}}.type" {{#unless ../editable}}disabled{{/unless}}>
+          <option value="note"       {{#if (flail-eq g.type 'note')}}selected{{/if}}>Note (no automation)</option>
+          <option value="attribute"  {{#if (flail-eq g.type 'attribute')}}selected{{/if}}>Attribute modifier</option>
+          <option value="item"       {{#if (flail-eq g.type 'item')}}selected{{/if}}>Grant item</option>
+          <option value="crossClass" {{#if (flail-eq g.type 'crossClass')}}selected{{/if}}>Cross-class pick</option>
+        </select>
+        {{#if (flail-eq g.type 'attribute')}}
+        <select name="system.grants.{{i}}.attrKey" {{#unless ../editable}}disabled{{/unless}}>
+          <option value=""     {{#if (flail-eq g.attrKey '')}}selected{{/if}}>— attribute —</option>
+          <option value="str"  {{#if (flail-eq g.attrKey 'str')}}selected{{/if}}>STR</option>
+          <option value="dex"  {{#if (flail-eq g.attrKey 'dex')}}selected{{/if}}>DEX</option>
+          <option value="cha"  {{#if (flail-eq g.attrKey 'cha')}}selected{{/if}}>CHA</option>
+          <option value="int"  {{#if (flail-eq g.attrKey 'int')}}selected{{/if}}>INT</option>
+          <option value="luck" {{#if (flail-eq g.attrKey 'luck')}}selected{{/if}}>LUCK</option>
+        </select>
+        <input type="number" name="system.grants.{{i}}.attrDelta" value="{{g.attrDelta}}" step="1" class="bg-grant-num" {{#unless ../editable}}disabled{{/unless}} title="Delta (e.g. -1 or +2)" />
+        {{/if}}
+        {{#if (flail-eq g.type 'item')}}
+        <input type="text" name="system.grants.{{i}}.itemName" value="{{g.itemName}}" placeholder="item name (searched in compendiums)" {{#unless ../editable}}disabled{{/unless}} />
+        {{/if}}
+        {{#if (flail-eq g.type 'crossClass')}}
+        <select name="system.grants.{{i}}.crossClassSource" {{#unless ../editable}}disabled{{/unless}}>
+          <option value="wizard"         {{#if (flail-eq g.crossClassSource 'wizard')}}selected{{/if}}>Wizard</option>
+          <option value="cleric"         {{#if (flail-eq g.crossClassSource 'cleric')}}selected{{/if}}>Cleric</option>
+          <option value="druid"          {{#if (flail-eq g.crossClassSource 'druid')}}selected{{/if}}>Druid</option>
+          <option value="cutthroat"      {{#if (flail-eq g.crossClassSource 'cutthroat')}}selected{{/if}}>Cutthroat</option>
+          <option value="tinkerer"       {{#if (flail-eq g.crossClassSource 'tinkerer')}}selected{{/if}}>Tinkerer</option>
+          <option value="bard"           {{#if (flail-eq g.crossClassSource 'bard')}}selected{{/if}}>Bard</option>
+          <option value="boneWhisperer"  {{#if (flail-eq g.crossClassSource 'boneWhisperer')}}selected{{/if}}>Bone Whisperer</option>
+        </select>
+        <select name="system.grants.{{i}}.crossClassType" {{#unless ../editable}}disabled{{/unless}}>
+          <option value="spell"   {{#if (flail-eq g.crossClassType 'spell')}}selected{{/if}}>Spell</option>
+          <option value="prayer"  {{#if (flail-eq g.crossClassType 'prayer')}}selected{{/if}}>Prayer</option>
+          <option value="gift"    {{#if (flail-eq g.crossClassType 'gift')}}selected{{/if}}>Primal Gift</option>
+          <option value="talent"  {{#if (flail-eq g.crossClassType 'talent')}}selected{{/if}}>Talent</option>
+          <option value="gadget"  {{#if (flail-eq g.crossClassType 'gadget')}}selected{{/if}}>Gadget</option>
+        </select>
+        {{/if}}
+        <input type="text" name="system.grants.{{i}}.description" value="{{g.description}}" placeholder="description (shown to player at apply time)" class="bg-grant-desc" {{#unless ../editable}}disabled{{/unless}} />
+        <label class="checkbox bg-grant-applied" title="Marks this grant as already applied — reset if the background needs re-applying">
+          <input type="checkbox" name="system.grants.{{i}}.applied" {{#if g.applied}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}} />
+          applied
+        </label>
+        {{#if ../editable}}
+        <button type="button" class="bg-grant-remove" data-action="bgGrantRemove" data-grant-index="{{i}}" title="Remove this grant">
+          <i class="fas fa-trash"></i>
+        </button>
+        {{/if}}
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  {{#if editable}}
+  <button type="button" class="bg-grant-add" data-action="bgGrantAdd">
+    <i class="fas fa-plus"></i> {{localize "FLAIL.Background.GrantsAdd"}}
+  </button>
   {{/if}}
 </section>

@@ -36,13 +36,16 @@
           (double-click the slot).
         --}}
         <div class="char-background-header">
+          {{!-- Icon-only trigger — the scroll icon still opens the
+               picker. The text label is dropped so the row's full
+               width can go to the slot content (background name +
+               key), maximizing readability. --}}
           <button type="button"
-                  class="char-background-open-btn"
+                  class="char-background-open-btn char-background-open-btn-iconic"
                   data-action="openBackgroundPicker"
                   title="{{localize 'FLAIL.BackgroundPicker.OpenPickerHint'}}"
                   {{#unless editable}}disabled{{/unless}}>
             <i class="fas fa-scroll"></i>
-            <span>{{localize "FLAIL.BackgroundPicker.HeaderLabel"}}:</span>
           </button>
           <div class="char-background-slot {{#if hasBackgroundItem}}bg-slot-filled{{else}}bg-slot-empty{{/if}}"
                data-flail-drop-target="background"
@@ -61,6 +64,18 @@
         </div>
         {{#if currentBackgroundPerk}}
         <div class="char-background-perk">{{{currentBackgroundPerk}}}</div>
+        {{/if}}
+        {{#if backgroundUnappliedGrantCount}}
+        <button type="button"
+                class="char-background-apply-btn"
+                data-action="openBackgroundGrants"
+                title="Walk through unapplied background grants (attribute mods, item grants, cross-class picks) with confirmation."
+                {{#unless editable}}disabled{{/unless}}>
+          <i class="fas fa-check-double"></i>
+          {{#with backgroundUnappliedGrantCount as |count|}}
+          Apply grants ({{count}})
+          {{/with}}
+        </button>
         {{/if}}
       </div>
     </div>

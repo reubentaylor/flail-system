@@ -8,6 +8,7 @@ import { rollMiracleCall } from "../dice/miracle-call.mjs";
 import { resolveRest } from "../dice/rest.mjs";
 import { CombatTalentPicker } from "../apps/combat-talent-picker.mjs";
 import { BackgroundPicker } from "../apps/background-picker.mjs";
+import { BackgroundGrantsDialog } from "../apps/background-grants-dialog.mjs";
 import { WIZARD_SPELLS } from "../setup/wizard-spells-data.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -47,6 +48,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       openTalentPicker: FlailCharacterSheet.#onOpenTalentPicker,
       openBackgroundPicker: FlailCharacterSheet.#onOpenBackgroundPicker,
       openBackgroundItem: FlailCharacterSheet.#onOpenBackgroundItem,
+      openBackgroundGrants: FlailCharacterSheet.#onOpenBackgroundGrants,
       openCombatTalentItem: FlailCharacterSheet.#onOpenCombatTalentItem,
       attributeAdjustUp:   FlailCharacterSheet.#onAttributeAdjustUp,
       attributeAdjustDown: FlailCharacterSheet.#onAttributeAdjustDown,
@@ -179,6 +181,9 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     ctx.currentBackgroundKey   = bgItem?.system?.sourceKey ?? "";
     ctx.currentBackgroundPerk  = bgItem?.system?.description ?? "";
     ctx.isCustomBackground     = !!bgItem?.system?.isCustomTemplate;
+    ctx.backgroundUnappliedGrantCount = bgItem
+      ? (bgItem.system?.grants ?? []).filter(g => !g.applied).length
+      : 0;
 
     // Attributes — list form for handlebars iteration.
     // Each attribute carries a per-attribute lock flag; the +/-
@@ -900,12 +905,13 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         const slot = slots[idx];
         if (slot) {
           slot.item = item;
-          // Two-handed weapons / 2-slot armour spill into the slot
-          // VERTICALLY below in the printed layout. That's `idx +
-          // columns` for wide zones (satchel is 2-wide, so index 0's
-          // slot below is index 2). For single-column zones (hands,
-          // body, adornment, instruments) columns=1 and this reduces
-          // to the previous `idx + 1` behaviour.
+          // Expose per-item flags as plain booleans on the slot.
+          // Handlebars can't reliably walk `item.flags.flail.<key>`
+          // on Foundry Documents (flag reads go through getters
+          // that Handlebars doesn't invoke), so any template gating
+          // on a flag reads from these plain fields instead.
+          slot.itemUsedOut  = !!item.getFlag?.("flail", "usedOut");
+          slot.itemUsedToday = !!item.getFlag?.("flail", "usedToday");
           const span = item.system.slotsRequired ?? 1;
           const cols = zoneDef.columns ?? 1;
           if (span > 1) slot.spansTwo = true;
@@ -2440,6 +2446,18 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const item = this.actor.items.get(id);
     if (!item) return;
     item.sheet?.render(true);
+  }
+
+  /**
+   * Open the Background Grants Apply dialog. Fired by the "Apply
+   * Grants (N)" button on the banner. Shows unapplied grants + lets
+   * the player confirm which to execute.
+   */
+  static async #onOpenBackgroundGrants(event, target) {
+    const bg = this.actor.items.find(i => i.type === "background");
+    if (!bg) return;
+    const dlg = new BackgroundGrantsDialog(this.actor, bg);
+    dlg.render(true);
   }
 
   /**
