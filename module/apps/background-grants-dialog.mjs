@@ -160,6 +160,15 @@ export class BackgroundGrantsDialog extends HandlebarsApplicationMixin(Applicati
           if (!picked) return false;
           const data = picked.toObject();
           delete data._id;
+          // Tag as a cross-class background grant. The character
+          // sheet's class-actions panel surfaces items with this flag
+          // in a dedicated "Background Grants" section so the player
+          // can click them from the Abilities tab. Source class is
+          // remembered for potential UI hints (e.g. tier badge).
+          data.flags = data.flags ?? {};
+          data.flags.flail = data.flags.flail ?? {};
+          data.flags.flail.fromBackgroundGrant = true;
+          data.flags.flail.backgroundGrantSource = grant.crossClassSource ?? "";
           await actor.createEmbeddedDocuments("Item", [data]);
           return true;
         }

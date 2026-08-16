@@ -250,6 +250,34 @@
       {{/each}}
     {{/if}}
 
+    {{!-- Background Grants — cross-class items embedded via a
+         background's crossClass grant. Available regardless of
+         class since a Cleric prayer granted to a Bard, a Wizard
+         spell granted to a Bone Whisperer, etc. all live here.
+         Click dispatches to a type-appropriate handler (see
+         backgroundGrantItems in character-sheet.mjs). --}}
+    {{#if hasBackgroundGrantItems}}
+    <div class="ca-section ca-bg-grants">
+      <h4 class="ca-section-header">
+        <i class="fas fa-scroll"></i>
+        {{localize "FLAIL.Section.BackgroundGrants"}}
+      </h4>
+      {{#each backgroundGrantItems as |g|}}
+      <button type="button"
+              class="ca-btn ca-bg-grant ca-bg-grant-{{g.type}}"
+              data-action="{{g.dataAction}}"
+              data-item-id="{{g.id}}"
+              data-tooltip="{{g.description}}"
+              title="{{g.type}} (from {{g.source}} background grant)"
+              {{#unless ../editable}}disabled{{/unless}}>
+        <img class="ca-img" src="{{g.img}}" alt="" />
+        <span class="ca-name">{{g.name}}</span>
+        {{#if g.source}}<span class="ca-bg-grant-source">{{g.source}}</span>{{/if}}
+      </button>
+      {{/each}}
+    </div>
+    {{/if}}
+
   </div>
 </div>
 {{/if}}

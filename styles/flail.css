@@ -10212,3 +10212,37 @@
 .background-grants-dialog .bg-grants-dialog-footer button:hover {
   filter: brightness(1.1);
 }
+
+/* ============================================================
+   CLASS ACTIONS — Background Grants section
+   Surfaces cross-class items embedded on the actor via a background's
+   crossClass grant (e.g. a Cleric prayer granted to a Bard). Sits at
+   the bottom of the panel with its own header + source badge per tile.
+   ============================================================ */
+.flail.sheet .class-actions-body .ca-section.ca-bg-grants {
+  margin-top: 0.55rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.35);
+}
+.flail.sheet .class-actions-body .ca-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0 0 0.35rem;
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--flail-accent, #6a4d0e);
+}
+.flail.sheet .class-actions-body .ca-bg-grant .ca-bg-grant-source {
+  margin-left: auto;
+  font-size: 0.65rem;
+  padding: 0.05rem 0.3rem;
+  background: rgba(139, 105, 20, 0.15);
+  color: var(--flail-muted, #5a4810);
+  border-radius: 2px;
+  text-transform: capitalize;
+  flex: 0 0 auto;
+}

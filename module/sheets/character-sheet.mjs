@@ -350,6 +350,43 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     // Bard / Cutthroat / Tinkerer / Warrior show no tracker; Special Skills card spans full width.
     ctx.hasTracker = ctx.isBoneWhisperer || ctx.isCleric || ctx.isDruid || ctx.isWizard || ctx.isCutthroat;
 
+    // Background Grant Items — cross-class abilities embedded on the
+    // actor via a background's `crossClass` grant. Flagged at apply
+    // time with `flags.flail.fromBackgroundGrant = true`. Each item
+    // gets a `dataAction` string chosen per item type so the class-
+    // actions-panel can wire the click to a working handler:
+    //
+    //   talent   → rollTalent      (rolls the talent's dice)
+    //   gift     → activateGift    (fires the gift's activation)
+    //   prayer   → itemToChat      (posts the description; religion/
+    //                                holy-symbol checks would fail on
+    //                                a non-cleric so we sidestep them)
+    //   spell    → itemToChat      (resource costs differ per class;
+    //                                let the player narrate + GM apply)
+    //   gadget   → itemToChat      (usage/damage is class-specific;
+    //                                the gadget's own sheet handles it)
+    //   other    → itemToChat      (safe universal fallback)
+    //
+    // The item's flag `backgroundGrantSource` remembers the source
+    // class (e.g. "cleric") so we can display a small badge indicating
+    // where it came from.
+    const grantItems = actor.items.filter(i => i.getFlag?.("flail", "fromBackgroundGrant"));
+    ctx.backgroundGrantItems = grantItems.map(i => {
+      let dataAction = "itemToChat";
+      if (i.type === "talent") dataAction = "rollTalent";
+      else if (i.type === "gift") dataAction = "activateGift";
+      return {
+        id: i.id,
+        name: i.name,
+        img: i.img,
+        type: i.type,
+        source: i.getFlag?.("flail", "backgroundGrantSource") ?? "",
+        description: i.system?.description ?? "",
+        dataAction
+      };
+    });
+    ctx.hasBackgroundGrantItems = ctx.backgroundGrantItems.length > 0;
+
     // Combat Talents (Warrior) — item-based (v0.4.30+).
     //
     // Talents are now first-class Item documents embedded on the actor.
