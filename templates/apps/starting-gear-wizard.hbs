@@ -1,0 +1,85 @@
+{{!--
+  Starting Gear Wizard — single-page dialog.
+  Blocking prereqs render at top and hide the Import button.
+  Below: fixed items list, choice dropdowns, random-item notes,
+  coin roll formula, and the Import action.
+--}}
+<div class="sgw-body">
+  {{#if error}}
+  <p class="sgw-error">{{error}}</p>
+  {{else}}
+
+  {{#if blockers.length}}
+  <div class="sgw-blockers">
+    <h3><i class="fas fa-triangle-exclamation"></i> Cannot import yet</h3>
+    <ul>
+      {{#each blockers as |b|}}
+      <li><strong>{{b.type}}:</strong> {{b.message}}</li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  <p class="sgw-intro">
+    Applying <strong>{{className}}</strong> starting gear.
+    Fixed items go into the satchel (first free slots); coins roll to chat.
+  </p>
+
+  {{#if fixedItems.length}}
+  <section class="sgw-section">
+    <h4>Fixed items</h4>
+    <ul class="sgw-list">
+      {{#each fixedItems as |fi|}}
+      <li><span class="sgw-item-name">{{fi.name}}</span>{{#if (flail-lt 1 fi.qty)}} <span class="sgw-item-qty">× {{fi.qty}}</span>{{/if}}</li>
+      {{/each}}
+    </ul>
+  </section>
+  {{/if}}
+
+  {{#if choices.length}}
+  <section class="sgw-section">
+    <h4>Choices</h4>
+    {{#each choices as |c|}}
+    <div class="sgw-choice-row">
+      <label>{{c.label}}</label>
+      <select name="choice.{{c.key}}">
+        <option value="">— select —</option>
+        {{#each c.options as |o|}}
+        <option value="{{o.uuid}}" {{#if o.preselected}}selected{{/if}}>{{o.name}}</option>
+        {{/each}}
+      </select>
+      {{#if c.note}}<p class="sgw-choice-note">{{c.note}}</p>{{/if}}
+      {{#unless c.options.length}}<p class="sgw-choice-empty">No items found in compendia for this choice.</p>{{/unless}}
+    </div>
+    {{/each}}
+  </section>
+  {{/if}}
+
+  {{#if randomItems.length}}
+  <section class="sgw-section">
+    <h4>Random / GM-adjudicated</h4>
+    <ul class="sgw-random-list">
+      {{#each randomItems as |r|}}
+      <li><strong>{{r.label}}:</strong> <em>{{r.description}}</em></li>
+      {{/each}}
+    </ul>
+  </section>
+  {{/if}}
+
+  {{#if coinsDice}}
+  <section class="sgw-section">
+    <h4>Starting coins</h4>
+    <p>Rolls <strong>{{coinsDice}}</strong> on import; result posted to chat + added to money.</p>
+  </section>
+  {{/if}}
+
+  {{#if canImport}}
+  <footer class="sgw-footer">
+    <button type="button" data-action="runImport" class="sgw-import-btn">
+      <i class="fas fa-box-open"></i> Import Starting Gear
+    </button>
+  </footer>
+  {{/if}}
+
+  {{/if}}
+</div>

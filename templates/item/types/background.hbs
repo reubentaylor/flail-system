@@ -96,8 +96,16 @@
     {{/each}}
   </div>
   {{#if editable}}
-  <button type="button" class="bg-grant-add" data-action="bgGrantAdd">
-    <i class="fas fa-plus"></i> {{localize "FLAIL.Background.GrantsAdd"}}
-  </button>
+  <div class="bg-grants-actions">
+    <button type="button" class="bg-grant-add" data-action="bgGrantAdd">
+      <i class="fas fa-plus"></i> {{localize "FLAIL.Background.GrantsAdd"}}
+    </button>
+    <button type="button" class="bg-grants-validate" data-action="bgGrantsValidate" title="{{localize 'FLAIL.Background.ValidateHint'}}">
+      <i class="fas fa-check-double"></i> {{localize "FLAIL.Background.ValidateButton"}}
+    </button>
+    <button type="button" class="bg-grants-reset" data-action="bgGrantsReset" title="{{localize 'FLAIL.Background.ResetHint'}}">
+      <i class="fas fa-rotate-left"></i> {{localize "FLAIL.Background.ResetButton"}}
+    </button>
+  </div>
   {{/if}}
 </section>

@@ -347,6 +347,8 @@ Hooks.once("init", () => {
         "systems/flail/templates/apps/combat-talent-picker.hbs",
         "systems/flail/templates/apps/background-picker.hbs",
         "systems/flail/templates/apps/background-grants-dialog.hbs",
+        "systems/flail/templates/apps/background-validate-dialog.hbs",
+        "systems/flail/templates/apps/starting-gear-wizard.hbs",
         "systems/flail/templates/item/parts/header.hbs",
         "systems/flail/templates/item/parts/body.hbs",
         "systems/flail/templates/item/types/weapon.hbs",
@@ -992,4 +994,73 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
   } catch (err) {
     console.error(`${TAG} updateActor (construct break-down) failed:`, err);
   }
+});
+
+/**
+ * Background item deletion cleanup.
+ *
+ * When a background item is removed from a character (via the picker's
+ * clear button, manual delete, or by picking a new background which
+ * clears the old one), any cross-class items granted by that
+ * background are left orphaned on the actor. They still work but no
+ * longer have a "reason to be there" — the player might want them
+ * cleaned up automatically to keep the sheet honest.
+ *
+ * Rather than block the delete with a preDelete prompt (which
+ * complicates cancel flows), we use post-delete: after the background
+ * is gone, if any items on the same actor carry the
+ * `fromBackgroundGrant` flag, prompt the user with three choices:
+ *   - Keep all — leave the granted items alone (they're now truly orphans)
+ *   - Remove all — delete every item with the flag
+ *   - Pick individually — mini-dialog with checkboxes per item
+ *
+ * GM-only, since non-GMs typically can't delete cross-actor items
+ * anyway. Skipped when Foundry is shutting down (options.deleteAll or
+ * bulk parent deletes) to avoid spurious prompts on world close.
+ */
+Hooks.on("deleteItem", async (item, options, userId) => {
+  if (!game.user.isGM) return;
+  if (userId !== game.user.id) return; // only fire on the deleter's client
+  if (item.type !== "background") return;
+  const actor = item.parent;
+  if (!actor || actor.documentName !== "Actor") return;
+  if (options?.deleteAll) return; // bulk delete during teardown
+
+  const granted = actor.items.filter(i =>
+    i.getFlag?.("flail", "fromBackgroundGrant")
+  );
+  if (granted.length === 0) return;
+
+  // Build a compact summary of what would be removed.
+  const summaryLines = granted
+    .map(i => `<li>${i.name} <em style="color:#8a6d1c">(${i.type})</em></li>`)
+    .join("");
+
+  const choice = await foundry.applications.api.DialogV2.wait({
+    window: { title: `Background removed — ${actor.name}` },
+    content: `
+      <p>Background <strong>${item.name}</strong> was removed from ${actor.name}.</p>
+      <p>The following items were granted by this background:</p>
+      <ul>${summaryLines}</ul>
+      <p>How should they be handled?</p>
+    `,
+    buttons: [
+      { action: "keep",   label: "Keep all (leave as orphans)",  default: true },
+      { action: "remove", label: `Remove all ${granted.length}`, icon: "fas fa-trash" },
+      { action: "cancel", label: "Cancel (keep for now)" }
+    ],
+    rejectClose: false
+  });
+
+  if (choice === "remove") {
+    try {
+      await actor.deleteEmbeddedDocuments("Item", granted.map(i => i.id));
+      ui.notifications?.info(
+        `FLAIL: removed ${granted.length} granted item(s) from ${actor.name}.`
+      );
+    } catch (err) {
+      console.error("FLAIL | Failed to clean up granted items:", err);
+    }
+  }
+  // "keep" / "cancel" / dialog dismissal — no cleanup, items remain.
 });

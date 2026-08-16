@@ -123,8 +123,25 @@ export class BackgroundGrantsDialog extends HandlebarsApplicationMixin(Applicati
           const key = grant.attrKey;
           const delta = grant.attrDelta ?? 0;
           if (!key || !delta) return true; // treat as ack
+          // Respect the per-attribute padlock (v0.4.27) — the write
+          // to `.mod` bypasses the lock at the actor level (it only
+          // gates the sheet's +/- buttons and base input readonly),
+          // but toggling the lock around the write makes the change
+          // feel consistent with how a player would do it by hand:
+          // unlock → adjust → re-lock. Preserves the original lock
+          // state so the padlock UI doesn't shift after apply.
+          const locks = { ...(actor.getFlag("flail", "attrLocks") ?? {}) };
+          const wasLocked = !!(locks[key] ?? true);
+          if (wasLocked) {
+            await actor.setFlag("flail", "attrLocks",
+              { ...locks, [key]: false });
+          }
           const cur = actor.system.attributes?.[key]?.mod ?? 0;
           await actor.update({ [`system.attributes.${key}.mod`]: cur + delta });
+          if (wasLocked) {
+            await actor.setFlag("flail", "attrLocks",
+              { ...locks, [key]: true });
+          }
           return true;
         }
 
@@ -138,6 +155,24 @@ export class BackgroundGrantsDialog extends HandlebarsApplicationMixin(Applicati
           }
           const data = found.toObject();
           delete data._id;
+          // If the item can occupy an inventory slot (has a `location`
+          // field — weapons, armour, gear, conditions all do), try to
+          // slot it into the first empty satchel position so it appears
+          // in the character's stashed row rather than being lost in
+          // the unequipped pile. Falls back to unequipped if the
+          // satchel is full.
+          if (data.system && "location" in data.system) {
+            const slotIdx = BackgroundGrantsDialog.#findEmptySatchelSlot(actor, data.system.slotsRequired ?? 1);
+            if (slotIdx >= 0) {
+              data.system.location = "satchel";
+              data.system.slotIndex = slotIdx;
+            } else {
+              ui.notifications?.warn(
+                game.i18n.format("FLAIL.Background.SatchelFull",
+                  { name: data.name ?? grant.itemName })
+              );
+            }
+          }
           await actor.createEmbeddedDocuments("Item", [data]);
           return true;
         }
@@ -179,6 +214,46 @@ export class BackgroundGrantsDialog extends HandlebarsApplicationMixin(Applicati
       return false;
     }
     return false;
+  }
+
+  /**
+   * Find the first empty slot index in the actor's satchel (stashed
+   * inventory zone). Accounts for multi-slot items via slotsRequired:
+   * a 2-slot item at index 0 also occupies index 2 (satchel is
+   * 2-column, spans go vertically per FLAIL's inventory layout).
+   *
+   * @param {Actor}  actor          the character
+   * @param {number} slotsRequired  how many contiguous slots the new
+   *                                item needs (usually 1)
+   * @returns {number}              slot index (0-7) or -1 if no space
+   */
+  static #findEmptySatchelSlot(actor, slotsRequired = 1) {
+    const SATCHEL_COUNT = 8;
+    const SATCHEL_COLUMNS = 2;
+    const occupied = new Set();
+    const items = actor.items.filter(i => i.system?.location === "satchel");
+    for (const it of items) {
+      const idx = it.system?.slotIndex ?? 0;
+      const span = it.system?.slotsRequired ?? 1;
+      for (let i = 0; i < span; i++) {
+        occupied.add(idx + i * SATCHEL_COLUMNS);
+      }
+    }
+    // Look for the first index where the item can fit — for a span=1
+    // item this is any unoccupied slot; for span=2 the slot AND the
+    // slot at idx+columns must both be free.
+    for (let i = 0; i < SATCHEL_COUNT; i++) {
+      let fits = true;
+      for (let j = 0; j < slotsRequired; j++) {
+        const check = i + j * SATCHEL_COLUMNS;
+        if (check >= SATCHEL_COUNT || occupied.has(check)) {
+          fits = false;
+          break;
+        }
+      }
+      if (fits) return i;
+    }
+    return -1;
   }
 
   /**

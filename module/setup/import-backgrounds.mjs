@@ -6,11 +6,17 @@ import { buildBackgroundsData } from "./backgrounds-data.mjs";
  * worlds re-sync updated entries instead of sticking with stale copies.
  *
  *   1 — initial bundle. 48 stock backgrounds + Custom template.
- *   2 — added `system.grants` records to backgrounds with clear
- *       mechanical hooks (Cleric 1/2/3/4/5/6, Bard 3/4/5/6,
- *       Bone Whisperer 1-6). Others remain grant-free (perk text only).
+ *   2 — added `system.grants` records to Cleric 1-6, Bard 3-6,
+ *       Bone Whisperer 1-6 (15 backgrounds).
+ *   3 — populated remaining 33 backgrounds (Cutthroat, Druid,
+ *       Tinkerer, Warrior, Wizard). All 48 stock entries now
+ *       have machine-actionable grants where possible plus `note`
+ *       fallbacks for GM-adjudicated effects.
+ *   4 — Wizard 6 grant: changed "Brawler Mauler" item grant to a
+ *       note (that name is a tree label, not an item — the expert
+ *       talents in the tree are "Mighty Clasp" and "Crushing Blow").
  */
-export const BACKGROUNDS_VERSION = 2;
+export const BACKGROUNDS_VERSION = 4;
 
 const VERSION_SETTING = "backgroundsVersion";
 const PACK_NAME  = "flail-backgrounds";

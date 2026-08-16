@@ -227,12 +227,21 @@
       "ApplyNone":        "No unapplied grants — everything's already been applied.",
       "AppliedToast":     "Applied {n} grant(s) from '{name}'.",
       "ItemNotFound":     "Grant refers to item '{name}' — not found in any compendium. Grant this manually.",
+      "SatchelFull":      "Satchel full — '{name}' added as unequipped. Move it into inventory manually.",
       "CrossClassPickTitle": "Pick one — {source} {type}",
       "CrossClassEmpty":  "No {source} {type} items found in compendiums.",
       "GrantTypeAttribute": "Attribute modifier",
       "GrantTypeItem":      "Grant item",
       "GrantTypeCrossClass":"Cross-class pick",
-      "GrantTypeNote":      "Note"
+      "GrantTypeNote":      "Note",
+      "ResetButton":        "Reset applied",
+      "ResetHint":          "Marks every grant on this background as unapplied so the character can re-run the Apply Grants flow. Does not undo previously-applied effects.",
+      "ResetConfirmTitle":  "Reset applied grants?",
+      "ResetConfirmContent":"Mark all {count} applied grant(s) on '{name}' as unapplied? This does not undo their effects (attribute mods, granted items stay). It only lets the Apply Grants button surface them again.",
+      "ResetDone":          "Reset {count} grant(s) to unapplied.",
+      "ResetNoneApplied":   "No grants are currently applied — nothing to reset.",
+      "ValidateButton":     "Validate",
+      "ValidateHint":       "Check each grant against your compendia and attribute keys. Non-mutating — just reports what will and won't work at apply time."
     },
     "Attribute": {
       "Str":  { "long": "Strength",     "abbr": "STR" },

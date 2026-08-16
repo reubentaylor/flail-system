@@ -9,6 +9,7 @@ import { resolveRest } from "../dice/rest.mjs";
 import { CombatTalentPicker } from "../apps/combat-talent-picker.mjs";
 import { BackgroundPicker } from "../apps/background-picker.mjs";
 import { BackgroundGrantsDialog } from "../apps/background-grants-dialog.mjs";
+import { StartingGearWizard } from "../apps/starting-gear-wizard.mjs";
 import { WIZARD_SPELLS } from "../setup/wizard-spells-data.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -49,6 +50,8 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       openBackgroundPicker: FlailCharacterSheet.#onOpenBackgroundPicker,
       openBackgroundItem: FlailCharacterSheet.#onOpenBackgroundItem,
       openBackgroundGrants: FlailCharacterSheet.#onOpenBackgroundGrants,
+      openStartingGearWizard: FlailCharacterSheet.#onOpenStartingGearWizard,
+      resetStartingGear: FlailCharacterSheet.#onResetStartingGear,
       openCombatTalentItem: FlailCharacterSheet.#onOpenCombatTalentItem,
       attributeAdjustUp:   FlailCharacterSheet.#onAttributeAdjustUp,
       attributeAdjustDown: FlailCharacterSheet.#onAttributeAdjustDown,
@@ -137,6 +140,29 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       });
     }
 
+    // Backfill migration: mark cross-class items that were granted
+    // by a background BEFORE v0.4.40 (which added the tracking flag)
+    // so the Class Actions panel's "Background Grants" section can
+    // surface them. Gated by `flags.flail.backgroundGrantMigrationV1`
+    // so it runs once per actor. GM-only. Only fires when the actor
+    // has an embedded background AND at least one applied crossClass
+    // grant on it — no work needed for anyone else.
+    if (game.user?.isGM
+        && !actor.getFlag("flail", "backgroundGrantMigrationV1")) {
+      const bg = actor.items.find(i => i.type === "background");
+      const hasAppliedCrossClass = (bg?.system?.grants ?? [])
+        .some(g => g.type === "crossClass" && g.applied);
+      if (hasAppliedCrossClass) {
+        this.constructor.#migrateBackgroundGrantFlags(actor, bg).catch(err => {
+          console.error("FLAIL | Background grant flag migration failed", actor.name, err);
+        });
+      } else if (bg) {
+        // No applied crossClass grants — mark migration done to skip
+        // this actor on future opens.
+        actor.setFlag("flail", "backgroundGrantMigrationV1", true).catch(() => {});
+      }
+    }
+
     ctx.actor = actor;
     ctx.system = sys;
     ctx.config = FLAIL;
@@ -163,6 +189,15 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       { label: game.i18n.localize(`${labelBase}.Armour`),     value: game.i18n.localize(`${detailsBase}.Armour`) },
       { label: game.i18n.localize(`${labelBase}.Gear`),       value: game.i18n.localize(`${detailsBase}.Gear`) }
     ];
+
+    // Starting Gear Wizard state — button only appears if class has
+    // starting-gear config AND hasn't been imported yet. GM sees the
+    // reset button (post-import) to re-enable and optionally cleanup.
+    const startingGearDef = FLAIL.startingGear?.[classKey];
+    const importFlag = actor.getFlag("flail", "startingGearImportedV1");
+    ctx.startingGearAvailable = !!startingGearDef;
+    ctx.startingGearImported  = !!importFlag;
+    ctx.startingGearIsGm      = !!game.user?.isGM;
 
     // Background display — item-based (v0.4.30+).
     //
@@ -2467,6 +2502,76 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     );
   }
 
+  /**
+   * Backfill migration for cross-class background grant flags.
+   *
+   * Before v0.4.40, applying a `crossClass` grant embedded an item
+   * on the actor but didn't stamp `flags.flail.fromBackgroundGrant`
+   * — so those items don't surface in the Class Actions panel's
+   * Background Grants section. This walks the background's applied
+   * crossClass grants and attempts to match each to an embedded
+   * item of the right type (and class-tradition where applicable),
+   * flagging the first unflagged match per grant.
+   *
+   * Idempotent — sets `flags.flail.backgroundGrantMigrationV1` when
+   * complete so we only run once per actor.
+   *
+   * Heuristic matching: for a Bard granted a Cleric prayer, we look
+   * for an embedded prayer item without the flag. First-match wins.
+   * Could over-mark in edge cases (e.g. player added their own prayer
+   * via drag-drop that happens to look identical), but the risk is
+   * low and the alternative — leaving items unflagged — is worse.
+   */
+  static async #migrateBackgroundGrantFlags(actor, backgroundItem) {
+    if (actor.getFlag("flail", "backgroundGrantMigrationV1")) return;
+    if (!backgroundItem) return;
+
+    const appliedCrossClassGrants = (backgroundItem.system?.grants ?? [])
+      .filter(g => g.type === "crossClass" && g.applied);
+
+    // Track which item ids we've flagged so a second matching grant
+    // doesn't re-flag the same item.
+    const flaggedIds = new Set();
+    const updates = [];
+
+    for (const grant of appliedCrossClassGrants) {
+      const type = grant.crossClassType;
+      const source = grant.crossClassSource;
+      if (!type) continue;
+
+      // Find candidate items: right type, no existing flag, not
+      // already claimed by an earlier grant this migration run.
+      const candidates = actor.items.filter(i => {
+        if (i.type !== type) return false;
+        if (flaggedIds.has(i.id)) return false;
+        if (i.getFlag?.("flail", "fromBackgroundGrant")) return false;
+        // Tradition filter for spells to match the crossClass loader.
+        if (source === "wizard" && type === "spell"
+            && i.system?.tradition === "dark") return false;
+        if (source === "boneWhisperer" && type === "spell"
+            && i.system?.tradition !== "dark") return false;
+        return true;
+      });
+      if (!candidates.length) continue;
+      const item = candidates[0];
+      flaggedIds.add(item.id);
+      updates.push({
+        _id: item.id,
+        "flags.flail.fromBackgroundGrant": true,
+        "flags.flail.backgroundGrantSource": source
+      });
+    }
+
+    if (updates.length) {
+      await actor.updateEmbeddedDocuments("Item", updates);
+      ui.notifications?.info(
+        `FLAIL: flagged ${updates.length} cross-class item(s) on ${actor.name} `
+        + `as background grants (Class Actions panel will surface them).`
+      );
+    }
+    await actor.setFlag("flail", "backgroundGrantMigrationV1", true);
+  }
+
   static async #onOpenBackgroundPicker(event, target) {
     const picker = new BackgroundPicker(this.actor);
     picker.render(true);
@@ -2495,6 +2600,58 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     if (!bg) return;
     const dlg = new BackgroundGrantsDialog(this.actor, bg);
     dlg.render(true);
+  }
+
+  /**
+   * Open the Starting Gear Wizard from the Class tab button. The
+   * wizard handles its own prereq checks (level 1, religion, guild).
+   */
+  static async #onOpenStartingGearWizard(event, target) {
+    const wiz = new StartingGearWizard(this.actor);
+    wiz.render(true);
+  }
+
+  /**
+   * GM-only reset for starting gear. Shows three choices matching
+   * the background delete pattern:
+   *   - Just clear the flag (imported items stay; button re-enables)
+   *   - Delete imported items + clear the flag (clean re-run)
+   *   - Cancel
+   */
+  static async #onResetStartingGear(event, target) {
+    if (!game.user.isGM) return;
+    const flag = this.actor.getFlag("flail", "startingGearImportedV1");
+    if (!flag) return;
+    const granted = this.actor.items.filter(i =>
+      i.getFlag?.("flail", "startingGear")
+    );
+    const summary = granted.length
+      ? `<ul>${granted.map(i => `<li>${i.name}</li>`).join("")}</ul>`
+      : "<p>(no tracked items on this character)</p>";
+    const choice = await foundry.applications.api.DialogV2.wait({
+      window: { title: `Reset starting gear — ${this.actor.name}` },
+      content: `
+        <p>Starting gear was imported previously (${flag.class}, ${flag.itemCount} item(s), ${flag.coins ?? 0} coin(s)).</p>
+        <p>Tracked items on this character:</p>
+        ${summary}
+      `,
+      buttons: [
+        { action: "reenable", label: "Just re-enable the button", default: true },
+        { action: "delete",   label: `Delete ${granted.length} tracked item(s) + re-enable`, icon: "fas fa-trash" },
+        { action: "cancel",   label: "Cancel" }
+      ],
+      rejectClose: false
+    });
+    if (choice === "cancel" || !choice) return;
+    if (choice === "delete" && granted.length) {
+      try {
+        await this.actor.deleteEmbeddedDocuments("Item", granted.map(i => i.id));
+      } catch (err) {
+        console.error("FLAIL | Failed to delete starting-gear items:", err);
+      }
+    }
+    await this.actor.unsetFlag("flail", "startingGearImportedV1");
+    ui.notifications?.info(`FLAIL: starting gear reset for ${this.actor.name}.`);
   }
 
   /**

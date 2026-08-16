@@ -740,6 +740,184 @@ for (const cls of Object.keys(FLAIL.backgrounds)) {
 }
 
 /**
+ * Starting gear per class — extracted from the FLAIL rulebook (v0.4.43).
+ *
+ * Each entry defines:
+ *   coinsDice   — Foundry dice formula rolled when the wizard applies
+ *                 (e.g. "4d6" for Bard, "1d6" for Cleric)
+ *   requiresReligion / requiresGuild — hard prereqs that block the
+ *                 wizard until set on the class-options
+ *   fixedItems  — always granted; each { name, qty } is searched in
+ *                 Item compendia by name
+ *   choices     — player-selected items; each renders a dropdown in
+ *                 the wizard, options filtered per rules below
+ *   randomItems — descriptive rows the wizard displays as GM/player-
+ *                 adjudicated notes (e.g. "random essence") since the
+ *                 rulebook is deliberately loose on what "random" means
+ *
+ * Choice types:
+ *   weapon      — dropdown of weapons; if `weaponSpec` is an array,
+ *                 filter to items whose name matches one of those tokens
+ *                 (case-insensitive substring). null = all weapons.
+ *   instrument  — dropdown of instrument items
+ *   gear        — dropdown of gear items; if `filterByReligion`,
+ *                 restrict to holy symbols matching the character's
+ *                 religion via HOLY_SYMBOL_BY_RELIGION lookup
+ *   holySymbol  — special case (fills automatically per religion)
+ */
+FLAIL.startingGear = {
+  bard: {
+    coinsDice: "4d6",
+    fixedItems: [
+      { name: "Grub", qty: 1 },
+      { name: "Lantern", qty: 1 },
+      { name: "Short Sword", qty: 1 }
+    ],
+    choices: [
+      { key: "instrument", label: "Instrument (Musical Talents)", type: "instrument" }
+    ]
+  },
+  boneWhisperer: {
+    coinsDice: "3d6",
+    fixedItems: [
+      { name: "Grub", qty: 1 },
+      { name: "Spirit Lantern", qty: 1 }
+    ],
+    choices: [
+      { key: "weapon", label: "Weapon",
+        type: "weapon", weaponSpec: ["dagger", "flail", "scythe", "short sword"] }
+    ],
+    randomItems: [
+      { key: "scroll", label: "Random Scroll",
+        description: "GM: roll or assign one random Bone Whisperer (dark) spell scroll." }
+    ]
+  },
+  cleric: {
+    coinsDice: "1d6",
+    requiresReligion: true,
+    fixedItems: [
+      { name: "Grub", qty: 1 },
+      { name: "Torches", qty: 1 }
+    ],
+    choices: [
+      { key: "weapon", label: "Weapon",
+        type: "weapon", weaponSpec: null,
+        note: "Weapon specialty depends on your religion — pick accordingly." },
+      { key: "holySymbol", label: "Holy Symbol", type: "holySymbol" }
+    ]
+  },
+  cutthroat: {
+    coinsDice: "4d10",
+    requiresGuild: true,
+    fixedItems: [
+      { name: "Grub", qty: 1 },
+      { name: "Thieves' Tools", qty: 1 }
+    ],
+    choices: [
+      { key: "weapon1", label: "Weapon 1",
+        type: "weapon", weaponSpec: ["blowgun", "crossbow", "dagger", "short sword"] },
+      { key: "weapon2", label: "Weapon 2",
+        type: "weapon", weaponSpec: ["blowgun", "crossbow", "dagger", "short sword"] },
+      { key: "guildSigil", label: "Guild Sigil", type: "guildSigil" }
+    ]
+  },
+  druid: {
+    coinsDice: "1d6",
+    fixedItems: [
+      { name: "Grub", qty: 1 },
+      { name: "Torches", qty: 1 },
+      { name: "Herbs", qty: 1 }
+    ],
+    choices: [
+      { key: "weapon", label: "Weapon",
+        type: "weapon",
+        weaponSpec: ["axe", "bow", "club", "mace", "quarterstaff", "sling", "spear"] }
+    ],
+    randomItems: [
+      { key: "animalCompanion", label: "Random Animal Companion",
+        description: "GM: roll on the animal companion table or assign one." }
+    ]
+  },
+  tinkerer: {
+    coinsDice: "6d6",
+    fixedItems: [
+      { name: "Grub", qty: 1 },
+      { name: "Lantern", qty: 1 },
+      { name: "Sparkle of Life", qty: 1 },
+      { name: "Gadget Belt", qty: 1 }
+    ],
+    choices: [
+      { key: "weapon", label: "Weapon",
+        type: "weapon",
+        weaponSpec: ["bow", "blowgun", "dagger", "hand axe", "short sword"] },
+      { key: "armour", label: "Basic Armour",
+        type: "armour", armourSpec: ["leather", "hide"] }
+    ]
+  },
+  warrior: {
+    coinsDice: "3d6",
+    fixedItems: [
+      { name: "Grub", qty: 1 },
+      { name: "Torches", qty: 1 },
+      { name: "Helmet", qty: 1 }
+    ],
+    choices: [
+      { key: "weapon", label: "Weapon (any specialty)",
+        type: "weapon", weaponSpec: null },
+      { key: "armour", label: "Basic Armour",
+        type: "armour", armourSpec: ["leather", "hide"] }
+    ]
+  },
+  wizard: {
+    coinsDice: "2d10",
+    fixedItems: [
+      { name: "Grub", qty: 1 },
+      { name: "Torches", qty: 1 },
+      { name: "Spellbook", qty: 1 }
+    ],
+    choices: [
+      { key: "weapon", label: "Weapon",
+        type: "weapon",
+        weaponSpec: ["crossbow", "dagger", "quarterstaff", "short sword", "wand"] }
+    ],
+    randomItems: [
+      { key: "essence", label: "Random Essence",
+        description: "GM: roll or assign one random essence from the potions table." }
+    ]
+  }
+};
+
+/**
+ * Holy symbol per religion — mapping used by the Cleric starting-gear
+ * wizard to auto-fill the holySymbol choice. Names match the item
+ * documents in the common-items compendium (as of v0.4.44).
+ *
+ * Note: castPrayer's HOLY_KEYWORDS uses substring matching for the
+ * carried-symbol check, so these exact names all satisfy that logic
+ * (e.g. "Cross of Sheezuz" contains "cross"; "Helm of Zor'Vol"
+ * matches by carrying the horned_helmet icon per religion note).
+ */
+FLAIL.HOLY_SYMBOL_BY_RELIGION = {
+  brotherhood:  "Cross of Sheezuz",
+  crusade:      "Mutton Tunic",
+  shadowDemon:  "Helm of Zor'Vol",
+  verdantGrove: "The Oak Leaf"
+};
+
+/**
+ * Guild sigil per guild — mapping keyed on the guild ITEM NAME
+ * (guilds are embedded Items of type "guild" on the actor). Used
+ * by the Cutthroat starting-gear wizard to auto-fill the guildSigil
+ * choice. Names match documents in the common-items compendium.
+ */
+FLAIL.GUILD_SIGIL_BY_GUILD = {
+  "Crimson Cloak Society": "Crimson Coin Sigil",
+  "The Shadow Arcanum":    "Eye Ring Sigil",
+  "The Justice League":    "Hand Brooch Sigil",
+  "The Octopus Nexus":     "Tentacle Clasp Sigil"
+};
+
+/**
  * Construct improvements — rulebook page 32.
  *
  * Each entry is one row in the improvement table. Order matches

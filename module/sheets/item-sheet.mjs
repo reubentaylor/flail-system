@@ -18,9 +18,58 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       removeGuildEntry: FlailItemSheet.#onRemoveGuildEntry,
       editImage:        FlailItemSheet.#onEditImage,
       bgGrantAdd:       FlailItemSheet.#onBgGrantAdd,
-      bgGrantRemove:    FlailItemSheet.#onBgGrantRemove
+      bgGrantRemove:    FlailItemSheet.#onBgGrantRemove,
+      bgGrantsReset:    FlailItemSheet.#onBgGrantsReset,
+      bgGrantsValidate: FlailItemSheet.#onBgGrantsValidate
     }
   };
+
+  /**
+   * Reset all grants on this background item to `applied: false`.
+   * Useful when swapping backgrounds or when the player wants to redo
+   * their picks (e.g. picked the wrong prayer). Doesn't undo the
+   * effects — attribute mods stay, items stay embedded — but the
+   * Apply Grants button on the character sheet will re-surface every
+   * grant as unapplied, letting the player run through them again.
+   *
+   * Confirmed via a DialogV2 to prevent accidental resets.
+   */
+  static async #onBgGrantsReset(event, target) {
+    if (this.item.type !== "background") return;
+    const grants = [...(this.item.system.grants ?? [])];
+    if (grants.length === 0) return;
+    const appliedCount = grants.filter(g => g.applied).length;
+    if (appliedCount === 0) {
+      ui.notifications?.info(game.i18n.localize("FLAIL.Background.ResetNoneApplied"));
+      return;
+    }
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: game.i18n.localize("FLAIL.Background.ResetConfirmTitle") },
+      content: `<p>${game.i18n.format("FLAIL.Background.ResetConfirmContent",
+        { count: appliedCount, name: this.item.name })}</p>`,
+      rejectClose: false
+    });
+    if (!confirmed) return;
+    const cleared = grants.map(g => ({ ...g, applied: false }));
+    await this.item.update({ "system.grants": cleared });
+    ui.notifications?.info(
+      game.i18n.format("FLAIL.Background.ResetDone", { count: appliedCount })
+    );
+  }
+
+  /**
+   * Validate this background's grants against available compendia.
+   * Checks each grant for correctness (item names exist, cross-class
+   * source has target-type items, attribute keys valid, etc.) and
+   * opens a report dialog. Non-mutating — just diagnostic.
+   */
+  static async #onBgGrantsValidate(event, target) {
+    if (this.item.type !== "background") return;
+    // Lazy import to avoid loading the dialog module until it's needed.
+    const { BackgroundValidateDialog } = await import("./../apps/background-validate-dialog.mjs");
+    const dlg = new BackgroundValidateDialog(this.item);
+    dlg.render(true);
+  }
 
   /**
    * Background item — add a blank grant row. Grants are per-item;

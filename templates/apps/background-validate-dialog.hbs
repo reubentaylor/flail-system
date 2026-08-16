@@ -1,0 +1,56 @@
+{{!--
+  Background Grants Validation report. Read-only diagnostic table:
+  one row per grant with status chip (pass/warn/fail) and a short
+  message explaining what the check found.
+--}}
+<div class="bg-validate-body">
+  <p class="bg-validate-intro">
+    Checking <strong>{{backgroundName}}</strong>'s grants against your
+    compendia — this doesn't change anything, just reports.
+  </p>
+
+  {{#if hasGrants}}
+  <div class="bg-validate-summary">
+    <span class="bg-validate-chip bg-validate-chip-pass">✓ {{summary.pass}} pass</span>
+    <span class="bg-validate-chip bg-validate-chip-warn">! {{summary.warn}} warn</span>
+    <span class="bg-validate-chip bg-validate-chip-fail">✗ {{summary.fail}} fail</span>
+    <span class="bg-validate-total">of {{summary.total}} total</span>
+  </div>
+  <table class="bg-validate-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Type</th>
+        <th>Details</th>
+        <th>Status</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each results as |r|}}
+      <tr class="bg-validate-row bg-validate-row-{{r.status}}">
+        <td>{{r.index}}</td>
+        <td>{{r.grant.type}}</td>
+        <td>
+          {{#if (flail-eq r.grant.type 'attribute')}}{{r.grant.attrKey}} {{r.grant.attrDelta}}{{/if}}
+          {{#if (flail-eq r.grant.type 'item')}}{{r.grant.itemName}}{{/if}}
+          {{#if (flail-eq r.grant.type 'crossClass')}}{{r.grant.crossClassSource}}/{{r.grant.crossClassType}}{{/if}}
+          {{#if (flail-eq r.grant.type 'note')}}—{{/if}}
+        </td>
+        <td>
+          <span class="bg-validate-chip bg-validate-chip-{{r.status}}">
+            {{#if (flail-eq r.status 'pass')}}✓{{/if}}
+            {{#if (flail-eq r.status 'warn')}}!{{/if}}
+            {{#if (flail-eq r.status 'fail')}}✗{{/if}}
+            {{r.status}}
+          </span>
+        </td>
+        <td class="bg-validate-msg">{{r.message}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="bg-validate-empty">No grants defined on this background.</p>
+  {{/if}}
+</div>

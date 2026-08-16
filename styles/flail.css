@@ -10246,3 +10246,290 @@
   text-transform: capitalize;
   flex: 0 0 auto;
 }
+
+/* ============================================================
+   BACKGROUND — grants actions row (item sheet, v0.4.41)
+   Reset + Validate buttons alongside the Add row.
+   ============================================================ */
+.flail.sheet.item .bg-grants-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.flail.sheet.item .bg-grants-actions button {
+  padding: 0.3rem 0.6rem;
+  background: var(--flail-parchment, #f4ebd4);
+  border: 1px solid var(--flail-rule);
+  border-radius: 3px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.flail.sheet.item .bg-grants-actions button:hover {
+  background: var(--flail-parchment-hover, #ecdfbe);
+}
+.flail.sheet.item .bg-grants-actions .bg-grants-reset {
+  border-left-width: 3px;
+  border-left-color: #a63e29;
+  color: #7a2f20;
+}
+.flail.sheet.item .bg-grants-actions .bg-grants-validate {
+  border-left-width: 3px;
+  border-left-color: #4c7d3a;
+  color: #2f5322;
+}
+
+/* ============================================================
+   BACKGROUND — validation dialog
+   ============================================================ */
+.background-validate-dialog .bg-validate-body {
+  padding: 0.6rem;
+  background: var(--flail-paper, #fbf3d9);
+  color: var(--flail-ink);
+  font-family: inherit;
+}
+.background-validate-dialog .bg-validate-intro {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+}
+.background-validate-dialog .bg-validate-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.3rem 0 0.6rem;
+  font-size: 0.75rem;
+}
+.background-validate-dialog .bg-validate-total {
+  color: var(--flail-muted);
+  font-style: italic;
+}
+.background-validate-dialog .bg-validate-chip {
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  font-weight: 800;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: white;
+  letter-spacing: 0.03em;
+}
+.background-validate-dialog .bg-validate-chip-pass { background: #4c7d3a; }
+.background-validate-dialog .bg-validate-chip-warn { background: #b57a1a; }
+.background-validate-dialog .bg-validate-chip-fail { background: #a63e29; }
+.background-validate-dialog .bg-validate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.background-validate-dialog .bg-validate-table th {
+  text-align: left;
+  padding: 0.25rem 0.35rem;
+  background: rgba(139, 105, 20, 0.15);
+  border-bottom: 1px solid var(--flail-rule);
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  letter-spacing: 0.05em;
+}
+.background-validate-dialog .bg-validate-table td {
+  padding: 0.25rem 0.35rem;
+  border-bottom: 1px dashed rgba(139, 105, 20, 0.2);
+  vertical-align: top;
+}
+.background-validate-dialog .bg-validate-row-fail td { background: rgba(166, 62, 41, 0.08); }
+.background-validate-dialog .bg-validate-row-warn td { background: rgba(181, 122, 26, 0.08); }
+.background-validate-dialog .bg-validate-msg { color: var(--flail-muted); font-style: italic; }
+.background-validate-dialog .bg-validate-empty {
+  padding: 0.6rem;
+  font-style: italic;
+  color: var(--flail-muted);
+  text-align: center;
+}
+
+/* ============================================================
+   STARTING GEAR — Class-details button + Wizard dialog (v0.4.43)
+   ============================================================ */
+.flail.sheet .class-details-card .starting-gear-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.3);
+}
+.flail.sheet .starting-gear-import-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--flail-success, #4c7d3a);
+  color: white;
+  border: 1px solid #2a7834;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.flail.sheet .starting-gear-import-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+.flail.sheet .starting-gear-import-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.flail.sheet .starting-gear-imported {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--flail-success, #4c7d3a);
+  font-style: italic;
+}
+.flail.sheet .starting-gear-reset-btn {
+  padding: 0.2rem 0.5rem;
+  background: transparent;
+  color: #a63e29;
+  border: 1px solid #a63e29;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.flail.sheet .starting-gear-reset-btn:hover {
+  background: rgba(200, 60, 40, 0.12);
+}
+
+/* Wizard dialog */
+.starting-gear-wizard .sgw-body {
+  padding: 0.6rem;
+  background: var(--flail-paper, #fbf3d9);
+  color: #1a1a1a;
+  font-family: inherit;
+}
+/* Force dark text on every child — Foundry's ApplicationV2 windows
+   don't inherit the sheet's --flail-ink cascade, and default light
+   theme sets some elements (headings, labels, list items) to white
+   against the parchment background, rendering them invisible. */
+.starting-gear-wizard .sgw-body,
+.starting-gear-wizard .sgw-body h3,
+.starting-gear-wizard .sgw-body h4,
+.starting-gear-wizard .sgw-body p,
+.starting-gear-wizard .sgw-body li,
+.starting-gear-wizard .sgw-body label,
+.starting-gear-wizard .sgw-body strong,
+.starting-gear-wizard .sgw-body em,
+.starting-gear-wizard .sgw-body span {
+  color: #1a1a1a;
+}
+.starting-gear-wizard .sgw-body select,
+.starting-gear-wizard .sgw-body input {
+  color: #1a1a1a;
+  background: #fff;
+}
+.starting-gear-wizard .sgw-error {
+  padding: 0.6rem;
+  background: rgba(166, 62, 41, 0.12);
+  color: #7a2f20;
+  border-left: 3px solid #a63e29;
+}
+.starting-gear-wizard .sgw-blockers {
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.6rem;
+  background: rgba(181, 122, 26, 0.12);
+  border-left: 3px solid #b57a1a;
+}
+.starting-gear-wizard .sgw-blockers h3 {
+  margin: 0 0 0.35rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #7a5510;
+}
+.starting-gear-wizard .sgw-blockers ul { margin: 0.25rem 0 0 1.2rem; }
+.starting-gear-wizard .sgw-intro {
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: rgba(139, 105, 20, 0.1);
+  border-left: 3px solid var(--flail-rule);
+  font-size: 0.85rem;
+}
+.starting-gear-wizard .sgw-section {
+  margin: 0.4rem 0;
+  padding: 0.4rem 0.5rem;
+  background: var(--flail-parchment, #f4ebd4);
+  border: 1px solid var(--flail-rule);
+  border-radius: 3px;
+}
+.starting-gear-wizard .sgw-section h4 {
+  margin: 0 0 0.35rem;
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6a4d0e;
+}
+.starting-gear-wizard .sgw-list,
+.starting-gear-wizard .sgw-random-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.82rem;
+}
+.starting-gear-wizard .sgw-list li,
+.starting-gear-wizard .sgw-random-list li {
+  padding: 0.1rem 0;
+}
+.starting-gear-wizard .sgw-item-qty {
+  color: #6a5a2a;
+  font-style: italic;
+}
+.starting-gear-wizard .sgw-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.3rem 0;
+  font-size: 0.82rem;
+}
+.starting-gear-wizard .sgw-choice-row label {
+  flex: 0 0 auto;
+  min-width: 8rem;
+  font-weight: 700;
+}
+.starting-gear-wizard .sgw-choice-row select {
+  flex: 1 1 auto;
+  font-size: 0.82rem;
+}
+.starting-gear-wizard .sgw-choice-note,
+.starting-gear-wizard .sgw-choice-empty {
+  flex: 1 0 100%;
+  margin: 0.15rem 0 0 8.4rem;
+  font-size: 0.72rem;
+  font-style: italic;
+  color: #6a5a2a;
+}
+.starting-gear-wizard .sgw-choice-empty { color: #a63e29; }
+.starting-gear-wizard .sgw-footer {
+  margin-top: 0.7rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.3);
+  text-align: right;
+}
+.starting-gear-wizard .sgw-import-btn {
+  padding: 0.4rem 0.9rem;
+  background: var(--flail-success, #4c7d3a);
+  color: white;
+  border: 1px solid #2a7834;
+  border-radius: 3px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.starting-gear-wizard .sgw-import-btn:hover {
+  filter: brightness(1.1);
+}

@@ -108,9 +108,171 @@ const GRANTS_SEED = {
   "cleric:6": [
     { type: "note",
       description: "Start with one basic combat talent (Warrior). Use the Combat Talents picker on the Class tab." }
+  ],
+
+  // Cutthroat
+  "cutthroat:1": [
+    { type: "note",
+      description: "May use Quick Craft (Tinkerer) once per session. Track use manually." }
+  ],
+  "cutthroat:2": [
+    { type: "crossClass", crossClassSource: "wizard", crossClassType: "spell",
+      description: "Pick one random Wizard spell (use LUCK as mana to cast)." },
+    { type: "crossClass", crossClassSource: "wizard", crossClassType: "spell",
+      description: "Pick a second random Wizard spell (use LUCK as mana to cast)." }
+  ],
+  "cutthroat:3": [
+    { type: "note",
+      description: "Start with a random magic ring (GM: pick from ring compendium)." }
+  ],
+  "cutthroat:4": [
+    { type: "crossClass", crossClassSource: "boneWhisperer", crossClassType: "spell",
+      description: "Pick one Bone Whisperer spell (use STR as spirit to cast)." },
+    { type: "note",
+      description: "Start with a little hireling (GM: define with player)." }
+  ],
+  "cutthroat:5": [
+    { type: "item", itemName: "The Dragon Skull",
+      description: "Start with The Dragon Skull (rulebook p. 107)." },
+    { type: "note",
+      description: "Start with a dragon egg (GM: define stats and hatching conditions)." }
+  ],
+  "cutthroat:6": [
+    { type: "note",
+      description: "Start with +2d20 coins (roll now) and a monkey familiar (GM: define)." }
+  ],
+
+  // Druid
+  "druid:1": [
+    { type: "crossClass", crossClassSource: "druid", crossClassType: "gift",
+      description: "Pick one mammal primal gift." },
+    { type: "crossClass", crossClassSource: "druid", crossClassType: "gift",
+      description: "Pick a second mammal primal gift." },
+    { type: "attribute", attrKey: "dex", attrDelta: 1,
+      description: "+1 DEX (adjusts DEX base modifier)." },
+    { type: "note",
+      description: "Start with a wolf companion (GM: define stats)." }
+  ],
+  "druid:2": [
+    { type: "note",
+      description: "May heal self or others d4 hp when surrounded by nature, twice per day. Track uses manually." }
+  ],
+  "druid:3": [
+    { type: "attribute", attrKey: "str", attrDelta: 2,
+      description: "+2 STR (adjusts STR base modifier)." },
+    { type: "item", itemName: "Speak with Plants",
+      description: "May cast Speak with Plants prayer (Cleric)." }
+  ],
+  "druid:4": [
+    { type: "note",
+      description: "Start with a plant as companion (hp, TH, dmg equal to Druid level + 3)." }
+  ],
+  "druid:5": [
+    { type: "note",
+      description: "Tattoos glow faintly in the presence of unknown magic items. Apply narratively." }
+  ],
+  "druid:6": [
+    { type: "note",
+      description: "May stand still and camouflage as plant at will. Apply narratively." }
+  ],
+
+  // Tinkerer
+  "tinkerer:1": [
+    { type: "note",
+      description: "Start with an additional 3 construct points (adjust construct sheet manually)." }
+  ],
+  "tinkerer:2": [
+    { type: "note",
+      description: "Immune to Exhausted conditions; must oil clockwork heart regularly." }
+  ],
+  "tinkerer:3": [
+    { type: "crossClass", crossClassSource: "cutthroat", crossClassType: "talent",
+      description: "Pick one thieving talent (Cutthroat)." }
+  ],
+  "tinkerer:4": [
+    { type: "note",
+      description: "Add battle axes to weapon specialty. +2 max hit points (adjust hp track manually)." }
+  ],
+  "tinkerer:5": [
+    { type: "note",
+      description: "The construct starts with speech and a built-in bard instrument of choice. Note on the construct sheet." }
+  ],
+  "tinkerer:6": [
+    { type: "item", itemName: "Buzzing Volt",
+      description: "Start with Buzzing Volt (rulebook p. 102)." },
+    { type: "note",
+      description: "Take half damage from electrical sources. Apply manually when relevant." }
+  ],
+
+  // Warrior
+  "warrior:1": [
+    { type: "item", itemName: "Bless",
+      description: "May cast Bless prayer (Cleric) once per day." },
+    { type: "item", itemName: "Locate Object",
+      description: "May cast Locate Object prayer (Cleric) once per day." }
+  ],
+  "warrior:2": [
+    { type: "attribute", attrKey: "str", attrDelta: 1,
+      description: "+1 STR (adjusts STR base modifier)." },
+    { type: "note",
+      description: "+2 hit points (adjust hp track manually). Show loathing for goblins — narrate at the table." }
+  ],
+  "warrior:3": [
+    { type: "note",
+      description: "Convert any amount of INT into hit points (adjust manually at any time)." }
+  ],
+  "warrior:4": [
+    { type: "note",
+      description: "Start with a random Legendary Weapon inherited from deceased master (GM: pick from unique-items compendium)." },
+    { type: "note",
+      description: "+2 TH vs Trolls. Apply manually when attacking one." }
+  ],
+  "warrior:5": [
+    { type: "note",
+      description: "Start with +50 coins (add to money)." },
+    { type: "attribute", attrKey: "cha", attrDelta: 1,
+      description: "Signet ring: +1 CHA (adjusts CHA base modifier)." }
+  ],
+  "warrior:6": [
+    { type: "attribute", attrKey: "cha", attrDelta: 2,
+      description: "+2 CHA (adjusts CHA base modifier)." },
+    { type: "note",
+      description: "Start with a map to an ancient arena (GM: define location)." }
+  ],
+
+  // Wizard
+  "wizard:1": [
+    { type: "note",
+      description: "May ooze through gaps a human child could fit through. Apply narratively." }
+  ],
+  "wizard:2": [
+    { type: "note",
+      description: "Start with a random magic ring (GM: pick from ring compendium)." },
+    { type: "attribute", attrKey: "str", attrDelta: -1,
+      description: "-1 STR (adjusts STR base modifier)." }
+  ],
+  "wizard:3": [
+    { type: "attribute", attrKey: "luck", attrDelta: 2,
+      description: "+2 LUCK (adjusts LUCK base modifier)." },
+    { type: "note",
+      description: "Take half damage from fire sources. Apply manually when relevant." }
+  ],
+  "wizard:4": [
+    { type: "note",
+      description: "May breathe underwater; heal d6 hit points when in water. Track uses manually." }
+  ],
+  "wizard:5": [
+    { type: "note",
+      description: "May use one Shadow Arcanum (Cutthroat) guild ability per session. Track use manually." }
+  ],
+  "wizard:6": [
+    { type: "note",
+      description: "Start with an expert Brawler Mauler talent of choice (Mighty Clasp or Crushing Blow — Warrior tree). Drag from the Combat Talents compendium onto your character." },
+    { type: "note",
+      description: "Add axes to weapon specialty." }
   ]
-  // Other classes: no grants seeded yet — perk text describes what to do.
-  // Add entries here as they get playtested.
+  // All 48 backgrounds now have seed grants (Custom Background remains
+  // empty — homebrewers define their own via the item sheet editor).
 };
 
 /**

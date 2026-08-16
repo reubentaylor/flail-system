@@ -15,4 +15,23 @@
     </div>
     {{/each}}
   </dl>
+  {{#if startingGearAvailable}}
+  <div class="starting-gear-row">
+    {{#if startingGearImported}}
+      <span class="starting-gear-imported"><i class="fas fa-check"></i> Starting gear imported</span>
+      {{#if startingGearIsGm}}
+      <button type="button" class="starting-gear-reset-btn" data-action="resetStartingGear"
+              title="GM: reset the imported state (optionally delete tracked items).">
+        <i class="fas fa-rotate-left"></i> Reset
+      </button>
+      {{/if}}
+    {{else}}
+      <button type="button" class="starting-gear-import-btn" data-action="openStartingGearWizard"
+              {{#unless editable}}disabled{{/unless}}
+              title="Open the wizard: import fixed items into your satchel, pick your weapon/instrument/etc., and roll starting coins.">
+        <i class="fas fa-box-open"></i> Import Starting Gear
+      </button>
+    {{/if}}
+  </div>
+  {{/if}}
 </section>
