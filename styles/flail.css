@@ -2022,16 +2022,24 @@
 .flail.sheet .bw-row {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  grid-template-rows: auto auto;
+  grid-template-rows: auto auto auto;
   gap: 0.5rem;
   margin-top: 0.85rem;
+  align-items: start;
 }
-/* Explicit cell placement — class-details + known-spells stack down col 1
-   (their right edges align), animate-dead + undead-puppet stack down col 2. */
-.flail.sheet .bw-row > .class-details-card { grid-column: 1; grid-row: 1; }
-.flail.sheet .bw-row > .animate-dead-card  { grid-column: 2; grid-row: 1; }
-.flail.sheet .bw-row > .known-spells-card  { grid-column: 1; grid-row: 2; }
-.flail.sheet .bw-row > .undead-puppet-card { grid-column: 2; grid-row: 2; }
+/* Explicit cell placement (v0.4.53) — spells panel now sizes to
+   content on the left; the right column stacks the three action
+   cards (animate-dead, spirit-harvest, undead-puppet) so all
+   three stay visible even when there are few known spells.
+   align-self:start on the spells card ensures it doesn't stretch
+   to match the taller right-column stack when it has little
+   content (low-level BWs with 2-3 spells).
+   Known-spells spans all three rows on the left. */
+.flail.sheet .bw-row > .class-details-card  { grid-column: 1; grid-row: 1; }
+.flail.sheet .bw-row > .animate-dead-card   { grid-column: 2; grid-row: 1; align-self: stretch; }
+.flail.sheet .bw-row > .known-spells-card   { grid-column: 1; grid-row: 2 / span 2; align-self: start; }
+.flail.sheet .bw-row > .spirit-harvest-card { grid-column: 2; grid-row: 2; }
+.flail.sheet .bw-row > .undead-puppet-card  { grid-column: 2; grid-row: 3; }
 
 /* Animate Dead — single-button card. The button sits flush in the card's
    body, sized to fill the available width so it reads as a primary action. */
@@ -2048,6 +2056,7 @@
   text-align: center;
 }
 .flail.sheet .animate-dead-card .animate-dead-btn {
+  margin-top: auto;
   margin-top: auto;
   padding: 0.6rem 0.8rem;
   background: #2a3d5a;
