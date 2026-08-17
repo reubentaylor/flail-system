@@ -246,8 +246,11 @@ export class StartingGearWizard extends HandlebarsApplicationMixin(ApplicationV2
           speaker: ChatMessage.getSpeaker({ actor }),
           flavor: `<strong>${actor.name}</strong> rolls starting coins (${this.def.coinsDice})`
         });
-        const curMoney = actor.system.money?.value ?? 0;
-        await actor.update({ "system.money.value": curMoney + coinsResult });
+        // Coins live at `system.coins` on the character (integer field).
+        // v0.4.43 mistakenly wrote to `system.money.value` which isn't
+        // in the schema, so the ability-tab display never updated.
+        const curCoins = actor.system.coins ?? 0;
+        await actor.update({ "system.coins": curCoins + coinsResult });
       } catch (err) {
         console.error("FLAIL | Starting coins roll failed:", err);
       }

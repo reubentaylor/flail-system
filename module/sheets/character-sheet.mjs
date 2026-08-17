@@ -61,6 +61,12 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       rollInstrument:  FlailCharacterSheet.#onRollInstrument,
       resetInstrumentUsedOut: FlailCharacterSheet.#onResetInstrumentUsedOut,
       castDarkSpell:   FlailCharacterSheet.#onCastDarkSpell,
+      animateDead:            FlailCharacterSheet.#onAnimateDead,
+      spiritHarvestNearby:    FlailCharacterSheet.#onSpiritHarvestNearby,
+      spiritHarvestSlay:      FlailCharacterSheet.#onSpiritHarvestSlay,
+      summonUndeadPuppet:     FlailCharacterSheet.#onSummonUndeadPuppet,
+      puppetAttack:           FlailCharacterSheet.#onPuppetAttack,
+      puppetMorale:           FlailCharacterSheet.#onPuppetMorale,
       castWizardSpell: FlailCharacterSheet.#onCastWizardSpell,
       useDamageGadget: FlailCharacterSheet.#onUseDamageGadget,
       editPortrait:    FlailCharacterSheet.#onEditImage,   // kept for backward compat with any external triggers
@@ -387,39 +393,34 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
 
     // Background Grant Items — cross-class abilities embedded on the
     // actor via a background's `crossClass` grant. Flagged at apply
-    // time with `flags.flail.fromBackgroundGrant = true`. Each item
-    // gets a `dataAction` string chosen per item type so the class-
-    // actions-panel can wire the click to a working handler:
+    // time with `flags.flail.fromBackgroundGrant = true`. Every item,
+    // regardless of type, dispatches to `itemToChat` because:
     //
-    //   talent   → rollTalent      (rolls the talent's dice)
-    //   gift     → activateGift    (fires the gift's activation)
-    //   prayer   → itemToChat      (posts the description; religion/
-    //                                holy-symbol checks would fail on
-    //                                a non-cleric so we sidestep them)
-    //   spell    → itemToChat      (resource costs differ per class;
-    //                                let the player narrate + GM apply)
-    //   gadget   → itemToChat      (usage/damage is class-specific;
-    //                                the gadget's own sheet handles it)
-    //   other    → itemToChat      (safe universal fallback)
+    //   * Prayers need Cleric religion + holy symbol.
+    //   * Spells need Wizard mana or Bone Whisperer spirit.
+    //   * Gifts need the Druid primalGifts[kingdom][key] flag set.
+    //   * Talents need the Cutthroat thievingTalents[key] flag set.
+    //
+    // A cross-class grant embeds the ITEM but doesn't set any of that
+    // class-side state — the native "roll" handlers all silently fail
+    // when their gates are missing. `itemToChat` sidesteps this by
+    // posting the item description; the player narrates the effect
+    // and the GM adjudicates. Same behaviour for all four types keeps
+    // the UX consistent.
     //
     // The item's flag `backgroundGrantSource` remembers the source
     // class (e.g. "cleric") so we can display a small badge indicating
     // where it came from.
     const grantItems = actor.items.filter(i => i.getFlag?.("flail", "fromBackgroundGrant"));
-    ctx.backgroundGrantItems = grantItems.map(i => {
-      let dataAction = "itemToChat";
-      if (i.type === "talent") dataAction = "rollTalent";
-      else if (i.type === "gift") dataAction = "activateGift";
-      return {
-        id: i.id,
-        name: i.name,
-        img: i.img,
-        type: i.type,
-        source: i.getFlag?.("flail", "backgroundGrantSource") ?? "",
-        description: i.system?.description ?? "",
-        dataAction
-      };
-    });
+    ctx.backgroundGrantItems = grantItems.map(i => ({
+      id: i.id,
+      name: i.name,
+      img: i.img,
+      type: i.type,
+      source: i.getFlag?.("flail", "backgroundGrantSource") ?? "",
+      description: i.system?.description ?? "",
+      dataAction: "itemToChat"
+    }));
     ctx.hasBackgroundGrantItems = ctx.backgroundGrantItems.length > 0;
 
     // Combat Talents (Warrior) — item-based (v0.4.30+).
@@ -2863,6 +2864,291 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     if (!result || !Number.isInteger(result) || result < 1) return;
 
     return rollDarkSpell({ actor: this.actor, spell, spirit: result });
+  }
+
+  /**
+   * Animate Dead (Bone Whisperer special skill).
+   *
+   * Rulebook: "revive the dead by spending spirit equal to the target
+   * level, and making an INT save (with disadvantage for creatures of
+   * 7+ level). On a success, the target is raised as an undead ally
+   * with its original abilities for a number of watches equal to the
+   * Bone Whisperer level, after which they fade in smoke. On a fail,
+   * the target is raised, but acts on its own accord."
+   *
+   * v0.4.48 rewrites this from a plain INT save button (which enforced
+   * nothing) to a proper flow: dialog for target level, verify spirit,
+   * apply advantage, spend spirit, roll, post an outcome chat card.
+   */
+  static async #onAnimateDead(event, target) {
+    const actor = this.actor;
+    const intVal = actor.system.attributes?.int?.current ?? 0;
+    const spiritCur = actor.system.resource?.value ?? 0;
+    const bwLevel = actor.system.level ?? 1;
+
+    const targetLevel = await foundry.applications.api.DialogV2.prompt({
+      window: { title: game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.Label") },
+      classes: ["flail-bw-dialog"],
+      content: `
+        <p><strong>${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.Label")}</strong> — ${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.DialogIntro")}</p>
+        <p>${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.DialogSpiritLabel")}: <strong>${spiritCur}</strong> · INT: <strong>${intVal}</strong> · ${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.DialogLevelLabel")}: <strong>${bwLevel}</strong></p>
+        <p class="hint" style="color:#6a5a2a;font-style:italic">${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.DialogDisadvHint")}</p>
+        <div class="form-group" style="display:flex;gap:.4rem;align-items:center;margin:.4rem 0">
+          <label for="flail-animate-target-level">${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.DialogTargetLevel")}:</label>
+          <input id="flail-animate-target-level" type="number" name="targetLevel" min="1" max="10" value="1" style="width:4rem" />
+        </div>
+      `,
+      ok: {
+        label: game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.DialogRoll"),
+        callback: (event, button, dialog) => {
+          const el = dialog.element.querySelector("[name='targetLevel']");
+          const n = parseInt(el?.value, 10);
+          return Number.isFinite(n) && n >= 1 ? n : null;
+        }
+      },
+      rejectClose: false
+    });
+    if (!targetLevel) return;
+
+    if (spiritCur < targetLevel) {
+      ui.notifications?.warn(
+        game.i18n.format("FLAIL.BoneWhisperer.AnimateDead.NoSpirit",
+          { need: targetLevel, have: spiritCur })
+      );
+      return;
+    }
+
+    const disadv = targetLevel >= 7;
+    // Spend spirit up-front (rulebook implies spend before roll).
+    await actor.update({ "system.resource.value": spiritCur - targetLevel });
+
+    // Roll INT save manually so we can bundle the outcome into a
+    // custom chat card. Not using actor.rollSave() because we want
+    // one card that combines the roll + the rise-vs-free-acting result.
+    const formula = disadv ? "2d20kh1" : "1d20";
+    const roll = new Roll(formula);
+    await roll.evaluate();
+    const rolled = roll.total;
+    const success = rolled <= intVal;
+
+    const outcomeHtml = success
+      ? `<p style="color:#4c7d3a"><strong>${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.Success")}</strong> ${game.i18n.format("FLAIL.BoneWhisperer.AnimateDead.SuccessDetail", { watches: bwLevel })}</p>`
+      : `<p style="color:#a63e29"><strong>${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.Fail")}</strong> ${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.FailDetail")}</p>`;
+
+    const flavor = `
+      <div class="flail-chat-card animate-dead-chat">
+        <p><i class="fas fa-skull"></i> <strong>${actor.name}</strong> ${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.AttemptsLabel")}</p>
+        <p>${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.DialogTargetLevel")}: <strong>${targetLevel}</strong> — ${game.i18n.format("FLAIL.BoneWhisperer.AnimateDead.SpentSpirit", { n: targetLevel })}${disadv ? ` <em>(${game.i18n.localize("FLAIL.BoneWhisperer.AnimateDead.DisadvNote")})</em>` : ""}</p>
+        <p>INT save: <strong>${rolled}</strong> vs INT ${intVal}</p>
+        ${outcomeHtml}
+      </div>
+    `;
+
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor
+    });
+  }
+
+  /**
+   * Spirit Harvesting — nearby kill.
+   *
+   * Rulebook: "regain 1 spirit for each sentient being that is killed
+   * Nearby." One-click increment, capped at INT (spirit's ceiling).
+   * Posts a brief chat card so the party sees the recovery.
+   */
+  static async #onSpiritHarvestNearby(event, target) {
+    const actor = this.actor;
+    const cur = actor.system.resource?.value ?? 0;
+    const intVal = actor.system.attributes?.int?.current ?? 0;
+    if (cur >= intVal) {
+      ui.notifications?.info(game.i18n.localize("FLAIL.BoneWhisperer.Spirit.AtMax"));
+      return;
+    }
+    const next = Math.min(intVal, cur + 1);
+    await actor.update({ "system.resource.value": next });
+    ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<p><i class="fas fa-skull"></i> <strong>${actor.name}</strong> harvests spirit from a Nearby kill (+1 → ${next}).</p>`
+    });
+  }
+
+  /**
+   * Spirit Harvesting — my kill (own To Hit slaying).
+   *
+   * Rulebook: "When Bone Whisperers slay a non-undead target themselves
+   * in a To Hit roll, they restore spirit equal to target's remaining
+   * hit points." Dialog asks for HP remaining; capped at INT.
+   */
+  static async #onSpiritHarvestSlay(event, target) {
+    const actor = this.actor;
+    const cur = actor.system.resource?.value ?? 0;
+    const intVal = actor.system.attributes?.int?.current ?? 0;
+    if (cur >= intVal) {
+      ui.notifications?.info(game.i18n.localize("FLAIL.BoneWhisperer.Spirit.AtMax"));
+      return;
+    }
+    const hp = await foundry.applications.api.DialogV2.prompt({
+      window: { title: game.i18n.localize("FLAIL.BoneWhisperer.Spirit.SlayTitle") },
+      classes: ["flail-bw-dialog"],
+      content: `
+        <p>${game.i18n.localize("FLAIL.BoneWhisperer.Spirit.SlayIntro")}</p>
+        <p>${game.i18n.localize("FLAIL.BoneWhisperer.Spirit.CurrentSpirit")}: <strong>${cur}</strong> · INT (cap): <strong>${intVal}</strong></p>
+        <div class="form-group" style="display:flex;gap:.4rem;align-items:center;margin:.4rem 0">
+          <label>${game.i18n.localize("FLAIL.BoneWhisperer.Spirit.SlayHpLabel")}:</label>
+          <input type="number" name="hp" min="0" value="0" style="width:4rem" />
+        </div>
+      `,
+      ok: {
+        label: game.i18n.localize("FLAIL.BoneWhisperer.Spirit.HarvestButton"),
+        callback: (event, button, dialog) => {
+          const el = dialog.element.querySelector("[name='hp']");
+          const n = parseInt(el?.value, 10);
+          return Number.isFinite(n) && n >= 0 ? n : null;
+        }
+      },
+      rejectClose: false
+    });
+    if (hp === null || hp === undefined || hp < 1) return;
+    const next = Math.min(intVal, cur + hp);
+    const actual = next - cur;
+    await actor.update({ "system.resource.value": next });
+    ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `<p><i class="fas fa-skull"></i> <strong>${actor.name}</strong> harvests spirit from their slain target (+${actual} → ${next}).</p>`
+    });
+  }
+
+  /**
+   * Summon Undead Puppet — chat announcement triggered by "two pairs
+   * rolled on To Hit" per Spirit Harvesting. Since the puppet's stat
+   * block already lives on the character sheet, "summon" here is a
+   * chat card that surfaces the current puppet stats so the whole
+   * table can see what appeared.
+   */
+  static async #onSummonUndeadPuppet(event, target) {
+    const actor = this.actor;
+    const puppet = actor.system.undeadPuppet ?? {};
+    const name = puppet.name || game.i18n.localize("FLAIL.Section.UndeadPuppet");
+    ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content: `
+        <div class="flail-chat-card summon-puppet-chat">
+          <p><i class="fas fa-skull"></i> <strong>${actor.name}</strong> ${game.i18n.format("FLAIL.BoneWhisperer.SummonPuppet.Label", { name })}</p>
+          <p><em>${game.i18n.localize("FLAIL.BoneWhisperer.SummonPuppet.Reason")}</em></p>
+          <ul style="margin:.3rem 0;padding-left:1.2rem">
+            <li>HP: ${puppet.hp ?? "?"} · Morale: ${puppet.morale ?? "?"}</li>
+            <li>TH: ${puppet.th ?? "?"} · DMG: ${puppet.damage ?? "?"}</li>
+          </ul>
+        </div>
+      `
+    });
+  }
+
+  /**
+   * Puppet Attack — rolls the puppet's TH pool (d6s) and reports the
+   * FLAIL tier + damage. Inlined here (not routed through rollToHit)
+   * because rollToHit's class-specific triggers all target the BW's
+   * own class, and we don't want puppet attacks re-triggering
+   * summonPuppetOption from the same detection path.
+   *
+   * FLAIL tier semantics:
+   *   0 ones + 1+ sixes → fumble
+   *   0 ones + 0 sixes → miss
+   *   1 one   → hit    (base damage)
+   *   2 ones  → major  (double damage)
+   *   3+ ones → death blow (triple damage)
+   *
+   * Damage numbers announced in the chat card; GM applies manually.
+   */
+  static async #onPuppetAttack(event, target) {
+    const actor = this.actor;
+    const puppet = actor.system.undeadPuppet ?? {};
+    const th = Number(puppet.th) || 0;
+    const dmg = Number(puppet.damage) || 0;
+    if (th < 1) {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.BoneWhisperer.PuppetAttack.NoTh"));
+      return;
+    }
+    const name = puppet.name || game.i18n.localize("FLAIL.Section.UndeadPuppet");
+    const roll = new Roll(`${th}d6`);
+    await roll.evaluate();
+    const dice = roll.dice[0]?.results.map(r => r.result) ?? [];
+    const ones = dice.filter(d => d === 1).length;
+    const sixes = dice.filter(d => d === 6).length;
+
+    let outcomeHtml;
+    if (ones === 0 && sixes >= 1) {
+      outcomeHtml = `<p style="color:#a63e29"><strong>${game.i18n.localize("FLAIL.BoneWhisperer.PuppetAttack.Fumble")}</strong></p>`;
+    } else if (ones === 0) {
+      outcomeHtml = `<p style="color:#6a5a2a"><em>${game.i18n.localize("FLAIL.BoneWhisperer.PuppetAttack.Miss")}</em></p>`;
+    } else if (ones === 1) {
+      outcomeHtml = `<p style="color:#4c7d3a"><strong>${game.i18n.format("FLAIL.BoneWhisperer.PuppetAttack.Hit", { dmg })}</strong></p>`;
+    } else if (ones === 2) {
+      outcomeHtml = `<p style="color:#4c7d3a"><strong>${game.i18n.format("FLAIL.BoneWhisperer.PuppetAttack.MajorHit", { dmg: dmg * 2 })}</strong></p>`;
+    } else {
+      outcomeHtml = `<p style="color:#4c7d3a"><strong>${game.i18n.format("FLAIL.BoneWhisperer.PuppetAttack.DeathBlow", { dmg: dmg * 3 })}</strong></p>`;
+    }
+
+    const flavor = `
+      <div class="flail-chat-card puppet-attack-chat">
+        <p><i class="fas fa-ghost"></i> <strong>${name}</strong> attacks (${actor.name}'s puppet)</p>
+        <p>TH ${th} pool → dice [${dice.join(", ")}]</p>
+        ${outcomeHtml}
+      </div>
+    `;
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor
+    });
+  }
+
+  /**
+   * Puppet Morale Save — rulebook: "Whenever the Bone Whisperer is
+   * hit, all Undead Puppets must succeed in a Morale save or crumble
+   * in ash." Manual trigger button (auto-triggering on BW HP loss
+   * requires a preUpdateActor hook — deferred to keep this focused).
+   *
+   * Roll: 1d20; success if roll <= puppet.morale. On failure, the
+   * puppet crumbles — HP set to 0 as a soft indicator that the
+   * player should clear the puppet fields. Doesn't wipe stats
+   * automatically so the character can re-summon a fresh puppet
+   * without re-typing everything.
+   */
+  static async #onPuppetMorale(event, target) {
+    const actor = this.actor;
+    const puppet = actor.system.undeadPuppet ?? {};
+    const morale = Number(puppet.morale) || 0;
+    if (morale < 1) {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.BoneWhisperer.PuppetMorale.NoMorale"));
+      return;
+    }
+    const name = puppet.name || game.i18n.localize("FLAIL.Section.UndeadPuppet");
+    const roll = new Roll("1d20");
+    await roll.evaluate();
+    const success = roll.total <= morale;
+
+    const outcomeHtml = success
+      ? `<p style="color:#4c7d3a"><strong>${game.i18n.localize("FLAIL.BoneWhisperer.PuppetMorale.Success")}</strong></p>`
+      : `<p style="color:#a63e29"><strong>${game.i18n.localize("FLAIL.BoneWhisperer.PuppetMorale.Fail")}</strong></p>`;
+
+    if (!success) {
+      // Zero out HP so the puppet reads as crumbled on the sheet.
+      // Stats stay so the player can re-summon without retyping.
+      await actor.update({ "system.undeadPuppet.hp": 0 });
+    }
+
+    const flavor = `
+      <div class="flail-chat-card puppet-morale-chat">
+        <p><i class="fas fa-ghost"></i> <strong>${name}</strong> Morale save (${actor.name}'s puppet)</p>
+        <p>Rolled <strong>${roll.total}</strong> vs Morale ${morale}</p>
+        ${outcomeHtml}
+      </div>
+    `;
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      flavor
+    });
   }
 
   /**

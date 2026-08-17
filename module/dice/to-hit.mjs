@@ -318,6 +318,23 @@ export async function rollToHit({
   }
 
   /*
+   * Bone Whisperer Summon Puppet trigger (Spirit Harvesting, rulebook
+   * p.16): "If two pairs are rolled, they may summon their Undead
+   * Puppet." Mirrors the opportunistic-strike pattern: if the actor
+   * is a BW and the roll shows two pairs, add a summonPuppetOption
+   * to the template so the attack chat card renders a "Summon Puppet"
+   * button the player can click. Optional — the rulebook says "may".
+   */
+  let summonPuppetOption = null;
+  const isBoneWhispererActor = actor?.type === "character" && actor.system?.class === "boneWhisperer";
+  if (isBoneWhispererActor && twoPairCombo) {
+    summonPuppetOption = {
+      actorUuid: actor.uuid,
+      resolved: false
+    };
+  }
+
+  /*
    * Druid Primal Gift reminders and follow-up-attack option. Three
    * gifts affect a Druid's To Hit chat card:
    *
@@ -373,6 +390,7 @@ export async function rollToHit({
     celestialAid,
     guildRecoup,
     opportunisticStrike,
+    summonPuppetOption,
     packMentality,
     vipersAgility,
     slimySkinTarget,
@@ -426,6 +444,10 @@ export async function rollToHit({
             actorUuid: opportunisticStrike.actorUuid,
             weaponId:  opportunisticStrike.weaponId,
             resolved:  false
+          } : null,
+          summonPuppetOption: summonPuppetOption ? {
+            actorUuid: summonPuppetOption.actorUuid,
+            resolved: false
           } : null,
           vipersAgility: vipersAgility ? {
             actorUuid: vipersAgility.actorUuid,

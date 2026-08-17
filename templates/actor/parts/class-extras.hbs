@@ -204,10 +204,28 @@
   <section class="tabbed-card animate-dead-card">
     <header class="tab-label">{{localize "FLAIL.BoneWhisperer.AnimateDead.Label"}}</header>
     <p class="hint">{{localize "FLAIL.BoneWhisperer.AnimateDead.Hint"}}</p>
-    <button type="button" class="animate-dead-btn" data-action="rollSave" data-attribute="int" title="{{localize 'FLAIL.BoneWhisperer.AnimateDead.Tooltip'}}">
+    <button type="button" class="animate-dead-btn" data-action="animateDead" title="{{localize 'FLAIL.BoneWhisperer.AnimateDead.Tooltip'}}">
       <i class="fas fa-skull"></i>
       <span>{{localize "FLAIL.BoneWhisperer.AnimateDead.Label"}}</span>
     </button>
+  </section>
+  <section class="tabbed-card spirit-harvest-card">
+    <header class="tab-label">{{localize "FLAIL.BoneWhisperer.Spirit.Header"}}</header>
+    <p class="hint">{{localize "FLAIL.BoneWhisperer.Spirit.Hint"}}</p>
+    <div class="spirit-harvest-buttons">
+      <button type="button" class="spirit-harvest-btn spirit-harvest-nearby" data-action="spiritHarvestNearby"
+              title="{{localize 'FLAIL.BoneWhisperer.Spirit.NearbyTooltip'}}">
+        <i class="fas fa-plus"></i> <span>{{localize "FLAIL.BoneWhisperer.Spirit.NearbyLabel"}}</span>
+      </button>
+      <button type="button" class="spirit-harvest-btn spirit-harvest-slay" data-action="spiritHarvestSlay"
+              title="{{localize 'FLAIL.BoneWhisperer.Spirit.SlayTooltip'}}">
+        <i class="fas fa-hand-fist"></i> <span>{{localize "FLAIL.BoneWhisperer.Spirit.SlayLabel"}}</span>
+      </button>
+      <button type="button" class="spirit-harvest-btn spirit-harvest-summon" data-action="summonUndeadPuppet"
+              title="{{localize 'FLAIL.BoneWhisperer.SummonPuppet.Tooltip'}}">
+        <i class="fas fa-ghost"></i> <span>{{localize "FLAIL.BoneWhisperer.SummonPuppet.ButtonLabel"}}</span>
+      </button>
+    </div>
   </section>
   <section class="tabbed-card known-spells-card">
     <header class="tab-label">{{localize "FLAIL.Section.KnownSpells"}}</header>
@@ -255,6 +273,18 @@
       <label>DMG
         <input type="number" name="system.undeadPuppet.damage" value="{{system.undeadPuppet.damage}}" min="0" {{#unless editable}}disabled{{/unless}} />
       </label>
+    </div>
+    <div class="puppet-buttons">
+      <button type="button" class="puppet-btn puppet-attack-btn" data-action="puppetAttack"
+              title="{{localize 'FLAIL.BoneWhisperer.PuppetAttack.Tooltip'}}">
+        <i class="fas fa-crosshairs"></i>
+        <span>{{localize "FLAIL.BoneWhisperer.PuppetAttack.Label"}}</span>
+      </button>
+      <button type="button" class="puppet-btn puppet-morale-btn" data-action="puppetMorale"
+              title="{{localize 'FLAIL.BoneWhisperer.PuppetMorale.Tooltip'}}">
+        <i class="fas fa-heart-crack"></i>
+        <span>{{localize "FLAIL.BoneWhisperer.PuppetMorale.Label"}}</span>
+      </button>
     </div>
   </section>
 </div>

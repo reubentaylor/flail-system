@@ -55,6 +55,7 @@ async function onChatAction(event, message) {
     case "celestialAidFullBless": return celestialAidFullBless(btn, flags, message);
     case "celestialAidLitany":    return celestialAidLitany(btn, flags, message);
     case "opportunisticStrike":   return opportunisticStrike(btn, flags, message);
+    case "summonUndeadPuppet":    return summonUndeadPuppet(btn, flags, message);
     case "vipersAgility":         return vipersAgility(btn, flags, message);
     case "negateWithArmour":      return negateWithArmour(btn, flags, message);
   }
@@ -769,3 +770,59 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   const block = html.querySelector?.(".special-feature-reminder");
   if (block) block.style.display = "none";
 });
+
+/**
+ * Summon Undead Puppet — Bone Whisperer Two Pair trigger from the
+ * Spirit Harvesting rule. Fires when the player clicks the banner
+ * button on an attack chat card that rolled two pairs. Posts the
+ * puppet-summon chat card (surfaces current puppet stats), then
+ * marks the message flag `resolved` so the button collapses across
+ * every rendered copy of the card.
+ */
+async function summonUndeadPuppet(btn, flags, message) {
+  if (flags?.attackRoll?.summonPuppetOption?.resolved) return;
+  const opt = flags?.attackRoll?.summonPuppetOption;
+  if (!opt) return;
+
+  const actor = opt.actorUuid ? await fromUuid(opt.actorUuid) : null;
+  if (!actor) {
+    ui.notifications.warn("FLAIL: original actor could not be resolved.");
+    return;
+  }
+
+  // Mark resolved on the source message.
+  await message.update({
+    "flags.flail.attackRoll.summonPuppetOption.resolved": true
+  });
+
+  // DOM patch — swap the button for the resolved indicator in every
+  // rendered copy of the message. Mirrors the opportunisticStrike
+  // pattern above.
+  document.querySelectorAll(`[data-message-id="${message.id}"] .summon-puppet-banner`)
+    .forEach(el => {
+      const button = el.querySelector(".os-btn");
+      if (button) button.remove();
+      const resolved = document.createElement("div");
+      resolved.className = "os-resolved";
+      resolved.innerHTML = `<strong>${game.i18n.localize("FLAIL.BoneWhisperer.SummonPuppet.BannerResolved")}</strong>`;
+      el.appendChild(resolved);
+    });
+
+  // Post the puppet-summon chat card (same content as clicking the
+  // Summon Puppet button on the sheet).
+  const puppet = actor.system.undeadPuppet ?? {};
+  const name = puppet.name || game.i18n.localize("FLAIL.Section.UndeadPuppet");
+  ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `
+      <div class="flail-chat-card summon-puppet-chat">
+        <p><i class="fas fa-skull"></i> <strong>${actor.name}</strong> ${game.i18n.format("FLAIL.BoneWhisperer.SummonPuppet.Label", { name })}</p>
+        <p><em>${game.i18n.localize("FLAIL.BoneWhisperer.SummonPuppet.Reason")}</em></p>
+        <ul style="margin:.3rem 0;padding-left:1.2rem">
+          <li>HP: ${puppet.hp ?? "?"} · Morale: ${puppet.morale ?? "?"}</li>
+          <li>TH: ${puppet.th ?? "?"} · DMG: ${puppet.damage ?? "?"}</li>
+        </ul>
+      </div>
+    `
+  });
+}

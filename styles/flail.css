@@ -10533,3 +10533,102 @@
 .starting-gear-wizard .sgw-import-btn:hover {
   filter: brightness(1.1);
 }
+
+/* ============================================================
+   BONE WHISPERER — Spirit Harvesting card (v0.4.48)
+   Three quick-action buttons for the class's spirit recovery /
+   puppet summoning rules. Matches the animate-dead card visually
+   so all BW active-action cards read as a coherent set.
+   ============================================================ */
+.flail.sheet .spirit-harvest-card {
+  padding: 1.05rem 0.85rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+}
+.flail.sheet .spirit-harvest-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+.flail.sheet .spirit-harvest-btn {
+  padding: 0.45rem 0.6rem;
+  background: #2a3d5a;
+  color: #d8e0ec;
+  border: 2px solid #1a2a40;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  line-height: 1;
+}
+.flail.sheet .spirit-harvest-btn:hover { background: #1a2a40; }
+.flail.sheet .spirit-harvest-btn .fa-plus,
+.flail.sheet .spirit-harvest-btn .fa-hand-fist,
+.flail.sheet .spirit-harvest-btn .fa-ghost { font-size: 0.9rem; flex: 0 0 auto; }
+
+/* DialogV2 windows for BW actions — force dark text on the parchment
+   backgrounds (Foundry's dialog chrome inherits light theme, which
+   makes labels invisible on the cream body). Same rationale as
+   starting-gear-wizard fix in v0.4.45. */
+/* Bone Whisperer DialogV2 windows (Animate Dead, Spirit Harvest Slay)
+   — the BW handlers add class "flail-bw-dialog" to their DialogV2
+   options so this rule can target them specifically.
+   Foundry's default DialogV2 chrome is dark; we override the content
+   area with the parchment background + dark text used throughout the
+   FLAIL sheets, matching the starting-gear wizard's look. */
+.flail-bw-dialog .window-content {
+  background: #fbf3d9;
+  color: #1a1a1a;
+}
+.flail-bw-dialog .form-group label,
+.flail-bw-dialog .form-group input,
+.flail-bw-dialog .form-group select,
+.flail-bw-dialog p,
+.flail-bw-dialog strong,
+.flail-bw-dialog em { color: #1a1a1a; }
+.flail-bw-dialog .form-group input,
+.flail-bw-dialog .form-group select {
+  background: #fff;
+}
+
+/* Undead Puppet action buttons (v0.4.49) — dark blue to match the
+   other Bone Whisperer active-action cards for visual consistency. */
+.flail.sheet .undead-puppet-card .puppet-buttons {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.3);
+}
+.flail.sheet .undead-puppet-card .puppet-btn {
+  flex: 1 1 auto;
+  padding: 0.4rem 0.5rem;
+  background: #2a3d5a;
+  color: #d8e0ec;
+  border: 2px solid #1a2a40;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: "Modesto Condensed", "Bebas Neue", Impact, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  line-height: 1;
+}
+.flail.sheet .undead-puppet-card .puppet-btn:hover { background: #1a2a40; }
+
+/* Summon Puppet chat-card banner (mirrors opportunistic-strike) */
+.summon-puppet-banner {
+  border-left-color: #5a2a6a !important;
+}

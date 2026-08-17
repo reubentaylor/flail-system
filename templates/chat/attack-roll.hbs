@@ -202,6 +202,27 @@
   </div>
   {{/if}}
 
+  {{!-- Summon Puppet — Bone Whisperer Two Pair → optional puppet summon --}}
+  {{#if summonPuppetOption}}
+  <div class="summon-puppet-banner opportunistic-strike-banner">
+    <header>
+      <i class="fas fa-ghost"></i>
+      <span class="title">{{localize "FLAIL.BoneWhisperer.SummonPuppet.BannerTitle"}}</span>
+      <span class="trigger">{{localize "FLAIL.BoneWhisperer.SummonPuppet.BannerTrigger"}}</span>
+    </header>
+    {{#if summonPuppetOption.resolved}}
+    <div class="os-resolved">
+      <strong>{{localize "FLAIL.BoneWhisperer.SummonPuppet.BannerResolved"}}</strong>
+    </div>
+    {{else}}
+    <button type="button" data-flail-action="summonUndeadPuppet" class="os-btn">
+      <i class="fas fa-ghost"></i>
+      <span>{{localize "FLAIL.BoneWhisperer.SummonPuppet.ButtonLabel"}}</span>
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+
   {{!-- Pack Mentality — Druid Mammal gift, reminder only --}}
   {{#if packMentality}}
   <div class="gift-banner gift-pack-mentality">

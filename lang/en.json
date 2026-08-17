@@ -943,7 +943,61 @@
       "AnimateDead": {
         "Label":   "Animate Dead",
         "Hint":    "Spend spirit equal to the target level. Make an INT save to revive the target. On success, the target is raised as an undead ally for a number of watches equal to your level. On a fail, the target is raised, but acts on its own accord.",
-        "Tooltip": "Roll INT save (Shift = advantage, Ctrl = disadvantage)"
+        "Tooltip": "Open the Animate Dead dialog: pick target level, spend spirit, roll INT save.",
+        "DialogIntro": "spend spirit equal to the target's level, then roll an INT save.",
+        "DialogSpiritLabel": "Current spirit",
+        "DialogLevelLabel": "Your level",
+        "DialogDisadvHint": "Creatures level 7+ impose disadvantage on the INT save.",
+        "DialogTargetLevel": "Target level",
+        "DialogRoll": "Spend spirit + roll",
+        "NoSpirit": "Need {need} spirit to animate a level {need} target; you have {have}.",
+        "AttemptsLabel": "attempts Animate Dead",
+        "SpentSpirit": "spent {n} spirit",
+        "DisadvNote": "disadvantage — level 7+",
+        "Success": "Success!",
+        "SuccessDetail": "Target rises as an ally with its original abilities for {watches} watch(es), then fades in smoke.",
+        "Fail": "Fail.",
+        "FailDetail": "Target is raised, but acts on its own accord."
+      },
+      "Spirit": {
+        "Header":         "Spirit Harvesting",
+        "Hint":           "Recover spirit from Nearby kills or your own To Hit slayings. Two pairs on To Hit lets you summon your Undead Puppet.",
+        "NearbyLabel":    "+1 (Nearby kill)",
+        "NearbyTooltip":  "A sentient being died Nearby — add 1 spirit (capped at INT).",
+        "SlayLabel":      "My kill",
+        "SlayTooltip":    "You slew a non-undead target with a To Hit roll — add its remaining HP as spirit (capped at INT).",
+        "SlayTitle":      "Spirit Harvesting (Slay)",
+        "SlayIntro":      "The slain target's remaining HP is added to your spirit.",
+        "SlayHpLabel":    "Target's HP left",
+        "CurrentSpirit":  "Current spirit",
+        "HarvestButton":  "Harvest",
+        "AtMax":          "Spirit already at maximum (INT)."
+      },
+      "SummonPuppet": {
+        "ButtonLabel":  "Summon Puppet",
+        "Tooltip":      "Two pairs on To Hit — announce the Undead Puppet is present, with current stats.",
+        "Label":        "summons {name}",
+        "Reason":       "Two pairs rolled on To Hit — the Undead Puppet manifests to fight alongside.",
+        "BannerTitle":   "Summon Puppet",
+        "BannerTrigger": "Two pairs — you may summon your Undead Puppet.",
+        "BannerResolved":"Puppet summoned."
+      },
+      "PuppetAttack": {
+        "Label":        "Puppet Attack",
+        "Tooltip":      "Roll the puppet's TH pool (d6s). Any 1s = hit at DMG; multiple 1s = major/death blow.",
+        "NoTh":         "Set puppet TH before rolling attacks.",
+        "Hit":          "Hit — {dmg} damage.",
+        "MajorHit":     "Major hit — double damage ({dmg}).",
+        "DeathBlow":    "Death blow — triple damage ({dmg}).",
+        "Miss":         "Miss.",
+        "Fumble":       "Fumble — the puppet stumbles."
+      },
+      "PuppetMorale": {
+        "Label":        "Morale Save",
+        "Tooltip":      "Roll the puppet's Morale save (d20 under Morale). Failure crumbles the puppet to ash.",
+        "NoMorale":     "Set puppet Morale before rolling saves.",
+        "Success":      "Morale holds — the puppet stands firm.",
+        "Fail":         "Morale fails — the puppet crumbles to ash."
       },
       "PuppetAttackHint": "Typical attack styles by puppet type (FLAIL v1 p.16): skeletons bite, ghouls drain, grasping corpses grasp, strangled dead choke."
     },
