@@ -10632,3 +10632,10 @@
 .summon-puppet-banner {
   border-left-color: #5a2a6a !important;
 }
+
+/* Bone Whisperer Spirit Harvesting tiles in the Class Actions panel
+   (v0.4.52) — subtle blue tint to match the class-tab spirit-harvest
+   buttons so the two locations feel visually paired. */
+.flail.sheet .class-actions-body .ca-spirit-harvest {
+  border-left: 3px solid #2a3d5a;
+}
