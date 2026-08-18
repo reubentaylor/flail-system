@@ -428,3 +428,101 @@ export class FlailCombatTalentModel extends foundry.abstract.TypeDataModel {
     };
   }
 }
+
+/* -------------------------------------------- */
+/*  Religion — Cleric class Item                */
+/* -------------------------------------------- */
+
+/**
+ * Religion Item — first-class Foundry Item document representing a
+ * Cleric's chosen religion (v0.4.58 foundation ship).
+ *
+ * Schema follows the FLAIL rulebook pages 20-23:
+ *   - tagline, description        — flavour text
+ *   - god { name, title, desc }   — deity block
+ *   - holySymbolItem / Tags/ Note — canonical item name + carry-check keywords
+ *   - weaponSpecialty[]           — substring tokens for starting-gear filter
+ *   - armourSpecialty[] + Text    — token filter + always-displayed free text
+ *   - prayers []                  — drag-drop prayer references (uuid + name)
+ *   - layOnHandsFumble            — free-text consequence description
+ *   - attributeBonuses            — homebrew flexibility, empty for canonicals
+ *   - isCustomTemplate            — the picker's "Custom Religion" seed
+ *
+ * When embedded on a Cleric (v0.4.59 ship), the actor's downstream
+ * code reads from this item rather than the legacy `classOptions.religion`
+ * string, and the 6 prayers get imported onto the character.
+ */
+export class FlailReligionModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      tagline:     new fields.StringField({ blank: true, initial: "" }),
+      description: new fields.HTMLField({ required: false, blank: true, initial: "" }),
+
+      god: new fields.SchemaField({
+        name:        new fields.StringField({ blank: true, initial: "" }),
+        title:       new fields.StringField({ blank: true, initial: "" }),
+        description: new fields.StringField({ blank: true, initial: "" })
+      }),
+
+      // Holy symbol — canonical name for auto-fill in the starting-gear
+      // wizard AND tags list for castPrayer's substring "is the symbol
+      // being carried?" check. Note is optional flavour text displayed
+      // on the sheet (e.g. "may be placed atop body armour").
+      holySymbolItem: new fields.StringField({ blank: true, initial: "" }),
+      holySymbolTags: new fields.ArrayField(
+        new fields.StringField({ blank: false }),
+        { initial: [] }
+      ),
+      holySymbolNote: new fields.StringField({ blank: true, initial: "" }),
+
+      // Weapon specialty — substring tokens for the starting-gear
+      // weapon-dropdown filter (mirrors class weaponSpec pattern).
+      weaponSpecialty: new fields.ArrayField(
+        new fields.StringField({ blank: false }),
+        { initial: [] }
+      ),
+
+      // Armour: token filter for starting-gear + always-displayed
+      // free-text description. Empty array = no filter (all allowed).
+      // Text is what actually shows on the sheet since some rulings
+      // are hard to encode ("no armour, helmet or boots").
+      armourSpecialty:   new fields.ArrayField(
+        new fields.StringField({ blank: false }),
+        { initial: [] }
+      ),
+      armourAllowedText: new fields.StringField({ blank: true, initial: "" }),
+
+      // Divine Prayers — populated by drag-dropping prayer Items onto
+      // the religion Item sheet. Stored as { uuid, name } pairs; UUID
+      // is the source of truth for import onto the Cleric, name is
+      // cached for display without needing to resolve.
+      prayers: new fields.ArrayField(
+        new fields.SchemaField({
+          uuid: new fields.StringField({ blank: false }),
+          name: new fields.StringField({ blank: true, initial: "" })
+        }),
+        { initial: [] }
+      ),
+
+      // Lay on Hands fumble consequence — free-form because the four
+      // canonicals differ wildly (coin loss / mutton transformation /
+      // God's Wrath table / entanglement). GM adjudicates.
+      layOnHandsFumble: new fields.HTMLField({ required: false, blank: true, initial: "" }),
+
+      // Optional homebrew attribute bonuses. Empty for the four
+      // canonicals per rulebook.
+      attributeBonuses: new fields.ArrayField(
+        new fields.SchemaField({
+          attrKey:  new fields.StringField({
+            choices: ["str", "dex", "cha", "int", "luck"],
+            initial: "str"
+          }),
+          delta:    new fields.NumberField({ integer: true, initial: 0 })
+        }),
+        { initial: [] }
+      ),
+
+      isCustomTemplate: new fields.BooleanField({ initial: false })
+    };
+  }
+}

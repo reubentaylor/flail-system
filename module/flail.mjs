@@ -18,7 +18,8 @@ import {
   FlailInstrumentModel,
   FlailGuildModel,
   FlailBackgroundModel,
-  FlailCombatTalentModel
+  FlailCombatTalentModel,
+  FlailReligionModel
 } from "./data/items.mjs";
 
 import { FlailActor } from "./documents/actor.mjs";
@@ -44,6 +45,7 @@ import { ensureWizardSpellsCompendium } from "./setup/import-wizard-spells.mjs";
 import { ensurePrimalGiftsCompendium } from "./setup/import-primal-gifts.mjs";
 import { ensureTinkererGadgetsCompendium } from "./setup/import-tinkerer-gadgets.mjs";
 import { ensureThievingTalentsCompendium } from "./setup/import-thieving-talents.mjs";
+import { ensureReligionsCompendium } from "./setup/import-religions.mjs";
 import { ensureUndeadPuppetActor, deleteUndeadPuppetTokens } from "./documents/undead-puppet.mjs";
 import { ensureFlailRollTables, ensureFlailMacros } from "./setup/import-rolltables.mjs";
 import { ensureFlailBestiary } from "./setup/import-bestiary.mjs";
@@ -112,6 +114,14 @@ Hooks.once("init", () => {
     game.settings.register("flail", "combatTalentsVersion", {
       name: "FLAIL Combat Talents version",
       hint: "Internal — last bundled-combat-talents version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "religionsVersion", {
+      name: "FLAIL Religions version",
+      hint: "Internal — last bundled-religions version this world synced from. Do not edit.",
       scope: "world",
       config: false,
       type: Number,
@@ -285,7 +295,8 @@ Hooks.once("init", () => {
       instrument:   FlailInstrumentModel,
       guild:        FlailGuildModel,
       background:   FlailBackgroundModel,
-      combatTalent: FlailCombatTalentModel
+      combatTalent: FlailCombatTalentModel,
+      religion:     FlailReligionModel
     };
     console.log(`${TAG} init — data models registered`);
 
@@ -366,6 +377,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/item/types/guild.hbs",
         "systems/flail/templates/item/types/background.hbs",
         "systems/flail/templates/item/types/combatTalent.hbs",
+        "systems/flail/templates/item/types/religion.hbs",
         "systems/flail/templates/chat/attack-roll.hbs",
         "systems/flail/templates/chat/save-roll.hbs",
         "systems/flail/templates/chat/cast-prayer.hbs",
@@ -451,6 +463,7 @@ Hooks.once("ready", async () => {
   await ensureFlailScrolls();
   await ensureFlailPotions();
   await ensureDivinePrayersCompendium();
+  await ensureReligionsCompendium();
   await ensureConditionsCompendium();
   await ensureGuildsCompendium();
   await ensureHexcrawlTablesCompendium();

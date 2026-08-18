@@ -1,0 +1,104 @@
+{{!--
+  Religion Item sheet — full-fat editor for the Cleric's religion.
+  Fields ordered top-to-bottom by the rulebook's structure (name /
+  tagline / description / god block / holy symbol / weapon +
+  armour specialty / prayers drop-zone / LoH fumble / attribute
+  bonuses / custom-template flag).
+--}}
+<form class="flail sheet flail-religion-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" />
+    <div class="header-fields">
+      <input type="text" name="name" value="{{item.name}}" placeholder="Religion name" {{#unless editable}}disabled{{/unless}} />
+      <input type="text" name="system.tagline" value="{{system.tagline}}" placeholder="Evocative subtitle" {{#unless editable}}disabled{{/unless}} />
+    </div>
+  </header>
+
+  <section class="rel-section">
+    <header class="tab-label">Description</header>
+    {{editor descriptionHTML target="system.description" button=true editable=editable engine="prosemirror"}}
+  </section>
+
+  <section class="rel-section rel-god">
+    <header class="tab-label">Deity</header>
+    <div class="rel-god-grid">
+      <label>Name
+        <input type="text" name="system.god.name" value="{{system.god.name}}" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label>Title
+        <input type="text" name="system.god.title" value="{{system.god.title}}" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label class="rel-god-desc">Descriptor
+        <input type="text" name="system.god.description" value="{{system.god.description}}" placeholder="One-line nature of the god"  {{#unless editable}}disabled{{/unless}} />
+      </label>
+    </div>
+  </section>
+
+  <section class="rel-section rel-symbol">
+    <header class="tab-label">Holy Symbol</header>
+    <div class="rel-symbol-grid">
+      <label>Canonical item name
+        <input type="text" name="system.holySymbolItem" value="{{system.holySymbolItem}}" placeholder="e.g. Cross of Sheezuz" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label>Substring tags (comma-separated)
+        <input type="text" name="flail.holySymbolTagsRaw" value="{{holySymbolTagsRaw}}" placeholder="e.g. cross, wooden" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label class="rel-full">Display note
+        <input type="text" name="system.holySymbolNote" value="{{system.holySymbolNote}}" placeholder="Optional flavour" {{#unless editable}}disabled{{/unless}} />
+      </label>
+    </div>
+    <p class="rel-hint">Tags are matched as substrings against carried gear names — the Cleric's Prayer casting check requires at least one match.</p>
+  </section>
+
+  <section class="rel-section rel-combat">
+    <header class="tab-label">Combat Gear Specialty</header>
+    <label>Weapon substring tokens (comma-separated)
+      <input type="text" name="flail.weaponSpecialtyRaw" value="{{weaponSpecialtyRaw}}" placeholder="e.g. club, quarterstaff, sling" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>Armour substring tokens (comma-separated, empty = all allowed)
+      <input type="text" name="flail.armourSpecialtyRaw" value="{{armourSpecialtyRaw}}" placeholder="e.g. leather, hide" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>Armour rule (free text, always displayed)
+      <input type="text" name="system.armourAllowedText" value="{{system.armourAllowedText}}" placeholder='e.g. "no armour, helmet, or boots"' {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </section>
+
+  <section class="rel-section rel-prayers">
+    <header class="tab-label">Divine Prayers</header>
+    <p class="rel-hint">Drag Divine Prayer items from any compendium into the box below.</p>
+    <ul class="rel-prayers-list rel-prayers-dropzone" data-drop-target="religionPrayers">
+      {{#each system.prayers as |p i|}}
+      <li class="rel-prayer-row" data-index="{{i}}">
+        <span class="rel-prayer-num">{{add i 1}}.</span>
+        <span class="rel-prayer-name">{{p.name}}</span>
+        {{#if p.uuid}}
+        <span class="rel-prayer-uuid" title="{{p.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="No UUID resolved — prayer will be skipped at import"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if ../editable}}
+        <button type="button" data-action="prayerRemove" data-index="{{i}}" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </li>
+      {{/each}}
+      {{#unless system.prayers.length}}
+      <li class="rel-prayers-empty">Drop prayer items here (or leave empty and Clerics will get none).</li>
+      {{/unless}}
+    </ul>
+  </section>
+
+  <section class="rel-section rel-loh">
+    <header class="tab-label">Lay on Hands — Fumble</header>
+    <p class="rel-hint">Free-form description of what happens when a Cleric of this religion fumbles a Lay on Hands roll. Rolled and adjudicated by the GM at the table.</p>
+    {{editor layOnHandsFumbleHTML target="system.layOnHandsFumble" button=true editable=editable engine="prosemirror"}}
+  </section>
+
+  {{#if editable}}
+  <section class="rel-section rel-flags">
+    <label class="rel-checkbox">
+      <input type="checkbox" name="system.isCustomTemplate" {{#if system.isCustomTemplate}}checked{{/if}} />
+      Custom Template (marks this as an editable homebrew starter)
+    </label>
+  </section>
+  {{/if}}
+</form>

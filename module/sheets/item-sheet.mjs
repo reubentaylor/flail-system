@@ -20,7 +20,8 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       bgGrantAdd:       FlailItemSheet.#onBgGrantAdd,
       bgGrantRemove:    FlailItemSheet.#onBgGrantRemove,
       bgGrantsReset:    FlailItemSheet.#onBgGrantsReset,
-      bgGrantsValidate: FlailItemSheet.#onBgGrantsValidate
+      bgGrantsValidate: FlailItemSheet.#onBgGrantsValidate,
+      prayerRemove:     FlailItemSheet.#onReligionPrayerRemove
     }
   };
 
@@ -34,6 +35,21 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
    *
    * Confirmed via a DialogV2 to prevent accidental resets.
    */
+  /**
+   * Remove a prayer entry from a religion Item's `system.prayers`
+   * array by index. Rebuilds the array without the removed entry
+   * and writes back.
+   */
+  static async #onReligionPrayerRemove(event, target) {
+    if (this.item.type !== "religion") return;
+    const idx = Number(target.dataset.index);
+    if (!Number.isInteger(idx)) return;
+    const current = [...(this.item.system.prayers ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current.splice(idx, 1);
+    await this.item.update({ "system.prayers": current });
+  }
+
   static async #onBgGrantsReset(event, target) {
     if (this.item.type !== "background") return;
     const grants = [...(this.item.system.grants ?? [])];
@@ -192,6 +208,22 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if (this.item.type === "weapon") {
       ctx.tagsCsv = (this.item.system.tags ?? []).join(", ");
     }
+
+    // Religion Item — pre-format the three token-array fields as CSV
+    // strings so the sheet can render them as single-line inputs, and
+    // enrich the two HTML fields (description + layOnHandsFumble) via
+    // TextEditor.enrichHTML so links/rolls in ProseMirror content
+    // render live in the editor's read view.
+    if (this.item.type === "religion") {
+      ctx.holySymbolTagsRaw  = (this.item.system.holySymbolTags  ?? []).join(", ");
+      ctx.weaponSpecialtyRaw = (this.item.system.weaponSpecialty ?? []).join(", ");
+      ctx.armourSpecialtyRaw = (this.item.system.armourSpecialty ?? []).join(", ");
+      const enrich = foundry.applications.ux.TextEditor.implementation.enrichHTML.bind(
+        foundry.applications.ux.TextEditor.implementation
+      );
+      ctx.descriptionHTML       = await enrich(this.item.system.description ?? "", { relativeTo: this.item, secrets: this.item.isOwner });
+      ctx.layOnHandsFumbleHTML  = await enrich(this.item.system.layOnHandsFumble ?? "", { relativeTo: this.item, secrets: this.item.isOwner });
+    }
     return ctx;
   }
 
@@ -232,6 +264,28 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
         foundry.utils.setProperty(data, "system.tags", tags);
         delete data.system.tagsCsv;
       }
+    }
+
+    // Religion Item — parse the three "raw CSV" inputs (bound to
+    // flail.* pseudo-fields to keep FormData off the actual schema
+    // paths) back into ArrayField-shaped string arrays.
+    if (this.item.type === "religion") {
+      const csvMap = {
+        holySymbolTagsRaw:  "system.holySymbolTags",
+        weaponSpecialtyRaw: "system.weaponSpecialty",
+        armourSpecialtyRaw: "system.armourSpecialty"
+      };
+      for (const [src, dst] of Object.entries(csvMap)) {
+        const raw = foundry.utils.getProperty(data, `flail.${src}`);
+        if (raw !== undefined) {
+          const tokens = String(raw)
+            .split(",")
+            .map(t => t.trim())
+            .filter(Boolean);
+          foundry.utils.setProperty(data, dst, tokens);
+        }
+      }
+      if (data.flail) delete data.flail;
     }
 
     // Instrument effect table — the banded editor renders three
@@ -281,6 +335,48 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
         await this.document.update({ "system.range": current });
       });
     });
+
+    // Religion Item — prayer drop zone. Accepts prayer Items dropped
+    // from any Item compendium; stores { uuid, name } in the schema
+    // array. Skips duplicates by UUID. Rejects non-prayer drops with
+    // a notification.
+    if (this.item.type === "religion") {
+      const zone = root.querySelector(".rel-prayers-dropzone");
+      if (zone) {
+        zone.addEventListener("dragover", ev => {
+          ev.preventDefault();
+          if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
+          zone.classList.add("drop-active");
+        });
+        zone.addEventListener("dragleave", () => zone.classList.remove("drop-active"));
+        zone.addEventListener("drop", async ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          zone.classList.remove("drop-active");
+          let payload;
+          try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); }
+          catch { return; }
+          const dropped = await Item.implementation.fromDropData(payload);
+          if (!dropped) return;
+          if (dropped.type !== "prayer") {
+            ui.notifications?.warn("Religion prayers list only accepts prayer items.");
+            return;
+          }
+          const uuid = dropped.uuid || payload.uuid || "";
+          if (!uuid) {
+            ui.notifications?.warn("Dropped prayer has no resolvable UUID.");
+            return;
+          }
+          const current = [...(this.item.system.prayers ?? [])];
+          if (current.some(p => p.uuid === uuid)) {
+            ui.notifications?.info(`"${dropped.name}" is already on this religion's prayers list.`);
+            return;
+          }
+          current.push({ uuid, name: dropped.name });
+          await this.item.update({ "system.prayers": current });
+        });
+      }
+    }
 
     // Guild drop zones — one for talent items, one for feature items.
     // On drop, snapshot the dropped item's data and append to the
