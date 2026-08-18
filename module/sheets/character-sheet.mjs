@@ -10,6 +10,7 @@ import { CombatTalentPicker } from "../apps/combat-talent-picker.mjs";
 import { BackgroundPicker } from "../apps/background-picker.mjs";
 import { BackgroundGrantsDialog } from "../apps/background-grants-dialog.mjs";
 import { StartingGearWizard } from "../apps/starting-gear-wizard.mjs";
+import { summonUndeadPuppetToken, deleteUndeadPuppetTokens } from "../documents/undead-puppet.mjs";
 import { WIZARD_SPELLS } from "../setup/wizard-spells-data.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -3030,12 +3031,23 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const actor = this.actor;
     const puppet = actor.system.undeadPuppet ?? {};
     const name = puppet.name || game.i18n.localize("FLAIL.Section.UndeadPuppet");
+
+    // Attempt token spawn on the currently-viewed scene. Silent fallback
+    // to chat-card-only if the BW has no token on the canvas (per
+    // decision 9 of the v0.4.54 design). Both the token AND the chat
+    // card fire when a token spawn succeeds (decision 8).
+    const token = await summonUndeadPuppetToken(actor);
+    const tokenLine = token
+      ? `<p><em>${game.i18n.localize("FLAIL.BoneWhisperer.SummonPuppet.TokenPlaced")}</em></p>`
+      : "";
+
     ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
       content: `
         <div class="flail-chat-card summon-puppet-chat">
           <p><i class="fas fa-skull"></i> <strong>${actor.name}</strong> ${game.i18n.format("FLAIL.BoneWhisperer.SummonPuppet.Label", { name })}</p>
           <p><em>${game.i18n.localize("FLAIL.BoneWhisperer.SummonPuppet.Reason")}</em></p>
+          ${tokenLine}
           <ul style="margin:.3rem 0;padding-left:1.2rem">
             <li>HP: ${puppet.hp ?? "?"} · Morale: ${puppet.morale ?? "?"}</li>
             <li>TH: ${puppet.th ?? "?"} · DMG: ${puppet.damage ?? "?"}</li>
@@ -3136,6 +3148,11 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       // Zero out HP so the puppet reads as crumbled on the sheet.
       // Stats stay so the player can re-summon without retyping.
       await actor.update({ "system.undeadPuppet.hp": 0 });
+      // Delete any active puppet tokens for this BW on the current
+      // scene. The deleteToken hook in flail.mjs would zero HP again
+      // as a safety net, but writing here keeps the sheet update
+      // synchronous with the roll outcome.
+      await deleteUndeadPuppetTokens(actor);
     }
 
     const flavor = `

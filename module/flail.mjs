@@ -44,6 +44,7 @@ import { ensureWizardSpellsCompendium } from "./setup/import-wizard-spells.mjs";
 import { ensurePrimalGiftsCompendium } from "./setup/import-primal-gifts.mjs";
 import { ensureTinkererGadgetsCompendium } from "./setup/import-tinkerer-gadgets.mjs";
 import { ensureThievingTalentsCompendium } from "./setup/import-thieving-talents.mjs";
+import { ensureUndeadPuppetActor, deleteUndeadPuppetTokens } from "./documents/undead-puppet.mjs";
 import { ensureFlailRollTables, ensureFlailMacros } from "./setup/import-rolltables.mjs";
 import { ensureFlailBestiary } from "./setup/import-bestiary.mjs";
 import { ensureFlailUniqueItems } from "./setup/import-unique-items.mjs";
@@ -453,6 +454,7 @@ Hooks.once("ready", async () => {
   await ensureConditionsCompendium();
   await ensureGuildsCompendium();
   await ensureHexcrawlTablesCompendium();
+  await ensureUndeadPuppetActor();
 
   // Socket relay — players can't create Active Effects on actors they
   // don't own, so player-triggered buffs (Bard's Witness Me!) are
@@ -1063,4 +1065,35 @@ Hooks.on("deleteItem", async (item, options, userId) => {
     }
   }
   // "keep" / "cancel" / dialog dismissal — no cleanup, items remain.
+});
+
+/**
+ * Undead puppet token cleanup hook (v0.4.55). When any user deletes
+ * a puppet token (via GM right-click → delete, or a Morale-fail auto-
+ * delete initiated elsewhere), zero out the summoning BW's puppet HP
+ * field so their sheet reflects "no puppet active" — they can then
+ * summon a fresh one on their next two-pair without re-typing stats.
+ *
+ * GM-only guard: only one client should execute the actor update to
+ * avoid conflict writes. If the deleting user IS the GM, they do it;
+ * otherwise the deletion propagates to the GM's client via Foundry's
+ * normal broadcast and this hook fires there too.
+ */
+Hooks.on("deleteToken", async (tokenDoc, options, userId) => {
+  try {
+    if (!game.user.isGM) return;
+    if (!tokenDoc.getFlag?.("flail", "isUndeadPuppet")) return;
+    const bwActorId = tokenDoc.getFlag("flail", "summonedByActorId");
+    if (!bwActorId) return;
+    const bwActor = game.actors.get(bwActorId);
+    if (!bwActor) return;
+    // Zero HP only if it was tracking a summon (i.e. > 0). If it was
+    // already 0 (crumbled/pre-summon state), no need to write again.
+    const curHp = bwActor.system.undeadPuppet?.hp ?? 0;
+    if (curHp > 0) {
+      await bwActor.update({ "system.undeadPuppet.hp": 0 });
+    }
+  } catch (err) {
+    console.error("FLAIL | deleteToken puppet cleanup failed:", err);
+  }
 });

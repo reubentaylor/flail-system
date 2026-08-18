@@ -790,6 +790,14 @@ async function summonUndeadPuppet(btn, flags, message) {
     return;
   }
 
+  // Attempt to place the token on the current scene. Silent fallback
+  // to chat-only when the BW has no token on canvas.
+  const { summonUndeadPuppetToken } = await import("../documents/undead-puppet.mjs");
+  const token = await summonUndeadPuppetToken(actor);
+  const tokenLine = token
+    ? `<p><em>${game.i18n.localize("FLAIL.BoneWhisperer.SummonPuppet.TokenPlaced")}</em></p>`
+    : "";
+
   // Mark resolved on the source message.
   await message.update({
     "flags.flail.attackRoll.summonPuppetOption.resolved": true
@@ -818,6 +826,7 @@ async function summonUndeadPuppet(btn, flags, message) {
       <div class="flail-chat-card summon-puppet-chat">
         <p><i class="fas fa-skull"></i> <strong>${actor.name}</strong> ${game.i18n.format("FLAIL.BoneWhisperer.SummonPuppet.Label", { name })}</p>
         <p><em>${game.i18n.localize("FLAIL.BoneWhisperer.SummonPuppet.Reason")}</em></p>
+        ${tokenLine}
         <ul style="margin:.3rem 0;padding-left:1.2rem">
           <li>HP: ${puppet.hp ?? "?"} · Morale: ${puppet.morale ?? "?"}</li>
           <li>TH: ${puppet.th ?? "?"} · DMG: ${puppet.damage ?? "?"}</li>

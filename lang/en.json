@@ -980,7 +980,8 @@
         "Reason":       "Two pairs rolled on To Hit — the Undead Puppet manifests to fight alongside.",
         "BannerTitle":   "Summon Puppet",
         "BannerTrigger": "Two pairs — you may summon your Undead Puppet.",
-        "BannerResolved":"Puppet summoned."
+        "BannerResolved":"Puppet summoned.",
+        "TokenPlaced":   "A puppet token has been placed on the scene, adjacent to you."
       },
       "PuppetAttack": {
         "Label":        "Puppet Attack",
