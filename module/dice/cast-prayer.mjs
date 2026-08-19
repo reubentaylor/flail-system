@@ -1,4 +1,5 @@
 import { FLAIL } from "../helpers/config.mjs";
+import { rollGodsWrathDice } from "./gods-wrath.mjs";
 
 /**
  * Cast a divine prayer.
@@ -75,12 +76,16 @@ export async function rollPrayer({ actor, prayer } = {}) {
   }
 
   /* ---------- 4. On fumble, roll God's Wrath ---------- */
+  // Uses the shared helper (module/dice/gods-wrath.mjs) so the table
+  // and roll mechanic have a single source of truth. We use the -Dice
+  // variant (no separate chat card) because the outcome renders
+  // INSIDE the prayer's own chat card below.
   let wrathRoll = null;
   let wrathEntry = null;
   if (outcome === "fumble") {
-    wrathRoll = new Roll("1d10");
-    await wrathRoll.evaluate();
-    wrathEntry = FLAIL.godsWrath[wrathRoll.total - 1] ?? null;
+    const w = await rollGodsWrathDice();
+    wrathRoll = w.roll;
+    wrathEntry = w.outcome;
   }
 
   /* ---------- 5. Substitute [LEVEL] in prayer description ---------- */

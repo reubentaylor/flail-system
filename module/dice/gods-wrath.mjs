@@ -25,6 +25,22 @@ const GODS_WRATH_TABLE = [
 ];
 
 /**
+ * Roll God's Wrath and return just the roll + outcome data. Doesn't
+ * post a chat card — for callers that render God's Wrath INSIDE
+ * their own chat card (cast-prayer, miracle-call). Standalone
+ * "roll a Wrath and show it" callers use `rollGodsWrath` below.
+ *
+ * @returns {Promise<{ roll: Roll, outcome: { roll:number, name:string, text:string } }>}
+ */
+export async function rollGodsWrathDice() {
+  const roll = new Roll("1d10");
+  await roll.evaluate();
+  const idx = Math.max(1, Math.min(10, roll.total));
+  const outcome = GODS_WRATH_TABLE[idx - 1];
+  return { roll, outcome };
+}
+
+/**
  * Roll on God's Wrath and post a chat card. Returns the outcome so
  * callers can post-process (e.g. entry 10 triggers a separate Death
  * Table roll — currently GM-adjudicated).
@@ -35,10 +51,8 @@ const GODS_WRATH_TABLE = [
  * @returns {Promise<{ roll: Roll, outcome: { roll:number, name:string, text:string } }>}
  */
 export async function rollGodsWrath({ actor = null, reason = "God's Wrath" } = {}) {
-  const roll = new Roll("1d10");
-  await roll.evaluate();
-  const idx = Math.max(1, Math.min(10, roll.total));
-  const outcome = GODS_WRATH_TABLE[idx - 1];
+  const { roll, outcome } = await rollGodsWrathDice();
+  const idx = outcome.roll;
 
   const flavor = `
     <div class="flail-chat-card gods-wrath-chat">

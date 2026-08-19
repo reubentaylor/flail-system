@@ -1,4 +1,5 @@
 import { FLAIL } from "../helpers/config.mjs";
+import { rollGodsWrathDice } from "./gods-wrath.mjs";
 
 /**
  * Miracle Call (Cleric special skill).
@@ -9,8 +10,9 @@ import { FLAIL } from "../helpers/config.mjs";
  *   - Roll d6s equal to the number of words used.
  *   - The miracle always occurs — there's no save, no failure path.
  *   - For each natural 6 rolled, the Cleric must also roll for God's
- *     Wrath (1d10 on FLAIL.godsWrath, the same table used for prayer
- *     fumbles). Multiple 6s mean multiple separate Wrath rolls.
+ *     Wrath (1d10 on the God's Wrath table — module/dice/gods-wrath.mjs,
+ *     the same helper used for prayer fumbles). Multiple 6s mean
+ *     multiple separate Wrath rolls.
  *
  * Caller is expected to have:
  *   - Verified the Cleric hasn't already used Miracle Call this session
@@ -39,20 +41,19 @@ export async function rollMiracleCall({ actor, wordCount } = {}) {
   const sixCount = dieResults.filter(r => r === 6).length;
 
   /* ---------- 2. For each 6, roll one God's Wrath d10 ---------- */
-  // Each six = one independent Wrath roll. Duplicates allowed (the GM
-  // resolves them in narrative order). Collected as separate Roll
-  // instances so DSN animates each one and the rolls drawer shows them.
+  // Each six = one independent Wrath roll (via the shared helper in
+  // module/dice/gods-wrath.mjs). Duplicates allowed (the GM resolves
+  // them in narrative order). Collected as separate Roll instances so
+  // DSN animates each one and the rolls drawer shows them.
   const wrathRolls = [];
   const wrathResults = [];
   for (let i = 0; i < sixCount; i++) {
-    const wr = new Roll("1d10");
-    await wr.evaluate();
-    const entry = FLAIL.godsWrath[wr.total - 1] ?? null;
+    const { roll: wr, outcome: entry } = await rollGodsWrathDice();
     wrathRolls.push(wr);
     wrathResults.push({
-      roll: wr.total,
-      name: entry?.name ?? "?",
-      text: entry?.text ?? ""
+      roll: entry.roll,
+      name: entry.name,
+      text: entry.text
     });
   }
 

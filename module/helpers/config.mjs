@@ -262,23 +262,14 @@ FLAIL.boneWhispererSideEffects = [
 ];
 
 /**
- * God's Wrath table — d10 lookup, rolled when a Cleric fumbles a prayer
- * cast. Entries taken verbatim from FLAIL v0.2 page 21. The chat card
- * for a fumble surfaces the entry; the GM resolves any narrative or
- * mechanical consequences (damage rolls, condition application, etc.).
+/**
+ * God's Wrath table — MOVED to module/dice/gods-wrath.mjs (v0.4.64).
+ * Single source of truth for the d10 table lives in that helper so
+ * cast-prayer.mjs, miracle-call.mjs, and future callers can share
+ * the same roll mechanic + entries. Any legacy code that referenced
+ * FLAIL.godsWrath should import `rollGodsWrathDice` (or the chat-
+ * posting `rollGodsWrath`) from ../dice/gods-wrath.mjs instead.
  */
-FLAIL.godsWrath = [
-  { name: "Focus Break",          text: "Lose next round of combat." },
-  { name: "Repentance",           text: "Self-inflict d4 damage." },
-  { name: "Divine Silence",       text: "Cannot cast more prayers today." },
-  { name: "Praying Hands",        text: "Cannot carry weapons today." },
-  { name: "Penitent Donation",    text: "Discard one random item." },
-  { name: "Stiffening Contrition", text: "Cannot move for d6 rounds." },
-  { name: "Atonement",            text: "Self-inflict d8 damage." },
-  { name: "Zealotry",             text: "Must attack nearest ally immediately." },
-  { name: "Blinding Light",       text: "Cannot see for d6 rounds." },
-  { name: "Divine Calling",       text: "Roll on the Death Table." }
-];
 
 /* -------------------------------------------- */
 /*  Inventory Layout                            */
