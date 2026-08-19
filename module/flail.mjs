@@ -47,6 +47,7 @@ import { ensureTinkererGadgetsCompendium } from "./setup/import-tinkerer-gadgets
 import { ensureThievingTalentsCompendium } from "./setup/import-thieving-talents.mjs";
 import { ensureReligionsCompendium } from "./setup/import-religions.mjs";
 import { ensureUndeadPuppetActor, deleteUndeadPuppetTokens } from "./documents/undead-puppet.mjs";
+import { importReligionPrayers, handleReligionSwap, handleReligionDelete } from "./documents/religion-embed.mjs";
 import { ensureFlailRollTables, ensureFlailMacros } from "./setup/import-rolltables.mjs";
 import { ensureFlailBestiary } from "./setup/import-bestiary.mjs";
 import { ensureFlailUniqueItems } from "./setup/import-unique-items.mjs";
@@ -769,8 +770,84 @@ Hooks.on("preCreateActor", (actor, data) => {
   }
 });
 
-Hooks.on("preCreateItem", (item, data) => {
-  /* reserved */
+Hooks.on("preCreateItem", (item, data, options, userId) => {
+  try {
+    // Religion embed on a Cleric character: if the actor already has
+    // a religion, block the create and defer to the swap dialog. If
+    // no religion exists yet, allow the create (createItem hook then
+    // handles the prayer import). Non-Cleric actors also allowed
+    // through — with a soft warning that the embed is inert.
+    if (item.type !== "religion") return;
+    const actor = item.parent;
+    if (!actor || actor.documentName !== "Actor") return;
+    if (actor.type !== "character") return;
+
+    if (actor.system?.class !== "cleric") {
+      ui.notifications?.warn(
+        `FLAIL: religion embedded on ${actor.name} (class=${actor.system?.class}) — no mechanical effect unless the character is a Cleric.`
+      );
+      return; // allow embed anyway
+    }
+
+    const existing = actor.items.find(i => i.type === "religion" && i.id !== item.id);
+    if (existing) {
+      // Block the direct create; run the swap dialog which handles
+      // cleanup + re-embeds via its own createEmbeddedDocuments call.
+      handleReligionSwap(actor, existing, item.toObject()).catch(err => {
+        console.error("FLAIL | Religion swap failed:", err);
+      });
+      return false;
+    }
+  } catch (err) {
+    console.error("FLAIL | preCreateItem religion hook failed:", err);
+  }
+});
+
+/**
+ * After a religion Item is embedded on a Cleric, import its prayers
+ * onto the actor. Fires only for the first (non-swap) embed path;
+ * the swap flow's own createEmbeddedDocuments also triggers here.
+ */
+Hooks.on("createItem", async (item, options, userId) => {
+  try {
+    if (item.type !== "religion") return;
+    if (userId !== game.user.id) return; // only run on the creating client
+    const actor = item.parent;
+    if (!actor || actor.documentName !== "Actor") return;
+    if (actor.type !== "character") return;
+    if (actor.system?.class !== "cleric") return;
+    const result = await importReligionPrayers(actor, item);
+    const parts = [];
+    if (result.imported > 0) parts.push(`imported ${result.imported}`);
+    if (result.adopted  > 0) parts.push(`adopted ${result.adopted} existing`);
+    if (parts.length) {
+      ui.notifications?.info(
+        `FLAIL: ${item.name} on ${actor.name} — ${parts.join(", ")} prayer(s).`
+      );
+    }
+  } catch (err) {
+    console.error("FLAIL | createItem religion hook failed:", err);
+  }
+});
+
+/**
+ * Before a religion Item is deleted from a Cleric, prompt with the
+ * three-choice cleanup dialog (keep-prayers / delete-prayers / cancel).
+ * Skipped when options.flailSwap is set (the swap flow already
+ * handled prayer cleanup, so we don't want a second prompt).
+ */
+Hooks.on("preDeleteItem", async (item, options, userId) => {
+  try {
+    if (item.type !== "religion") return;
+    if (userId !== game.user.id) return;
+    const actor = item.parent;
+    if (!actor || actor.documentName !== "Actor") return;
+    if (actor.type !== "character") return;
+    const proceed = await handleReligionDelete(item, options);
+    if (!proceed) return false;
+  } catch (err) {
+    console.error("FLAIL | preDeleteItem religion hook failed:", err);
+  }
 });
 
 /**

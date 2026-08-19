@@ -21,7 +21,10 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       bgGrantRemove:    FlailItemSheet.#onBgGrantRemove,
       bgGrantsReset:    FlailItemSheet.#onBgGrantsReset,
       bgGrantsValidate: FlailItemSheet.#onBgGrantsValidate,
-      prayerRemove:     FlailItemSheet.#onReligionPrayerRemove
+      prayerRemove:       FlailItemSheet.#onReligionPrayerRemove,
+      holySymbolRemove:   FlailItemSheet.#onReligionHolySymbolRemove,
+      weaponSpecRemove:   FlailItemSheet.#onReligionWeaponSpecRemove,
+      armourSpecRemove:   FlailItemSheet.#onReligionArmourSpecRemove
     }
   };
 
@@ -48,6 +51,34 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if (idx < 0 || idx >= current.length) return;
     current.splice(idx, 1);
     await this.item.update({ "system.prayers": current });
+  }
+
+  /** Clear the religion's holy symbol reference (single item). */
+  static async #onReligionHolySymbolRemove(event, target) {
+    if (this.item.type !== "religion") return;
+    await this.item.update({ "system.holySymbol": { uuid: "", name: "" } });
+  }
+
+  /** Remove a weapon entry from a religion's weaponSpecialty[]. */
+  static async #onReligionWeaponSpecRemove(event, target) {
+    if (this.item.type !== "religion") return;
+    const idx = Number(target.dataset.index);
+    if (!Number.isInteger(idx)) return;
+    const current = [...(this.item.system.weaponSpecialty ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current.splice(idx, 1);
+    await this.item.update({ "system.weaponSpecialty": current });
+  }
+
+  /** Remove an armour entry from a religion's armourSpecialty[]. */
+  static async #onReligionArmourSpecRemove(event, target) {
+    if (this.item.type !== "religion") return;
+    const idx = Number(target.dataset.index);
+    if (!Number.isInteger(idx)) return;
+    const current = [...(this.item.system.armourSpecialty ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current.splice(idx, 1);
+    await this.item.update({ "system.armourSpecialty": current });
   }
 
   static async #onBgGrantsReset(event, target) {
@@ -209,15 +240,12 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       ctx.tagsCsv = (this.item.system.tags ?? []).join(", ");
     }
 
-    // Religion Item — pre-format the three token-array fields as CSV
-    // strings so the sheet can render them as single-line inputs, and
-    // enrich the two HTML fields (description + layOnHandsFumble) via
-    // TextEditor.enrichHTML so links/rolls in ProseMirror content
-    // render live in the editor's read view.
+    // Religion Item — enrich the two HTML fields (description +
+    // layOnHandsFumble) via TextEditor.enrichHTML so links/rolls in
+    // ProseMirror content render live in the editor's read view.
+    // The three item-ref lists (holySymbol, weaponSpecialty,
+    // armourSpecialty) are drag-drop populated; no CSV pre-format.
     if (this.item.type === "religion") {
-      ctx.holySymbolTagsRaw  = (this.item.system.holySymbolTags  ?? []).join(", ");
-      ctx.weaponSpecialtyRaw = (this.item.system.weaponSpecialty ?? []).join(", ");
-      ctx.armourSpecialtyRaw = (this.item.system.armourSpecialty ?? []).join(", ");
       const enrich = foundry.applications.ux.TextEditor.implementation.enrichHTML.bind(
         foundry.applications.ux.TextEditor.implementation
       );
@@ -264,28 +292,6 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
         foundry.utils.setProperty(data, "system.tags", tags);
         delete data.system.tagsCsv;
       }
-    }
-
-    // Religion Item — parse the three "raw CSV" inputs (bound to
-    // flail.* pseudo-fields to keep FormData off the actual schema
-    // paths) back into ArrayField-shaped string arrays.
-    if (this.item.type === "religion") {
-      const csvMap = {
-        holySymbolTagsRaw:  "system.holySymbolTags",
-        weaponSpecialtyRaw: "system.weaponSpecialty",
-        armourSpecialtyRaw: "system.armourSpecialty"
-      };
-      for (const [src, dst] of Object.entries(csvMap)) {
-        const raw = foundry.utils.getProperty(data, `flail.${src}`);
-        if (raw !== undefined) {
-          const tokens = String(raw)
-            .split(",")
-            .map(t => t.trim())
-            .filter(Boolean);
-          foundry.utils.setProperty(data, dst, tokens);
-        }
-      }
-      if (data.flail) delete data.flail;
     }
 
     // Instrument effect table — the banded editor renders three
@@ -336,13 +342,20 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       });
     });
 
-    // Religion Item — prayer drop zone. Accepts prayer Items dropped
-    // from any Item compendium; stores { uuid, name } in the schema
-    // array. Skips duplicates by UUID. Rejects non-prayer drops with
-    // a notification.
+    // Religion Item — four drop zones:
+    //   prayers        (list, prayer items only)
+    //   holySymbol     (single, any Item type — weapons can be symbols)
+    //   weaponSpecialty (list, weapon items only)
+    //   armourSpecialty (list, armour items only)
     if (this.item.type === "religion") {
-      const zone = root.querySelector(".rel-prayers-dropzone");
-      if (zone) {
+
+      /**
+       * Attach a drag-drop listener that appends { uuid, name } to
+       * a religion schema array (or writes a single ref if isSingle).
+       */
+      const attachDropZone = (selector, opts) => {
+        const zone = root.querySelector(selector);
+        if (!zone) return;
         zone.addEventListener("dragover", ev => {
           ev.preventDefault();
           if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
@@ -358,24 +371,50 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
           catch { return; }
           const dropped = await Item.implementation.fromDropData(payload);
           if (!dropped) return;
-          if (dropped.type !== "prayer") {
-            ui.notifications?.warn("Religion prayers list only accepts prayer items.");
+          if (opts.acceptedTypes && !opts.acceptedTypes.includes(dropped.type)) {
+            ui.notifications?.warn(opts.rejectMessage
+              ?? `This drop zone doesn't accept ${dropped.type} items.`);
             return;
           }
           const uuid = dropped.uuid || payload.uuid || "";
           if (!uuid) {
-            ui.notifications?.warn("Dropped prayer has no resolvable UUID.");
+            ui.notifications?.warn("Dropped item has no resolvable UUID.");
             return;
           }
-          const current = [...(this.item.system.prayers ?? [])];
-          if (current.some(p => p.uuid === uuid)) {
-            ui.notifications?.info(`"${dropped.name}" is already on this religion's prayers list.`);
+          if (opts.isSingle) {
+            await this.item.update({ [`system.${opts.field}`]: { uuid, name: dropped.name } });
+            return;
+          }
+          const current = [...(this.item.system[opts.field] ?? [])];
+          if (current.some(entry => entry.uuid === uuid)) {
+            ui.notifications?.info(`"${dropped.name}" is already in this list.`);
             return;
           }
           current.push({ uuid, name: dropped.name });
-          await this.item.update({ "system.prayers": current });
+          await this.item.update({ [`system.${opts.field}`]: current });
         });
-      }
+      };
+
+      attachDropZone(".rel-prayers-dropzone", {
+        field: "prayers",
+        acceptedTypes: ["prayer"],
+        rejectMessage: "Religion prayers list only accepts prayer items."
+      });
+      attachDropZone(".rel-symbol-drop", {
+        field: "holySymbol",
+        isSingle: true,
+        acceptedTypes: null // any Item type
+      });
+      attachDropZone(".rel-weapons-dropzone", {
+        field: "weaponSpecialty",
+        acceptedTypes: ["weapon"],
+        rejectMessage: "Weapon specialty list only accepts weapon items."
+      });
+      attachDropZone(".rel-armour-dropzone", {
+        field: "armourSpecialty",
+        acceptedTypes: ["armour"],
+        rejectMessage: "Armour specialty list only accepts armour items."
+      });
     }
 
     // Guild drop zones — one for talent items, one for feature items.

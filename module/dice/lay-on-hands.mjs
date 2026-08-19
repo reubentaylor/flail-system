@@ -54,6 +54,10 @@ export async function rollLayOnHands({ actor, target } = {}) {
   const level = actor.system.level ?? 1;
   const religionKey = actor.system.classOptions?.religion ?? "";
   const religion    = FLAIL.religions[religionKey] ?? null;
+  // v0.4.62: prefer embedded religion Item for fumble text + label
+  // (the item's HTML field overrides the legacy config string). Legacy
+  // fallback remains for unmigrated characters.
+  const religionItem = actor.items.find(i => i.type === "religion");
 
   /* ---------- 2. Roll the LUCK save ---------- */
   const saveRoll = new Roll("1d20");
@@ -106,9 +110,11 @@ export async function rollLayOnHands({ actor, target } = {}) {
       amount: healAmount
     } : null,
     fumbleText: outcome === "fumble"
-      ? (religion?.layOnHandsFumble ?? "Suffer consequences as per the Cleric's religion.")
+      ? (religionItem?.system?.layOnHandsFumble
+         ?? religion?.layOnHandsFumble
+         ?? "Suffer consequences as per the Cleric's religion.")
       : null,
-    religionLabel: religion?.label ?? ""
+    religionLabel: religionItem?.name ?? religion?.label ?? ""
   };
 
   const content = await foundry.applications.handlebars.renderTemplate(

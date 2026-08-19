@@ -51,10 +51,11 @@ export function buildReligionsData() {
           title: "God of Justice",
           description: "Baby revered through asceticism and offerings by fearing nobles."
         },
-        holySymbolItem: "Cross of Sheezuz",
-        holySymbolTags: ["cross"],
+        holySymbol: { name: "Cross of Sheezuz" },
         holySymbolNote: "A small wooden cross, worn openly.",
-        weaponSpecialty: ["club", "quarterstaff", "sling", "whip"],
+        weaponSpecialty: [
+          { name: "Club" }, { name: "Quarterstaff" }, { name: "Sling" }, { name: "Whip" }
+        ],
         armourSpecialty: [],
         armourAllowedText: "No armour, helmet, or boots.",
         prayers: [
@@ -74,7 +75,7 @@ export function buildReligionsData() {
       _id: stableReligionId("religion:crusade"),
       name: "Crusade of the Mutton Chalice",
       type: "religion",
-      img: "systems/flail/icons/items/mutton_tunic.webp",
+      img: "systems/flail/icons/items/mutton-tunic.png",
       system: {
         tagline: "For a thousand years they've searched for the Woolly Frail.",
         description: "<p>Mystic warrior-clerics of the Crusade have spent centuries seeking the lost relics of Meh, the Mutton of Knowledge. They combine martial devotion with esoteric scholarship.</p>",
@@ -83,10 +84,11 @@ export function buildReligionsData() {
           title: "Mutton of Knowledge",
           description: "Sustained by mysticism; its clerics vowed to unearth Its relics."
         },
-        holySymbolItem: "Mutton Tunic",
-        holySymbolTags: ["mutton"],
+        holySymbol: { name: "Mutton Tunic" },
         holySymbolNote: "A tunic with mutton crest; may be placed atop body armour.",
-        weaponSpecialty: ["mace", "maul", "warhammer"],
+        weaponSpecialty: [
+          { name: "Mace" }, { name: "Maul" }, { name: "Warhammer" }
+        ],
         armourSpecialty: [],
         armourAllowedText: "All armour.",
         prayers: [
@@ -115,10 +117,11 @@ export function buildReligionsData() {
           title: "Lord of Chaos",
           description: "Demon appeased through sacrifices and hedonism."
         },
-        holySymbolItem: "Helm of Zor'Vol",
-        holySymbolTags: ["horned", "zor'vol"],
+        holySymbol: { name: "Helm of Zor'Vol" },
         holySymbolNote: "A horned helmet; may also serve as armour.",
-        weaponSpecialty: ["flail", "morningstar", "spiked chain"],
+        weaponSpecialty: [
+          { name: "Flail" }, { name: "Morningstar" }, { name: "Spiked Chain" }
+        ],
         armourSpecialty: [],
         armourAllowedText: "All armour.",
         prayers: [
@@ -138,7 +141,7 @@ export function buildReligionsData() {
       _id: stableReligionId("religion:verdantGrove"),
       name: "Order of the Verdant Grove",
       type: "religion",
-      img: "systems/flail/icons/items/oak_leaf.webp",
+      img: "systems/flail/icons/items/oakleaf_medallion.webp",
       system: {
         tagline: "Protectors of nature, guardians of animal life.",
         description: "<p>Druidic clerics of the Verdant Grove serve Tul, God of Nature, who takes the form of wild animals. They protect wilderness against encroachment and demand that all life be respected.</p>",
@@ -147,11 +150,15 @@ export function buildReligionsData() {
           title: "God of Nature",
           description: "Takes the form of wild animals and demands nature to be protected."
         },
-        holySymbolItem: "The Oak Leaf",
-        holySymbolTags: ["oak", "leaf"],
+        holySymbol: { name: "The Oak Leaf" },
         holySymbolNote: "An oak leaf medallion.",
-        weaponSpecialty: ["crossbow", "dagger", "longbow", "short bow", "spear", "quarterstaff"],
-        armourSpecialty: ["leather", "hide"],
+        weaponSpecialty: [
+          { name: "Crossbow" }, { name: "Dagger" }, { name: "Longbow" },
+          { name: "Short Bow" }, { name: "Spear" }, { name: "Quarterstaff" }
+        ],
+        armourSpecialty: [
+          { name: "Leather Armour" }, { name: "Hide Armour" }
+        ],
         armourAllowedText: "Basic or light armour.",
         prayers: [
           { name: "Animal Growth" },
@@ -170,17 +177,16 @@ export function buildReligionsData() {
       _id: stableReligionId("religion:custom"),
       name: "Custom Religion",
       type: "religion",
-      img: "icons/svg/holy-hand-grenade.svg",
+      img: "icons/svg/mystery-man.svg",
       system: {
         tagline: "A homebrew religion — customise every field.",
-        description: "<p>Blank template for homebrew religions. Duplicate this Item, rename it, then fill in the fields below. Drag Divine Prayer items from any compendium into the Prayers list.</p>",
+        description: "<p>Blank template for homebrew religions. Duplicate this Item, rename it, then fill in the fields below. Drag Divine Prayer items into the Prayers list, and drag holy symbol / weapon / armour items into their respective lists.</p>",
         god: {
           name: "",
           title: "",
           description: ""
         },
-        holySymbolItem: "",
-        holySymbolTags: [],
+        holySymbol: { uuid: "", name: "" },
         holySymbolNote: "",
         weaponSpecialty: [],
         armourSpecialty: [],

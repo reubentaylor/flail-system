@@ -10808,3 +10808,151 @@
   color: #ff8f7a;
   font-weight: 700;
 }
+
+/* Religion — single-item drop zone for holy symbol (v0.4.60). Matches
+   the list-style drop zones visually but hosts one row instead of
+   many, and shows a placeholder message when empty. */
+.flail-religion-sheet .rel-single-dropzone {
+  min-height: 3rem;
+  padding: 0.4rem;
+  border: 2px dashed var(--flail-rule);
+  background: var(--flail-paper-2, #f8f0d9);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+.flail-religion-sheet .rel-single-dropzone.drop-active {
+  background: rgba(74, 125, 58, 0.15);
+  border-color: #4c7d3a;
+}
+.flail-religion-sheet .rel-single-empty {
+  flex: 1 1 auto;
+  font-style: italic;
+  color: var(--flail-muted, #6a5a2a);
+  text-align: center;
+  font-size: 0.78rem;
+}
+.flail-religion-sheet .rel-symbol-row {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.35rem;
+  background: var(--flail-parchment, #f4ebd4);
+  border: 1px solid var(--flail-rule);
+  border-radius: 2px;
+  font-size: 0.85rem;
+}
+.flail-religion-sheet .rel-symbol-name { font-weight: 700; }
+.flail-religion-sheet .rel-symbol-row button {
+  padding: 0.15rem 0.35rem;
+  background: transparent;
+  border: 1px solid var(--flail-rule);
+  cursor: pointer;
+}
+.flail-religion-sheet .rel-symbol-row button:hover {
+  background: rgba(166, 62, 41, 0.12);
+  color: #a63e29;
+}
+
+/* Cleric religion card — v0.4.62 header for the embedded Religion
+   Item view. Shows icon + name + tagline + controls in a row above
+   the derived-fields dl. */
+.flail.sheet .religion-card .religion-item-header {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px dashed rgba(139, 105, 20, 0.3);
+}
+.flail.sheet .religion-card .religion-item-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: 2px solid var(--flail-rule);
+  border-radius: 3px;
+  background: var(--flail-parchment, #f4ebd4);
+}
+.flail.sheet .religion-card .religion-item-title h3 {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.flail.sheet .religion-card .religion-item-tagline {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--flail-muted, #6a5a2a);
+  margin-top: 0.1rem;
+}
+.flail.sheet .religion-card .religion-item-controls {
+  display: flex;
+  gap: 0.25rem;
+}
+.flail.sheet .religion-card .religion-item-controls button {
+  padding: 0.2rem 0.4rem;
+  background: transparent;
+  border: 1px solid var(--flail-rule);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.flail.sheet .religion-card .religion-item-controls button:hover {
+  background: rgba(139, 105, 20, 0.15);
+}
+.flail.sheet .religion-card .religion-item-controls .religion-remove:hover {
+  background: rgba(166, 62, 41, 0.15);
+  color: #a63e29;
+  border-color: #a63e29;
+}
+.flail.sheet .religion-card .religion-swap-hint {
+  margin: 0.4rem 0 0;
+  padding-top: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--flail-muted, #6a5a2a);
+  border-top: 1px dashed rgba(139, 105, 20, 0.3);
+  text-align: center;
+}
+.flail.sheet .religion-card .religion-migration-pending {
+  padding: 0.25rem 0.4rem;
+  background: rgba(181, 122, 26, 0.15);
+  border-left: 3px solid #b57a1a;
+  color: #7a5510;
+  font-size: 0.72rem;
+  margin: 0.35rem 0;
+}
+.flail.sheet .religion-card .religion-loh-fumble { font-style: italic; }
+.flail.sheet .religion-card .religion-loh-fumble p { margin: 0.1rem 0; }
+
+/* Religion drop-zone slot on Cleric class tab (v0.4.63). Shown when
+   no religion Item is embedded — invites the player to drag one
+   from the compendium onto the character sheet. */
+.flail.sheet .religion-card .religion-drop-zone {
+  padding: 1.2rem 0.8rem;
+  text-align: center;
+  border: 2px dashed var(--flail-rule);
+  border-radius: 4px;
+  background: var(--flail-parchment, #f4ebd4);
+  color: var(--flail-ink);
+}
+.flail.sheet .religion-card .religion-drop-zone i {
+  font-size: 1.6rem;
+  color: var(--flail-muted, #6a5a2a);
+  margin-bottom: 0.4rem;
+}
+.flail.sheet .religion-card .religion-drop-zone p {
+  margin: 0.2rem 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.flail.sheet .religion-card .religion-drop-zone .hint {
+  font-size: 0.72rem;
+  font-weight: normal;
+  color: var(--flail-muted, #6a5a2a);
+}

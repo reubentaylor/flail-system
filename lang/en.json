@@ -19,7 +19,8 @@
       "instrument":   "Instrument",
       "guild":        "Guild",
       "background":   "Background",
-      "combatTalent": "Combat Talent"
+      "combatTalent": "Combat Talent",
+      "religion":     "Religion"
     }
   },
   "FLAIL": {
@@ -463,7 +464,8 @@
       "condition":    "Condition",
       "instrument":   "Instrument",
       "background":   "Background",
-      "combatTalent": "Combat Talent"
+      "combatTalent": "Combat Talent",
+      "religion":     "Religion"
     },
     "Item": {
       "New": "New {type}",
@@ -1005,6 +1007,7 @@
     "Religion": {
       "Choose": "— Choose a religion —",
       "SelectPrompt": "Select a religion above to see your god, holy symbol, weapons, armour, and Lay on Hands fumble.",
+      "DropPrompt": "Drop a Religion Item here to select your Cleric's faith.",
       "NoPrayersUntilChosen": "Your divine prayers appear here once you choose a religion."
     },
     "Prayer": {

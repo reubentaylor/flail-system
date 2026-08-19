@@ -36,29 +36,76 @@
 
   <section class="rel-section rel-symbol">
     <header class="tab-label">Holy Symbol</header>
-    <div class="rel-symbol-grid">
-      <label>Canonical item name
-        <input type="text" name="system.holySymbolItem" value="{{system.holySymbolItem}}" placeholder="e.g. Cross of Sheezuz" {{#unless editable}}disabled{{/unless}} />
-      </label>
-      <label>Substring tags (comma-separated)
-        <input type="text" name="flail.holySymbolTagsRaw" value="{{holySymbolTagsRaw}}" placeholder="e.g. cross, wooden" {{#unless editable}}disabled{{/unless}} />
-      </label>
-      <label class="rel-full">Display note
-        <input type="text" name="system.holySymbolNote" value="{{system.holySymbolNote}}" placeholder="Optional flavour" {{#unless editable}}disabled{{/unless}} />
-      </label>
+    <p class="rel-hint">Drag any single item onto the box below — gear, armour, or a weapon can all serve as a holy symbol.</p>
+    <div class="rel-symbol-drop rel-single-dropzone" data-drop-target="religionHolySymbol">
+      {{#if system.holySymbol.name}}
+      <div class="rel-symbol-row">
+        <span class="rel-symbol-name">{{system.holySymbol.name}}</span>
+        {{#if system.holySymbol.uuid}}
+        <span class="rel-prayer-uuid" title="{{system.holySymbol.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="No UUID resolved — will not match at carry-check"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if editable}}
+        <button type="button" data-action="holySymbolRemove" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </div>
+      {{else}}
+      <div class="rel-single-empty">Drop the holy symbol item here.</div>
+      {{/if}}
     </div>
-    <p class="rel-hint">Tags are matched as substrings against carried gear names — the Cleric's Prayer casting check requires at least one match.</p>
+    <label class="rel-full">Display note
+      <input type="text" name="system.holySymbolNote" value="{{system.holySymbolNote}}" placeholder="Optional flavour (e.g. 'may be worn atop armour')" {{#unless editable}}disabled{{/unless}} />
+    </label>
   </section>
 
   <section class="rel-section rel-combat">
-    <header class="tab-label">Combat Gear Specialty</header>
-    <label>Weapon substring tokens (comma-separated)
-      <input type="text" name="flail.weaponSpecialtyRaw" value="{{weaponSpecialtyRaw}}" placeholder="e.g. club, quarterstaff, sling" {{#unless editable}}disabled{{/unless}} />
-    </label>
-    <label>Armour substring tokens (comma-separated, empty = all allowed)
-      <input type="text" name="flail.armourSpecialtyRaw" value="{{armourSpecialtyRaw}}" placeholder="e.g. leather, hide" {{#unless editable}}disabled{{/unless}} />
-    </label>
-    <label>Armour rule (free text, always displayed)
+    <header class="tab-label">Weapon Specialty</header>
+    <p class="rel-hint">Drag weapon items into the box below. Empty = no filter (all weapons acceptable).</p>
+    <ul class="rel-prayers-list rel-weapons-dropzone" data-drop-target="religionWeapons">
+      {{#each system.weaponSpecialty as |w i|}}
+      <li class="rel-prayer-row" data-index="{{i}}">
+        <span class="rel-prayer-num">{{add i 1}}.</span>
+        <span class="rel-prayer-name">{{w.name}}</span>
+        {{#if w.uuid}}
+        <span class="rel-prayer-uuid" title="{{w.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="No UUID resolved"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if ../editable}}
+        <button type="button" data-action="weaponSpecRemove" data-index="{{i}}" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </li>
+      {{/each}}
+      {{#unless system.weaponSpecialty.length}}
+      <li class="rel-prayers-empty">Drop weapon items here (leave empty = no filter).</li>
+      {{/unless}}
+    </ul>
+  </section>
+
+  <section class="rel-section rel-combat">
+    <header class="tab-label">Armour Specialty</header>
+    <p class="rel-hint">Drag armour items into the box below. Empty list = all armour allowed (per Q2 answer 'a').</p>
+    <ul class="rel-prayers-list rel-armour-dropzone" data-drop-target="religionArmour">
+      {{#each system.armourSpecialty as |a i|}}
+      <li class="rel-prayer-row" data-index="{{i}}">
+        <span class="rel-prayer-num">{{add i 1}}.</span>
+        <span class="rel-prayer-name">{{a.name}}</span>
+        {{#if a.uuid}}
+        <span class="rel-prayer-uuid" title="{{a.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="No UUID resolved"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if ../editable}}
+        <button type="button" data-action="armourSpecRemove" data-index="{{i}}" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </li>
+      {{/each}}
+      {{#unless system.armourSpecialty.length}}
+      <li class="rel-prayers-empty">Drop armour items here (or leave empty = all allowed).</li>
+      {{/unless}}
+    </ul>
+    <label class="rel-full">Armour rule (free text, always displayed)
       <input type="text" name="system.armourAllowedText" value="{{system.armourAllowedText}}" placeholder='e.g. "no armour, helmet, or boots"' {{#unless editable}}disabled{{/unless}} />
     </label>
   </section>

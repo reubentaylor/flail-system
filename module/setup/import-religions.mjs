@@ -7,8 +7,17 @@ import { buildReligionsData } from "./religions-data.mjs";
  *
  *   1 — initial bundle. 4 canonicals (Brotherhood, Crusade, Shadow
  *       Demon, Verdant Grove) + Custom Religion template (v0.4.58).
+ *   2 — icon fixes: mutton_tunic.webp → mutton-tunic.png; oak_leaf.webp
+ *       → oakleaf_medallion.webp; custom → mystery-man.svg placeholder.
+ *   3 — SCHEMA CHANGE (v0.4.60). Replaced string-token fields with
+ *       item-reference objects:
+ *         holySymbolItem + holySymbolTags → holySymbol { uuid, name }
+ *         weaponSpecialty (string[])       → weaponSpecialty ({uuid,name}[])
+ *         armourSpecialty (string[])       → armourSpecialty ({uuid,name}[])
+ *       Any customised religion Items on user worlds will lose data
+ *       in the removed fields (Foundry drops them silently).
  */
-export const RELIGIONS_VERSION = 1;
+export const RELIGIONS_VERSION = 3;
 
 const VERSION_SETTING = "religionsVersion";
 const PACK_NAME  = "flail-religions";
@@ -16,34 +25,80 @@ const PACK_LABEL = "Religions";
 const PRAYERS_PACK = "flail-divine-prayers";
 
 /**
- * Resolve prayer names in the bundled data to concrete { uuid, name }
- * pairs pointing into the divine-prayers compendium. Called at sync
- * time so the religion Items ship with resolved references — the
- * character-side wiring (v0.4.59) then just clones by UUID.
+ * Resolve item name references in the bundled data to concrete UUIDs.
+ * Covers four fields:
+ *   - system.prayers[]            → divine-prayers compendium
+ *   - system.holySymbol           → any Item compendium (single ref)
+ *   - system.weaponSpecialty[]    → any Item compendium (weapons)
+ *   - system.armourSpecialty[]    → any Item compendium (armour)
  *
- * If a name doesn't resolve (missing prayer), logs a warning and
- * leaves the entry with only a name (uuid empty), which the
- * character-side code will skip with its own warning.
+ * Called at sync time so the religion Items ship with resolved UUIDs.
+ * A name that can't be resolved leaves uuid = "" and the character-
+ * side wiring (v0.4.60) will skip it with its own warning.
  */
-async function resolvePrayerReferences(bundle) {
-  const pack = game.packs.get(`world.${PRAYERS_PACK}`);
-  if (!pack) {
-    console.warn(`FLAIL | Religions sync: prayers compendium '${PRAYERS_PACK}' not found — prayer references left unresolved.`);
-    return;
+async function resolveReferences(bundle) {
+  // Build a single by-name index across every Item compendium once.
+  // Prayer refs prefer the divine-prayers pack, but we fall back to
+  // the global index if not found there (handles homebrew authored
+  // in a different pack).
+  const prayersPack = game.packs.get(`world.${PRAYERS_PACK}`);
+  const prayerByName = new Map();
+  if (prayersPack) {
+    const idx = await prayersPack.getIndex();
+    for (const e of idx) {
+      prayerByName.set((e.name ?? "").toLowerCase(),
+        { uuid: `Compendium.${prayersPack.collection}.Item.${e._id}` });
+    }
+  } else {
+    console.warn(`FLAIL | Religions sync: prayers compendium '${PRAYERS_PACK}' not found — prayer refs left unresolved.`);
   }
-  const index = await pack.getIndex();
-  const byName = new Map([...index].map(e => [(e.name ?? "").toLowerCase(), e]));
+
+  const anyItemByName = new Map();
+  for (const pack of game.packs) {
+    if (pack.metadata.type !== "Item") continue;
+    const idx = await pack.getIndex();
+    for (const e of idx) {
+      const key = (e.name ?? "").toLowerCase();
+      // First match wins — canonical items in earlier-loaded packs win.
+      if (!anyItemByName.has(key)) {
+        anyItemByName.set(key, { uuid: `Compendium.${pack.collection}.Item.${e._id}` });
+      }
+    }
+  }
 
   for (const religion of bundle) {
-    const prayers = religion.system?.prayers ?? [];
-    for (const p of prayers) {
+    const sys = religion.system;
+
+    // Prayers
+    for (const p of sys.prayers ?? []) {
       if (!p.name || p.uuid) continue;
-      const hit = byName.get(p.name.toLowerCase());
-      if (hit) {
-        p.uuid = `Compendium.${pack.collection}.Item.${hit._id}`;
-      } else {
-        console.warn(`FLAIL | Religions sync: prayer "${p.name}" not found in ${PRAYERS_PACK} for religion "${religion.name}".`);
-      }
+      const hit = prayerByName.get(p.name.toLowerCase());
+      if (hit) p.uuid = hit.uuid;
+      else console.warn(`FLAIL | Religions sync: prayer "${p.name}" not found for religion "${religion.name}".`);
+    }
+
+    // Holy symbol (single ref, any Item type — weapons can be symbols)
+    const hs = sys.holySymbol;
+    if (hs?.name && !hs.uuid) {
+      const hit = anyItemByName.get(hs.name.toLowerCase());
+      if (hit) hs.uuid = hit.uuid;
+      else console.warn(`FLAIL | Religions sync: holy symbol "${hs.name}" not found for religion "${religion.name}".`);
+    }
+
+    // Weapon specialty (list)
+    for (const w of sys.weaponSpecialty ?? []) {
+      if (!w.name || w.uuid) continue;
+      const hit = anyItemByName.get(w.name.toLowerCase());
+      if (hit) w.uuid = hit.uuid;
+      else console.warn(`FLAIL | Religions sync: weapon "${w.name}" not found for religion "${religion.name}".`);
+    }
+
+    // Armour specialty (list)
+    for (const a of sys.armourSpecialty ?? []) {
+      if (!a.name || a.uuid) continue;
+      const hit = anyItemByName.get(a.name.toLowerCase());
+      if (hit) a.uuid = hit.uuid;
+      else console.warn(`FLAIL | Religions sync: armour "${a.name}" not found for religion "${religion.name}".`);
     }
   }
 }
@@ -76,7 +131,7 @@ export async function ensureReligionsCompendium() {
   }
 
   const bundle = buildReligionsData();
-  await resolvePrayerReferences(bundle);
+  await resolveReferences(bundle);
 
   const index = await pack.getIndex();
   const storedVersion = game.settings.get("flail", VERSION_SETTING);

@@ -464,30 +464,44 @@ export class FlailReligionModel extends foundry.abstract.TypeDataModel {
         description: new fields.StringField({ blank: true, initial: "" })
       }),
 
-      // Holy symbol — canonical name for auto-fill in the starting-gear
-      // wizard AND tags list for castPrayer's substring "is the symbol
-      // being carried?" check. Note is optional flavour text displayed
-      // on the sheet (e.g. "may be placed atop body armour").
-      holySymbolItem: new fields.StringField({ blank: true, initial: "" }),
-      holySymbolTags: new fields.ArrayField(
-        new fields.StringField({ blank: false }),
-        { initial: [] }
-      ),
+      // Holy symbol — a single item reference (any type, since weapons
+      // can be holy symbols per some religions). Populated by drag-
+      // dropping an item onto the religion sheet. Stored as
+      // { uuid, name } — UUID for canonical resolution, name cached
+      // for display + castPrayer's carry-check.
+      //
+      // holySymbolNote is optional free-text flavour that always
+      // renders on the sheet (e.g. "may be placed atop body armour").
+      holySymbol: new fields.SchemaField({
+        uuid: new fields.StringField({ blank: true, initial: "" }),
+        name: new fields.StringField({ blank: true, initial: "" })
+      }),
       holySymbolNote: new fields.StringField({ blank: true, initial: "" }),
 
-      // Weapon specialty — substring tokens for the starting-gear
-      // weapon-dropdown filter (mirrors class weaponSpec pattern).
+      // Weapon specialty — list of weapon item references. The
+      // starting-gear wizard populates its weapon dropdown from
+      // resolving these UUIDs. These items DO NOT appear on the
+      // Cleric's inventory when the religion is embedded — they're
+      // pure signifiers of what counts as "religion weapons".
       weaponSpecialty: new fields.ArrayField(
-        new fields.StringField({ blank: false }),
+        new fields.SchemaField({
+          uuid: new fields.StringField({ blank: false }),
+          name: new fields.StringField({ blank: true, initial: "" })
+        }),
         { initial: [] }
       ),
 
-      // Armour: token filter for starting-gear + always-displayed
-      // free-text description. Empty array = no filter (all allowed).
-      // Text is what actually shows on the sheet since some rulings
-      // are hard to encode ("no armour, helmet or boots").
-      armourSpecialty:   new fields.ArrayField(
-        new fields.StringField({ blank: false }),
+      // Armour specialty — list of armour item references. Same
+      // signifier-only pattern. Empty array = no restriction (per
+      // decision Q2 answer 'a', canonical religions with "all armour"
+      // rulings leave this empty). armourAllowedText is always
+      // rendered as free-text explanation for rules that can't be
+      // captured as items (e.g. "no armour, helmet or boots").
+      armourSpecialty: new fields.ArrayField(
+        new fields.SchemaField({
+          uuid: new fields.StringField({ blank: false }),
+          name: new fields.StringField({ blank: true, initial: "" })
+        }),
         { initial: [] }
       ),
       armourAllowedText: new fields.StringField({ blank: true, initial: "" }),

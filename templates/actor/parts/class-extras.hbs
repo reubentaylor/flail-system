@@ -295,15 +295,56 @@
   <section class="tabbed-card religion-card">
     <header class="tab-label">{{localize "FLAIL.Section.Religion"}}</header>
     <div class="religion-fields">
-      <label class="full">{{localize "FLAIL.Field.Religion"}}
-        <select name="system.classOptions.religion" {{#unless editable}}disabled{{/unless}}>
-          {{#each religionOptions as |opt|}}
-          <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{opt.label}}</option>
-          {{/each}}
-        </select>
-      </label>
-      {{#if religion}}
-      <p class="religion-blurb">{{religion.blurb}}</p>
+      {{#if religionItem}}
+      {{!-- Item-based religion (v0.4.62+) — display fields from the
+           embedded Item document. Drag another religion onto the
+           character sheet to swap. --}}
+      <div class="religion-item-header">
+        <img class="religion-item-img" src="{{religionItem.img}}" alt="{{religionItem.name}}" />
+        <div class="religion-item-title">
+          <h3>{{religionItem.name}}</h3>
+          {{#if religionItem.system.tagline}}
+          <em class="religion-item-tagline">{{religionItem.system.tagline}}</em>
+          {{/if}}
+        </div>
+        <div class="religion-item-controls">
+          <button type="button" data-action="itemEdit" data-item-id="{{religionItem.id}}" title="Open religion sheet"><i class="fas fa-book-open"></i></button>
+          <button type="button" data-action="itemDelete" data-item-id="{{religionItem.id}}" title="Remove religion" class="religion-remove"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <dl class="religion-derived">
+        {{#if religionItem.system.god.name}}
+        <div class="row"><dt>{{localize "FLAIL.Field.God"}}</dt>
+          <dd><strong>{{religionItem.system.god.name}}</strong>{{#if religionItem.system.god.title}}, {{religionItem.system.god.title}}{{/if}}{{#if religionItem.system.god.description}} — {{religionItem.system.god.description}}{{/if}}</dd></div>
+        {{/if}}
+        {{#if religionItem.system.holySymbol.name}}
+        <div class="row"><dt>{{localize "FLAIL.Field.HolySymbol"}}</dt>
+          <dd>{{religionItem.system.holySymbol.name}}{{#if religionItem.system.holySymbolNote}} <em>({{religionItem.system.holySymbolNote}})</em>{{/if}}</dd></div>
+        {{/if}}
+        {{#if religionItem.system.weaponSpecialty.length}}
+        <div class="row"><dt>{{localize "FLAIL.Field.Weapons"}}</dt>
+          <dd>{{#each religionItem.system.weaponSpecialty as |w|}}{{w.name}}{{#unless @last}}, {{/unless}}{{/each}}.</dd></div>
+        {{/if}}
+        {{#if religionItem.system.armourAllowedText}}
+        <div class="row"><dt>{{localize "FLAIL.Field.Armour"}}</dt>
+          <dd>{{religionItem.system.armourAllowedText}}</dd></div>
+        {{else if religionItem.system.armourSpecialty.length}}
+        <div class="row"><dt>{{localize "FLAIL.Field.Armour"}}</dt>
+          <dd>{{#each religionItem.system.armourSpecialty as |a|}}{{a.name}}{{#unless @last}}, {{/unless}}{{/each}}.</dd></div>
+        {{/if}}
+        {{#if religionItem.system.layOnHandsFumble}}
+        <div class="row"><dt>{{localize "FLAIL.Field.LayOnHandsFumble"}}</dt>
+          <dd class="religion-loh-fumble">{{{religionItemHtml.layOnHandsFumble}}}</dd></div>
+        {{/if}}
+      </dl>
+      <p class="religion-swap-hint"><em>Drag another religion Item onto this character to change.</em></p>
+
+      {{else if religion}}
+      {{!-- Legacy pre-migration display — reads FLAIL.religions[key].
+           The GM's next sheet open triggers auto-migration; no way
+           to change religion here (drag a Religion Item onto the
+           character sheet to switch). --}}
+      <p class="religion-migration-pending"><em>Legacy religion — will migrate to Item form the next time a GM opens this sheet.</em></p>
       <dl class="religion-derived">
         <div class="row"><dt>{{localize "FLAIL.Field.God"}}</dt>
           <dd><strong>{{religion.god}}</strong> — {{religion.godBlurb}}</dd></div>
@@ -316,14 +357,42 @@
         <div class="row"><dt>{{localize "FLAIL.Field.LayOnHandsFumble"}}</dt>
           <dd>{{religion.layOnHandsFumble}}</dd></div>
       </dl>
+
       {{else}}
-      <p class="religion-empty">{{localize "FLAIL.Religion.SelectPrompt"}}</p>
+      {{!-- No religion — drop zone. Foundry's native item-drop pathway
+           on the character sheet catches the drop and fires the
+           preCreateItem hook which routes to religion-embed logic. --}}
+      <div class="religion-drop-zone">
+        <i class="fas fa-hands-praying"></i>
+        <p>{{localize "FLAIL.Religion.DropPrompt"}}</p>
+        <p class="hint"><em>Drag any Religion Item here — from the Religions compendium or a homebrew one.</em></p>
+      </div>
       {{/if}}
     </div>
   </section>
   <section class="tabbed-card divine-prayers-card">
     <header class="tab-label">{{localize "FLAIL.Section.DivinePrayers"}}</header>
-    {{#if religion}}
+    {{#if religionItem}}
+      {{!-- Drop zone — accepts prayer Items (also filled automatically
+           when a religion is embedded per its own prayer list). --}}
+      <ul class="known-spells-list known-spells-dropzone prayer-dropzone" data-drop-target="divinePrayers">
+        {{#each knownDivinePrayers as |p|}}
+        <li class="known-spell known-prayer" draggable="true" data-item-id="{{p.id}}" data-tooltip="{{p.tooltipText}}">
+          <img class="spell-img" src="{{p.img}}" alt="{{p.name}}" />
+          <span class="spell-name">{{p.name}}</span>
+          <span class="spell-meta">
+            <button type="button" data-action="itemEdit"   data-item-id="{{p.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
+            <button type="button" data-action="itemDelete" data-item-id="{{p.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="spell-delete"><i class="fas fa-trash"></i></button>
+          </span>
+          {{#if ../hasHolySymbol}}
+          <button type="button" class="prayer-cast-btn" data-action="castPrayer" data-item-id="{{p.id}}" title="{{localize 'FLAIL.Prayer.CastTooltip'}}">
+            <i class="fas fa-hands-praying"></i>
+          </button>
+          {{/if}}
+        </li>
+        {{/each}}
+      </ul>
+    {{else if religion}}
       {{!-- Drop zone — accepts prayer Items matching the chosen religion --}}
       <ul class="known-spells-list known-spells-dropzone prayer-dropzone" data-drop-target="divinePrayers">
         {{#each knownDivinePrayers as |p|}}

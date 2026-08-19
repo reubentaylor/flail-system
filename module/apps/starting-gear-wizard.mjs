@@ -59,11 +59,17 @@ export class StartingGearWizard extends HandlebarsApplicationMixin(ApplicationV2
         message: `This character is level ${this.actor.system.level ?? 1} — starting gear is designed for chargen. Refusing to import.`
       });
     }
-    if (def.requiresReligion && !this.actor.system.classOptions?.religion) {
-      blockers.push({
-        type: "religion",
-        message: "Cleric starting gear needs a religion selected first (Class tab)."
-      });
+    if (def.requiresReligion) {
+      // Cleric prereq: either the legacy classOptions.religion string,
+      // OR an embedded religion Item (v0.4.62+ preferred).
+      const hasReligion = !!this.actor.system.classOptions?.religion
+        || this.actor.items.some(i => i.type === "religion");
+      if (!hasReligion) {
+        blockers.push({
+          type: "religion",
+          message: "Cleric starting gear needs a religion selected first (Class tab — drop a religion Item or set classOptions.religion)."
+        });
+      }
     }
     if (def.requiresGuild) {
       // Cutthroat's guild is an EMBEDDED ITEM of type "guild" (not a
@@ -118,7 +124,17 @@ export class StartingGearWizard extends HandlebarsApplicationMixin(ApplicationV2
    *                 the mapped holy-symbol item name
    */
   async #loadChoiceOptions(choice) {
+    // v0.4.62: prefer embedded religion Item (drag-drop schema) over
+    // the legacy FLAIL.HOLY_SYMBOL_BY_RELIGION / config lookups.
+    const embeddedReligion = this.actor.items.find(i => i.type === "religion");
+
     if (choice.type === "holySymbol") {
+      // Prefer the religion Item's holySymbol.name (drag-drop item ref).
+      const embeddedSymbolName = embeddedReligion?.system?.holySymbol?.name;
+      if (embeddedSymbolName) {
+        return [{ uuid: `name:${embeddedSymbolName}`, name: embeddedSymbolName, preselected: true }];
+      }
+      // Legacy fallback for unmigrated characters.
       const religion = this.actor.system.classOptions?.religion;
       const symbolName = FLAIL.HOLY_SYMBOL_BY_RELIGION?.[religion];
       if (!symbolName) return [];
@@ -131,6 +147,36 @@ export class StartingGearWizard extends HandlebarsApplicationMixin(ApplicationV2
       if (!sigilName) return [];
       return [{ uuid: `name:${sigilName}`, name: sigilName, preselected: true }];
     }
+
+    // For Cleric weapon/armour choices, prefer the embedded religion's
+    // specialty item lists when populated. Each ref { uuid, name }
+    // becomes a dropdown option. Empty list = fall through to the
+    // normal compendium scan (defaults to "all" per Q2 answer 'a').
+    if (this.actor.system?.class === "cleric" && embeddedReligion) {
+      if (choice.type === "weapon") {
+        const refs = embeddedReligion.system?.weaponSpecialty ?? [];
+        if (refs.length > 0) {
+          return refs
+            .filter(r => r.uuid || r.name)
+            .map(r => ({ uuid: r.uuid || `name:${r.name}`, name: r.name }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+        }
+      }
+      if (choice.type === "armour") {
+        const refs = embeddedReligion.system?.armourSpecialty ?? [];
+        if (refs.length > 0) {
+          return refs
+            .filter(r => r.uuid || r.name)
+            .map(r => ({ uuid: r.uuid || `name:${r.name}`, name: r.name }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+        }
+        // Empty list on religion = all armour allowed (Q2 answer 'a').
+        // Fall through to the generic compendium scan without spec
+        // filtering.
+        return this.#loadCompendiumItemsOfType("armour", null);
+      }
+    }
+
     const typeFilter = choice.type; // weapon / instrument / gear / armour
     const results = [];
     for (const pack of game.packs) {
@@ -155,6 +201,25 @@ export class StartingGearWizard extends HandlebarsApplicationMixin(ApplicationV2
       }
     }
     // Alphabetic — easier to scan long weapon lists.
+    results.sort((a, b) => a.name.localeCompare(b.name));
+    return results;
+  }
+
+  /**
+   * Simple by-type compendium scan (no spec filter). Used when we want
+   * "all items of this type" — e.g. Cleric armour when the religion's
+   * armour list is empty (all armour allowed per Q2).
+   */
+  async #loadCompendiumItemsOfType(itemType, ignored) {
+    const results = [];
+    for (const pack of game.packs) {
+      if (pack.metadata.type !== "Item") continue;
+      const docs = await pack.getDocuments();
+      for (const doc of docs) {
+        if (doc.type !== itemType) continue;
+        results.push({ uuid: doc.uuid, name: doc.name });
+      }
+    }
     results.sort((a, b) => a.name.localeCompare(b.name));
     return results;
   }
