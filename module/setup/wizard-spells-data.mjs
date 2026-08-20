@@ -646,7 +646,7 @@ export const WIZARD_SPELLS = [
     "_id": "tvjoMIGdrUfQWWfE",
     "name": "Jellification",
     "type": "spell",
-    "img": "icons/creatures/slimes/slime-face-eyes-purple.webp",
+    "img": "icons/svg/acid.svg",
     "system": {
       "description": "<p>forces target of level [DICE] to save or be turned into a squishy gelatinous mass.</p>",
       "tradition": "ooze",
@@ -703,7 +703,7 @@ export const WIZARD_SPELLS = [
     "_id": "CipQgghwxuhR4Z73",
     "name": "Ooze Form",
     "type": "spell",
-    "img": "icons/creatures/slimes/slime-face-eyes-purple.webp",
+    "img": "icons/svg/acid.svg",
     "system": {
       "description": "<p>caster takes the form of a living ooze for [DICE] turns.</p>",
       "tradition": "ooze",

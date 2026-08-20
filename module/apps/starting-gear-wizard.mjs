@@ -60,14 +60,15 @@ export class StartingGearWizard extends HandlebarsApplicationMixin(ApplicationV2
       });
     }
     if (def.requiresReligion) {
-      // Cleric prereq: either the legacy classOptions.religion string,
-      // OR an embedded religion Item (v0.4.62+ preferred).
-      const hasReligion = !!this.actor.system.classOptions?.religion
-        || this.actor.items.some(i => i.type === "religion");
+      // Cleric prereq — a religion Item must be embedded on the actor.
+      // The legacy classOptions.religion string was removed as a
+      // runtime consumer in v0.4.65; migration converts pre-existing
+      // Clerics on GM sheet open.
+      const hasReligion = this.actor.items.some(i => i.type === "religion");
       if (!hasReligion) {
         blockers.push({
           type: "religion",
-          message: "Cleric starting gear needs a religion selected first (Class tab — drop a religion Item or set classOptions.religion)."
+          message: "Cleric starting gear needs a religion Item — drop one from the Religions compendium onto the Class tab first."
         });
       }
     }
@@ -124,26 +125,25 @@ export class StartingGearWizard extends HandlebarsApplicationMixin(ApplicationV2
    *                 the mapped holy-symbol item name
    */
   async #loadChoiceOptions(choice) {
-    // v0.4.62: prefer embedded religion Item (drag-drop schema) over
-    // the legacy FLAIL.HOLY_SYMBOL_BY_RELIGION / config lookups.
+    // Religion is a first-class Item on the actor. Legacy fallbacks
+    // (FLAIL.HOLY_SYMBOL_BY_RELIGION / classOptions.religion) removed
+    // in v0.4.65 — the wizard's prereq check refuses to render when
+    // no religion Item is embedded, so we can trust it exists here
+    // for Cleric-specific choices.
     const embeddedReligion = this.actor.items.find(i => i.type === "religion");
 
     if (choice.type === "holySymbol") {
-      // Prefer the religion Item's holySymbol.name (drag-drop item ref).
       const embeddedSymbolName = embeddedReligion?.system?.holySymbol?.name;
-      if (embeddedSymbolName) {
-        return [{ uuid: `name:${embeddedSymbolName}`, name: embeddedSymbolName, preselected: true }];
-      }
-      // Legacy fallback for unmigrated characters.
-      const religion = this.actor.system.classOptions?.religion;
-      const symbolName = FLAIL.HOLY_SYMBOL_BY_RELIGION?.[religion];
-      if (!symbolName) return [];
-      return [{ uuid: `name:${symbolName}`, name: symbolName, preselected: true }];
+      if (!embeddedSymbolName) return [];
+      return [{ uuid: `name:${embeddedSymbolName}`, name: embeddedSymbolName, preselected: true }];
     }
     if (choice.type === "guildSigil") {
-      // Guild is an embedded ITEM of type "guild"; lookup by name.
+      // Guild is an embedded ITEM of type "guild"; the sigil's canonical
+      // item name is stored on the guild's own schema (v0.4.68 item-ref
+      // pattern — same as Religion's holySymbol). Legacy
+      // GUILD_SIGIL_BY_GUILD map was deleted in v0.4.68.
       const guildItem = this.actor.items.find(i => i.type === "guild");
-      const sigilName = FLAIL.GUILD_SIGIL_BY_GUILD?.[guildItem?.name];
+      const sigilName = guildItem?.system?.sigil?.name;
       if (!sigilName) return [];
       return [{ uuid: `name:${sigilName}`, name: sigilName, preselected: true }];
     }

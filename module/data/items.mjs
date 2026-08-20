@@ -282,7 +282,19 @@ export class FlailGuildModel extends foundry.abstract.TypeDataModel {
     return {
       ...descriptionField(),
       blurb: new fields.StringField({ required: false, blank: true, initial: "" }),
-      sigil: new fields.StringField({ required: false, blank: true, initial: "" }),
+      // Guild sigil — a single Item reference (drag-drop, v0.4.68).
+      // Same pattern as Religion's holySymbol: the item is a
+      // signifier only — it does NOT appear on the character's
+      // inventory when the guild is embedded. The `_hasSigilEquipped`
+      // check on the character sheet matches carried items by name
+      // against `sigil.name` (case-insensitive).
+      sigil: new fields.SchemaField({
+        uuid: new fields.StringField({ blank: true, initial: "" }),
+        name: new fields.StringField({ blank: true, initial: "" })
+      }),
+      // Optional free-text flavour ("a crimson coin worn on a chain")
+      // always displayed on the guild sheet + character card.
+      sigilNote: new fields.StringField({ required: false, blank: true, initial: "" }),
       // New drop-based fields — full item document snapshots. Each
       // element is passed straight to createEmbeddedDocuments when the
       // guild is dropped onto a Cutthroat.

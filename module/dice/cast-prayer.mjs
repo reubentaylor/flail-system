@@ -96,8 +96,12 @@ export async function rollPrayer({ actor, prayer } = {}) {
   const filledDesc = rawDesc.replace(/\[LEVEL\]/g, String(level));
 
   /* ---------- 6. Build chat card ---------- */
-  const religionKey = prayer.system?.religion ?? "";
-  const religion    = FLAIL.religions[religionKey] ?? null;
+  // Religion label comes from the actor's embedded religion Item.
+  // The old lookup via FLAIL.religions[prayer.system.religion] was
+  // removed in v0.4.65 — the prayer's own religion field is descriptive
+  // metadata now, not a key into the deleted config.
+  const religionItem = actor.items.find(i => i.type === "religion");
+  const religionLabel = religionItem?.name ?? "";
 
   const templateData = {
     actor: { name: actor.name, img: actor.img, uuid: actor.uuid },
@@ -106,7 +110,7 @@ export async function rollPrayer({ actor, prayer } = {}) {
       name: prayer.name,
       img: prayer.img,
       description: filledDesc,
-      religionLabel: religion?.label ?? religionKey
+      religionLabel
     },
     luck,
     level,

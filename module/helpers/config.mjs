@@ -146,100 +146,15 @@ FLAIL.classes = {
 FLAIL.classKeys = Object.keys(FLAIL.classes);
 
 /**
- * Cleric religions — chosen at character creation. Determines weapon
- * specialty, deity, holy symbol, armour proficiency, the Lay on Hands
- * fumble effect, and the available divine prayers.
+ * FLAIL.religions + FLAIL.religionKeys — DELETED in v0.4.65.
  *
- * The Cleric class config (above) lists "depends on religion" placeholders;
- * these objects fill in the concrete values. Resolved on the sheet via
- * `system.classOptions.religion` keying into this map.
- *
- * Sourced from FLAIL v0.2 page 20.
+ * Religions became first-class Item documents in v0.4.58. All runtime
+ * consumers were rewired to read the embedded religion Item; migration
+ * from the legacy `system.classOptions.religion` string still runs
+ * (character-sheet.mjs `#migrateReligionToItem`) but reads seed IDs
+ * from `module/setup/religions-data.mjs` rather than this config.
  */
-FLAIL.religions = {
-  brotherhood: {
-    label:        "Brotherhood of Saint Mendicant",
-    blurb:        "Popular in cities and feared by merchants, its priests lead an ascetic life.",
-    weapons:      ["club", "quarterstaff", "sling", "whip"],
-    weaponsLabel: "club, quarterstaff, sling, whip",
-    god:          "Sheezuz, God of Justice",
-    godBlurb:     "Baby revered through asceticism and offerings by fearing nobles.",
-    holySymbol:   "small wooden cross",
-    armour:       "no armour, helmet or boots",
-    armourTypes:  [],
-    layOnHandsFumble: "Ally 'loses' d10 coins or a random item is confiscated.",
-    prayers: [
-      { name: "Cure Disease",  text: "Removes Diseased condition; use only [LEVEL] times per session." },
-      { name: "Cure Wound",    text: "Removes Injured condition; use only [LEVEL] times per day." },
-      { name: "Detect Greed",  text: "Everyone Nearby carrying 30+ coins starts to glow." },
-      { name: "Finger of Death", text: "Eliminate a blasphemous, opulent target; target is allowed a save." },
-      { name: "Silence",       text: "All sound within Distant range stops for [LEVEL] rounds." },
-      { name: "Turn Undead",   text: "Up to [LEVEL] undead creatures Nearby must save, or flee and take d6 damage." }
-    ]
-  },
-  crusade: {
-    label:        "Crusade of the Mutton Chalice",
-    blurb:        "For a thousand years they've searched for the Woolly Frail.",
-    weapons:      ["mace", "maul", "warhammer"],
-    weaponsLabel: "mace, maul, warhammer",
-    god:          "Meh, Mutton of Knowledge",
-    godBlurb:     "Sustained by mysticism, its clerics vowed to unearth Its relics.",
-    holySymbol:   "tunic with mutton crest (may be placed atop body armour)",
-    armour:       "all armour",
-    armourTypes:  ["basic", "light", "heavy"],
-    armourTypes:  ["basic", "light", "heavy"],
-    layOnHandsFumble: "1-in-6 chance that ally is permanently transformed into a mutton.",
-    prayers: [
-      { name: "Bless",         text: "[LEVEL] allies Nearby get +1 To Hit in their next round of combat." },
-      { name: "Commune",       text: "Ask God a yes-or-no question; use only [LEVEL] times per session." },
-      { name: "Holy Shield",   text: "[LEVEL] allies Nearby each gain a radiant energy shield with 2d4 hit points." },
-      { name: "Locate Object", text: "Sense the location of a previously-touched object." },
-      { name: "Quest",         text: "Command someone of same (or inferior) level to perform a specific task." },
-      { name: "Recall",        text: "Mark location; may teleport to these coordinates within [LEVEL] + 2 turns." }
-    ]
-  },
-  shadowDemon: {
-    label:        "Cult of the Shadow Demon",
-    blurb:        "Its priests all hail from the Temple of Shadows in Mount Gloom.",
-    weapons:      ["flail", "morningstar", "spikedChain"],
-    weaponsLabel: "flail, morningstar, spiked chain",
-    god:          "Zor'Vol, Lord of Chaos",
-    godBlurb:     "Demon appeased through sacrifices and hedonism.",
-    holySymbol:   "horned helmet (may be used as armour)",
-    armour:       "all armour",
-    layOnHandsFumble: "Ally must roll on the God's Wrath table.",
-    prayers: [
-      { name: "Admonish",      text: "[LEVEL] adversaries Nearby receive a -1 penalty To Hit in their next round." },
-      { name: "Cause Fear",    text: "Forces a Morale save on a target of level [LEVEL] + 2 (or less)." },
-      { name: "Conjure Demon", text: "Lasts one turn; hp = d6 + [LEVEL], TH = d3 + [LEVEL], DMG = [LEVEL]." },
-      { name: "Curse",         text: "All saves rolled by chosen target automatically fail for [LEVEL] rounds." },
-      { name: "Darkness",      text: "Creates an aura of darkness around the caster for up to [LEVEL] turns." },
-      { name: "Striking",      text: "Magically enchants weapon for +1 TH/+[LEVEL] DMG for one round." }
-    ]
-  },
-  verdantGrove: {
-    label:        "Order of the Verdant Grove",
-    blurb:        "Protectors of nature, guardians of animal life.",
-    weapons:      ["crossbow", "dagger", "longBow", "shortBow", "spear", "quarterstaff"],
-    weaponsLabel: "crossbow, dagger, longbow, short bow, spear, quarterstaff",
-    god:          "Tul, God of Nature",
-    godBlurb:     "Takes the form of wild animals and demands nature to be protected.",
-    holySymbol:   "oak leaf medallion",
-    armour:       "basic or light armour",
-    armourTypes:  ["basic", "light"],
-    layOnHandsFumble: "Ally is entangled by spontaneous vines for d4 rounds.",
-    prayers: [
-      { name: "Animal Growth",     text: "Enlarges one touched animal; lasts [LEVEL] turns." },
-      { name: "Create Food",       text: "Creates [LEVEL] grub item cards." },
-      { name: "Entangle",          text: "Conjures vines and roots that restrain up to [LEVEL] targets for [LEVEL] rounds." },
-      { name: "Neutralise Poison", text: "Removes Poisoned condition; use only [LEVEL] times per day." },
-      { name: "Purify Food",       text: "Purifies up to [LEVEL] grub upon touching them." },
-      { name: "Speak with Plants", text: "May gather intel on events up to [LEVEL] days in the past." }
-    ]
-  }
-};
 
-FLAIL.religionKeys = Object.keys(FLAIL.religions);
 
 /**
  * Bone Whisperer Side Effects table — d10 lookup, rolled when a Dark Arts
@@ -753,8 +668,9 @@ for (const cls of Object.keys(FLAIL.backgrounds)) {
  *   instrument  — dropdown of instrument items
  *   gear        — dropdown of gear items; if `filterByReligion`,
  *                 restrict to holy symbols matching the character's
- *                 religion via HOLY_SYMBOL_BY_RELIGION lookup
- *   holySymbol  — special case (fills automatically per religion)
+ *                 religion Item's holySymbol.name
+ *   holySymbol  — special case (fills automatically from the embedded
+ *                 religion Item's holySymbol.name)
  */
 FLAIL.startingGear = {
   bard: {
@@ -879,34 +795,18 @@ FLAIL.startingGear = {
 };
 
 /**
- * Holy symbol per religion — mapping used by the Cleric starting-gear
- * wizard to auto-fill the holySymbol choice. Names match the item
- * documents in the common-items compendium (as of v0.4.44).
- *
- * Note: castPrayer's HOLY_KEYWORDS uses substring matching for the
- * carried-symbol check, so these exact names all satisfy that logic
- * (e.g. "Cross of Sheezuz" contains "cross"; "Helm of Zor'Vol"
- * matches by carrying the horned_helmet icon per religion note).
+ * FLAIL.HOLY_SYMBOL_BY_RELIGION — DELETED in v0.4.65. Superseded by
+ * the religion Item's `holySymbol.name` field, populated via drag-
+ * drop on the religion sheet. Starting-gear wizard reads that
+ * directly (module/apps/starting-gear-wizard.mjs).
  */
-FLAIL.HOLY_SYMBOL_BY_RELIGION = {
-  brotherhood:  "Cross of Sheezuz",
-  crusade:      "Mutton Tunic",
-  shadowDemon:  "Helm of Zor'Vol",
-  verdantGrove: "The Oak Leaf"
-};
 
 /**
- * Guild sigil per guild — mapping keyed on the guild ITEM NAME
- * (guilds are embedded Items of type "guild" on the actor). Used
- * by the Cutthroat starting-gear wizard to auto-fill the guildSigil
- * choice. Names match documents in the common-items compendium.
+ * FLAIL.GUILD_SIGIL_BY_GUILD — DELETED in v0.4.68. Superseded by the
+ * guild Item's `sigil.name` field, populated via drag-drop on the
+ * guild sheet. Starting-gear wizard + sigil-equipped check read that
+ * directly.
  */
-FLAIL.GUILD_SIGIL_BY_GUILD = {
-  "Crimson Cloak Society": "Crimson Coin Sigil",
-  "The Shadow Arcanum":    "Eye Ring Sigil",
-  "The Justice League":    "Hand Brooch Sigil",
-  "The Octopus Nexus":     "Tentacle Clasp Sigil"
-};
 
 /**
  * Construct improvements — rulebook page 32.

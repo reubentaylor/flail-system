@@ -15,7 +15,8 @@ export const GUILDS = [
     "img": "systems/flail/icons/items/crimson-coin.png",
     "system": {
       "blurb": "An assassin's guild whose members wear a dark red cape.",
-      "sigil": "crimson coin",
+      "sigil": { "name": "Crimson Coin Sigil" },
+      "sigilNote": "A crimson coin worn on a chain.",
       "startingTalents": [
         "disguise",
         "hideShadows",
@@ -76,7 +77,8 @@ export const GUILDS = [
     "img": "systems/flail/icons/items/eye-ring.png",
     "system": {
       "blurb": "Guild of esoteric thieves specialised in the occult.",
-      "sigil": "eye ring that blinks",
+      "sigil": { "name": "Eye Ring Sigil" },
+      "sigilNote": "An eye ring that blinks unnervingly.",
       "startingTalents": [
         "appraise",
         "forgePapers",
@@ -137,7 +139,8 @@ export const GUILDS = [
     "img": "systems/flail/icons/items/hand-brooch.png",
     "system": {
       "blurb": "Union of burglars and pickpockets who steal from the aristocracy.",
-      "sigil": "hand-shaped brooch",
+      "sigil": { "name": "Hand Brooch Sigil" },
+      "sigilNote": "A hand-shaped brooch.",
       "startingTalents": [
         "acrobatics",
         "pickLock",
@@ -198,7 +201,8 @@ export const GUILDS = [
     "img": "systems/flail/icons/items/tentacle-clasp.png",
     "system": {
       "blurb": "Tentacular network of covert agents and master spies.",
-      "sigil": "tentacle cloak clasp",
+      "sigil": { "name": "Tentacle Clasp Sigil" },
+      "sigilNote": "A tentacle cloak clasp.",
       "startingTalents": [
         "disguise",
         "forgePapers",

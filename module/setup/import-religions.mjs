@@ -16,8 +16,10 @@ import { buildReligionsData } from "./religions-data.mjs";
  *         armourSpecialty (string[])       → armourSpecialty ({uuid,name}[])
  *       Any customised religion Items on user worlds will lose data
  *       in the removed fields (Foundry drops them silently).
+ *   4 — Fix Verdant Grove weapon name: "Longbow" → "Long Bow" (matches
+ *       common-items compendium naming convention with "Short Bow").
  */
-export const RELIGIONS_VERSION = 3;
+export const RELIGIONS_VERSION = 4;
 
 const VERSION_SETTING = "religionsVersion";
 const PACK_NAME  = "flail-religions";

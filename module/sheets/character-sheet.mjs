@@ -338,19 +338,18 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     // adjustments happen automatically per the intended design.
     //
     // Cleric is a special case: their proficiency depends on the
-    // religion they follow (Brotherhood = none, Crusade / Shadow
-    // Demon = all armour). When the class is `cleric`, defer to
-    // `FLAIL.religions[religion].armourTypes` if present. Wizards
-    // and Druids always resolve to the empty class list — no
-    // religion fallback for them per the intended design.
+    // religion they follow. As of v0.4.65 the religion is a first-
+    // class Item document with free-text `armourAllowedText` and an
+    // explicit `armourSpecialty` list — neither maps cleanly onto
+    // the tier tokens (basic/light/heavy) this check uses. So when
+    // a religion Item is embedded we skip the tier check entirely
+    // and trust the religion's own display + GM adjudication.
+    // For pre-migration Clerics (no religion Item yet), no armour
+    // proficiency filter fires — GM opens their sheet to migrate.
     const bodyArmourTypes = new Set(["basic", "light", "heavy"]);
     let classProfList = FLAIL.classes[actor.system.class]?.armour ?? [];
     if (actor.system.class === "cleric") {
-      const religionKey = actor.system.classOptions?.religion;
-      const religion = FLAIL.religions?.[religionKey];
-      if (religion?.armourTypes) {
-        classProfList = religion.armourTypes;
-      }
+      classProfList = []; // deferred to religion Item's armourAllowedText
     }
     const classProficiency = new Set(classProfList);
     const wornZones = new Set(["body", "adornment"]);
@@ -600,22 +599,12 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       n: i + 1, text
     }));
 
-    // Cleric — religion + everything derived from it (deity, weapons,
-    // holy symbol, armour, lay-on-hands fumble, prayer list). Religion is
-    // the only persisted Cleric field; everything else is computed every
-    // render so it can never drift from the chosen religion.
-    //
-    // v0.4.62: prefer the embedded religion Item (drag-drop schema)
-    // over the legacy classOptions.religion string. Both surfaces are
-    // exposed on ctx for the templates to use — the class-extras
-    // "religion card" (added below) reads religionItem; the older
-    // religion selector on the main sheet still reads religionKey
-    // for pre-migration compatibility.
-    const religionKey = sys.classOptions?.religion ?? "";
-    const religion    = FLAIL.religions[religionKey] ?? null;
+    // Cleric — religion is a first-class Item document (drag-drop).
+    // The legacy classOptions.religion string and FLAIL.religions
+    // config lookup were removed in v0.4.65 — migration continues to
+    // read the legacy string (in #migrateReligionToItem) but no
+    // runtime rendering code consults it anymore.
     const religionItem = actor.items.find(i => i.type === "religion") ?? null;
-    ctx.religionKey   = religionKey;
-    ctx.religion      = religion;
     ctx.religionItem  = religionItem;
     ctx.religionItemHtml = religionItem
       ? {
@@ -629,30 +618,25 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
           )
         }
       : null;
-    ctx.religionOptions = [
-      { key: "", label: game.i18n.localize("FLAIL.Religion.Choose") },
-      ...FLAIL.religionKeys.map(k => ({ key: k, label: FLAIL.religions[k].label }))
-    ].map(o => ({ ...o, selected: o.key === religionKey }));
 
     // Cleric divine prayers — like Bone Whisperer's known dark spells.
     // Sourced from owned prayer Items (dropped from the divine-prayers
-    // compendium OR imported by the religion embed hook). Filtering:
-    //   * When a religion Item is embedded (v0.4.62+), show any prayer
-    //     with fromReligion flag matching this religion, PLUS any
-    //     unmoored prayer (kept from a previous religion swap).
-    //   * Otherwise, use the legacy religion-key match on prayer's own
-    //     religion field for pre-migration characters.
+    // compendium OR imported by the religion embed hook). Filter:
+    //   * With a religion Item embedded: show any prayer with
+    //     fromReligion flag matching this religion, PLUS any unmoored
+    //     prayer (no flag — either manually dropped or kept from a
+    //     previous religion swap).
+    //   * Without a religion Item: nothing shows (drop a religion
+    //     Item first).
     ctx.knownDivinePrayers = actor.items
       .filter(i => {
         if (i.type !== "prayer") return false;
-        if (religionItem) {
-          const flag = i.getFlag?.("flail", "fromReligion");
-          const relId = i.getFlag?.("flail", "religionItemId");
-          if (flag && relId === religionItem.id) return true;
-          if (!flag) return true; // unmoored / manually-added — always show
-          return false;
-        }
-        return !religionKey || (i.system?.religion ?? "") === religionKey;
+        if (!religionItem) return false;
+        const flag = i.getFlag?.("flail", "fromReligion");
+        const relId = i.getFlag?.("flail", "religionItemId");
+        if (flag && relId === religionItem.id) return true;
+        if (!flag) return true; // unmoored / manually-added — always show
+        return false;
       })
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(i => {
@@ -675,48 +659,31 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
 
     // Holy symbol presence — required for prayer casting. The rule says
     // "carrying or wearing" — translate to: item is in hands OR body
-    // location (not stashed in satchel, not unequipped). Match by name
-    // against keywords specific to each religion; fall back to a generic
-    // "holy symbol" name so the player can just call their item that.
-    const HOLY_SYMBOL_KEYWORDS = {
-      brotherhood:  ["wooden cross", "cross"],
-      crusade:      ["mutton crest", "mutton tunic"],
-      shadowDemon:  ["horned helmet", "horned helm"],
-      verdantGrove: ["oak leaf", "leaf medallion"]
-    };
+    // location. Match against the religion Item's holy symbol name
+    // (exact match, case-insensitive), OR a generic "holy symbol"
+    // substring so the player can just call their item that.
     const carriedLocations = new Set(["hands", "body"]);
-    // v0.4.63: also match the embedded religion Item's holy symbol
-    // name so the Cast Prayer button appears on the class-tab prayers
-    // list post-migration (previously only checked religionKey, which
-    // is empty for migrated characters that use the Item).
     const embeddedSymbolName = (religionItem?.system?.holySymbol?.name || "").toLowerCase();
-    ctx.hasHolySymbol = (religionKey || religionItem)
+    ctx.hasHolySymbol = religionItem
       ? actor.items.some(i => {
           if (!carriedLocations.has(i.system?.location)) return false;
           const lower = (i.name ?? "").toLowerCase();
-          if (lower.includes("holy symbol")) return true;  // generic fallback
+          if (lower.includes("holy symbol")) return true;
           if (embeddedSymbolName && lower === embeddedSymbolName) return true;
-          const keywords = HOLY_SYMBOL_KEYWORDS[religionKey] ?? [];
-          return keywords.some(k => lower.includes(k));
+          return false;
         })
       : false;
 
     // Augment class-details for Clerics — the rules table says "depends
     // on religion" for weapon spec, main item, and armour. Substitute
-    // concrete values from the embedded religion Item first (v0.4.62+),
-    // falling back to the legacy config for unmigrated characters.
-    if (ctx.isCleric && (religionItem || religion)) {
-      const weaponsLabel = religionItem
-        ? (religionItem.system?.weaponSpecialty ?? []).map(w => w.name).filter(Boolean).join(", ")
-        : religion?.weaponsLabel;
-      const holySymbolLabel = religionItem
-        ? (religionItem.system?.holySymbol?.name || "")
-        : religion?.holySymbol;
-      const armourLabel = religionItem
-        ? (religionItem.system?.armourAllowedText
-           || (religionItem.system?.armourSpecialty ?? []).map(a => a.name).filter(Boolean).join(", ")
-           || "")
-        : religion?.armour;
+    // concrete values from the embedded religion Item.
+    if (ctx.isCleric && religionItem) {
+      const weaponsLabel = (religionItem.system?.weaponSpecialty ?? [])
+        .map(w => w.name).filter(Boolean).join(", ");
+      const holySymbolLabel = religionItem.system?.holySymbol?.name || "";
+      const armourLabel = religionItem.system?.armourAllowedText
+        || (religionItem.system?.armourSpecialty ?? []).map(a => a.name).filter(Boolean).join(", ")
+        || "";
       for (const row of ctx.classDetails) {
         if (row.label === game.i18n.localize("FLAIL.ClassDetails.Labels.WeaponSpec") && weaponsLabel) {
           row.value = weaponsLabel + ".";
@@ -822,7 +789,8 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
           name:  guildItem.name,
           img:   guildItem.img,
           blurb: guildItem.system?.blurb ?? "",
-          sigil: guildItem.system?.sigil ?? "",
+          sigilName: guildItem.system?.sigil?.name ?? "",
+          sigilNote: guildItem.system?.sigilNote ?? "",
           startingTalents,
           specialActions
         };
@@ -1380,33 +1348,21 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       return;
     }
 
-    // Religion gate — Cleric must have picked a religion, and the dropped
-    // prayer's religion must match. Without this guard, a Cleric could
-    // accidentally collect prayers from incompatible religions.
-    const actorReligion = this.actor.system.classOptions?.religion ?? "";
-    const prayerReligion = item.system?.religion ?? "";
-    if (!actorReligion) {
+    // Religion gate — Cleric must have a religion Item embedded.
+    // The item's own prayers array is the authoritative "allowed
+    // set", but manual drops of other prayers are permitted (they'll
+    // just render as unmoored, unflagged prayers on the sheet).
+    // Pre-migration Clerics with no religion Item are asked to
+    // resolve that first.
+    const religionItem = this.actor.items.find(i => i.type === "religion");
+    if (!religionItem) {
       ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.PickReligionFirst"));
       return;
     }
-    if (prayerReligion !== actorReligion) {
-      const actorLabel  = FLAIL.religions[actorReligion]?.label ?? actorReligion;
-      const prayerLabel = FLAIL.religions[prayerReligion]?.label ?? prayerReligion;
-      ui.notifications?.warn(
-        game.i18n.format("FLAIL.Notify.PrayerWrongReligion", {
-          prayer: item.name,
-          prayerReligion: prayerLabel,
-          actorReligion: actorLabel
-        })
-      );
-      return;
-    }
 
-    // Avoid duplicates of the same prayer.
+    // Avoid duplicates of the same prayer (case-insensitive name match).
     const dup = this.actor.items.find(i =>
-      i.type === "prayer"
-      && i.system?.religion === prayerReligion
-      && i.name === item.name
+      i.type === "prayer" && i.name === item.name
     );
     if (dup) {
       ui.notifications?.info(
@@ -1933,17 +1889,12 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
   /**
    * Whether this character is currently carrying or wearing a sigil.
    *
-   * A sigil qualifies when:
-   *   - it's an item whose name contains "sigil" (case-insensitive)
-   *     — matches Crimson Coin Sigil, Eye Ring Sigil, Hand Brooch
-   *     Sigil, Tentacle Clasp Sigil, or any home-brew guild sigil
-   *     that follows the naming convention;
-   *   - AND it's currently held in the Hands zone, worn in the Body
-   *     zone, OR worn in the Adornment zone. The last case is the
-   *     canonical location — the four Cutthroat guild sigils in the
-   *     compendium are pre-flagged as adornments and drop into the
-   *     Adornment column by default, so that zone must count as
-   *     "worn" for guild-token spending to work.
+   * As of v0.4.68 the check reads the embedded guild Item's
+   * `system.sigil.name` first and does an exact case-insensitive name
+   * match against carried items (hands/body/adornment locations).
+   * Legacy fallback: any item whose name contains "sigil" also
+   * qualifies — covers unmigrated Cutthroats and home-brew items that
+   * follow the naming convention.
    *
    * Used by the sheet context (renders the token counter as enabled/
    * disabled) and by the guild-action + guild-token spend handlers
@@ -1951,10 +1902,15 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
    */
   _hasSigilEquipped() {
     const wornOrCarried = new Set(["hands", "body", "adornment"]);
-    return this.actor.items.some(i =>
-      wornOrCarried.has(i.system?.location)
-      && (i.name ?? "").toLowerCase().includes("sigil")
-    );
+    const guildItem = this.actor.items.find(i => i.type === "guild");
+    const guildSigilName = (guildItem?.system?.sigil?.name || "").toLowerCase();
+    return this.actor.items.some(i => {
+      if (!wornOrCarried.has(i.system?.location)) return false;
+      const lower = (i.name ?? "").toLowerCase();
+      if (guildSigilName && lower === guildSigilName) return true;
+      if (lower.includes("sigil")) return true; // legacy fallback
+      return false;
+    });
   }
 
   /**
@@ -3568,39 +3524,26 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const prayer = this.actor.items.get(itemId);
     if (!prayer) return;
 
-    // The template already gates the cast button on hasHolySymbol so the
-    // button shouldn't render when the symbol is absent. Defensive
+    // The template already gates the cast button on hasHolySymbol so
+    // the button shouldn't render when the symbol is absent. Defensive
     // recheck anyway in case the player's state changed mid-render.
-    // v0.4.62: prefer the embedded religion Item (drag-drop schema
-    // introduced in v0.4.58/60) over the legacy classOptions.religion
-    // string. If a religion Item is embedded, use its `holySymbol.name`
-    // as an exact-match key against carried gear (plus the generic
-    // "holy symbol" substring fallback). If not, fall back to the
-    // pre-item HOLY_KEYWORDS table for characters that haven't been
-    // migrated yet.
+    // Religion is an embedded Item; if absent, GM must migrate the
+    // character (opening their sheet triggers migration) or the player
+    // must drop a religion.
     const religionItem = this.actor.items.find(i => i.type === "religion");
-    const religionKey = this.actor.system.classOptions?.religion ?? "";
-    if (!religionItem && !religionKey) {
+    if (!religionItem) {
       ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.PickReligionFirst"));
       return;
     }
 
-    const HOLY_KEYWORDS = {
-      brotherhood:  ["wooden cross", "cross"],
-      crusade:      ["mutton crest", "mutton tunic"],
-      shadowDemon:  ["horned helmet", "horned helm"],
-      verdantGrove: ["oak leaf", "leaf medallion"]
-    };
+    const embeddedSymbolName = (religionItem.system?.holySymbol?.name || "").toLowerCase();
     const carried = new Set(["hands", "body"]);
     const hasSymbol = this.actor.items.some(i => {
       if (!carried.has(i.system?.location)) return false;
       const lower = (i.name ?? "").toLowerCase();
       if (lower.includes("holy symbol")) return true;
-      // Preferred path: embedded religion item's holy symbol name.
-      const embeddedSymbolName = religionItem?.system?.holySymbol?.name;
-      if (embeddedSymbolName && lower === embeddedSymbolName.toLowerCase()) return true;
-      // Legacy fallback: keyword substring match.
-      return (HOLY_KEYWORDS[religionKey] ?? []).some(k => lower.includes(k));
+      if (embeddedSymbolName && lower === embeddedSymbolName) return true;
+      return false;
     });
     if (!hasSymbol) {
       ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.NoHolySymbol"));

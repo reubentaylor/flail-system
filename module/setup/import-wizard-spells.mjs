@@ -18,8 +18,12 @@ import { WIZARD_SPELLS } from "./wizard-spells-data.mjs";
  *       • Teleport: single-destination "up to [SUM] x 10' away" wording
  *         instead of "between two places".
  *       • Hold Person: cleaner phrasing (no mechanical change).
+ *   4 — Fix broken icon reference on Jellification + Ooze Form:
+ *       `icons/creatures/slimes/slime-face-eyes-purple.webp` doesn't
+ *       exist in Foundry v14's core icon pack — swapped for
+ *       `icons/svg/acid.svg` (guaranteed present SVG placeholder).
  */
-export const WIZARD_SPELLS_VERSION = 3;
+export const WIZARD_SPELLS_VERSION = 4;
 
 /**
  * IDs of spells that used to exist in the bundle and have since been

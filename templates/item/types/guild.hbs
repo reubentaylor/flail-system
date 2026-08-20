@@ -15,13 +15,39 @@
   <label class="block">{{localize "FLAIL.Field.Blurb"}}
     <input type="text" name="system.blurb" value="{{system.blurb}}" {{#unless editable}}disabled{{/unless}} />
   </label>
-  <label class="block">{{localize "FLAIL.Field.Sigil"}}
-    <input type="text" name="system.sigil" value="{{system.sigil}}" {{#unless editable}}disabled{{/unless}} />
-  </label>
-  <p class="guild-sigil-hint">
-    <i class="fas fa-circle-info"></i>
-    {{localize "FLAIL.Guild.SigilNamingHint"}}
-  </p>
+
+  {{!-- Sigil drop zone — single Item reference (v0.4.68). Any Item
+       type accepted; typically a gear item. The item is a signifier
+       only — it does NOT get embedded on the Cutthroat when the guild
+       is dropped onto them. `_hasSigilEquipped` on the character
+       sheet matches by name against carried items. --}}
+  <div class="block">
+    <label>{{localize "FLAIL.Field.Sigil"}}</label>
+    <p class="guild-sigil-hint">
+      <i class="fas fa-circle-info"></i>
+      Drag any item onto the box below — it becomes this guild's sigil.
+    </p>
+    <div class="rel-symbol-drop rel-single-dropzone" data-drop-target="guildSigil">
+      {{#if system.sigil.name}}
+      <div class="rel-symbol-row">
+        <span class="rel-symbol-name">{{system.sigil.name}}</span>
+        {{#if system.sigil.uuid}}
+        <span class="rel-prayer-uuid" title="{{system.sigil.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="No UUID resolved — will not match at carry-check"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if editable}}
+        <button type="button" data-action="guildSigilRemove" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </div>
+      {{else}}
+      <div class="rel-single-empty">Drop the guild's sigil item here.</div>
+      {{/if}}
+    </div>
+    <label class="block">Display note
+      <input type="text" name="system.sigilNote" value="{{system.sigilNote}}" placeholder="Optional flavour (e.g. 'crimson coin on a chain')" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
 
   {{!-- Starting Talents drop zone --}}
   <div class="block">

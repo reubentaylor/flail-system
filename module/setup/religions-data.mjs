@@ -153,7 +153,7 @@ export function buildReligionsData() {
         holySymbol: { name: "The Oak Leaf" },
         holySymbolNote: "An oak leaf medallion.",
         weaponSpecialty: [
-          { name: "Crossbow" }, { name: "Dagger" }, { name: "Longbow" },
+          { name: "Crossbow" }, { name: "Dagger" }, { name: "Long Bow" },
           { name: "Short Bow" }, { name: "Spear" }, { name: "Quarterstaff" }
         ],
         armourSpecialty: [

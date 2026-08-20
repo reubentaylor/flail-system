@@ -24,7 +24,8 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       prayerRemove:       FlailItemSheet.#onReligionPrayerRemove,
       holySymbolRemove:   FlailItemSheet.#onReligionHolySymbolRemove,
       weaponSpecRemove:   FlailItemSheet.#onReligionWeaponSpecRemove,
-      armourSpecRemove:   FlailItemSheet.#onReligionArmourSpecRemove
+      armourSpecRemove:   FlailItemSheet.#onReligionArmourSpecRemove,
+      guildSigilRemove:   FlailItemSheet.#onGuildSigilRemove
     }
   };
 
@@ -79,6 +80,12 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if (idx < 0 || idx >= current.length) return;
     current.splice(idx, 1);
     await this.item.update({ "system.armourSpecialty": current });
+  }
+
+  /** Clear the guild's sigil reference (single item, v0.4.68). */
+  static async #onGuildSigilRemove(event, target) {
+    if (this.item.type !== "guild") return;
+    await this.item.update({ "system.sigil": { uuid: "", name: "" } });
   }
 
   static async #onBgGrantsReset(event, target) {
@@ -421,7 +428,37 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     // On drop, snapshot the dropped item's data and append to the
     // matching schema array. The character-sheet guild-drop handler
     // then materialises these as embedded items on the actor.
+    // Also (v0.4.68): single-item drop zone for the guild sigil,
+    // parallel to Religion's holy-symbol pattern. Sigil items are
+    // signifiers — NOT embedded on the character when the guild is
+    // dropped.
     if (this.item.type === "guild") {
+      const sigilZone = root.querySelector('[data-drop-target="guildSigil"]');
+      if (sigilZone) {
+        sigilZone.addEventListener("dragover", ev => {
+          ev.preventDefault();
+          if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
+          sigilZone.classList.add("drop-active");
+        });
+        sigilZone.addEventListener("dragleave", () => sigilZone.classList.remove("drop-active"));
+        sigilZone.addEventListener("drop", async ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          sigilZone.classList.remove("drop-active");
+          let payload;
+          try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); }
+          catch { return; }
+          const dropped = await Item.implementation.fromDropData(payload);
+          if (!dropped) return;
+          const uuid = dropped.uuid || payload.uuid || "";
+          if (!uuid) {
+            ui.notifications?.warn("Dropped item has no resolvable UUID.");
+            return;
+          }
+          await this.item.update({ "system.sigil": { uuid, name: dropped.name } });
+        });
+      }
+
       root.querySelectorAll("[data-guild-drop]").forEach(zone => {
         zone.addEventListener("dragover", ev => {
           ev.preventDefault();

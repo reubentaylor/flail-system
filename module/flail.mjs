@@ -895,81 +895,17 @@ Hooks.on("preUpdateActor", (actor, changes) => {
   }
 });
 
-/**
- * When a Cleric chooses or changes religion, sync their divine prayers:
- *
- *   1. Prune prayers belonging to the OLD religion (now invalid).
- *   2. Auto-populate prayers from the NEW religion (so the player doesn't
- *      have to drag all six from the compendium manually).
- *
- * Gated to the primary active GM so the mutation runs exactly once per
- * religion change. If both a GM and a player-owner were allowed to fire
- * the mutation, the create-step would race and produce duplicate prayer
- * items on the sheet. The delete-step is idempotent and harmless either
- * way; restricting both keeps the logic uniform.
- *
- * If no GM is connected, the auto-sync is skipped — the player can still
- * drag prayers manually from the compendium, and the sync will run the
- * next time a GM is present and the religion is toggled.
- */
-Hooks.on("updateActor", async (actor, changes) => {
-  try {
-    if (actor.type !== "character") return;
-    // Only the primary active GM runs the mutation.
-    if (game.user.id !== game.users.activeGM?.id) return;
-
-    const newReligion = foundry.utils.getProperty(changes, "system.classOptions.religion");
-    if (newReligion === undefined) return;  // no religion change in this update
-
-    /* ---------- 1. Prune prayers from the OLD religion ---------- */
-    const stale = actor.items.filter(i =>
-      i.type === "prayer"
-      && i.system?.religion
-      && i.system.religion !== newReligion
-    );
-    if (stale.length) {
-      await actor.deleteEmbeddedDocuments("Item", stale.map(i => i.id));
-      ui.notifications?.info(
-        `FLAIL: removed ${stale.length} prayer${stale.length === 1 ? "" : "s"} from the previous religion.`
-      );
-    }
-
-    /* ---------- 2. Auto-populate prayers from the NEW religion ---- */
-    // Skip if the player cleared the dropdown (newReligion === "").
-    if (!newReligion) return;
-
-    const pack = game.packs.get("world.flail-divine-prayers");
-    if (!pack) {
-      console.warn(`${TAG} divine-prayers compendium not found — skipping auto-populate.`);
-      return;
-    }
-    const docs = await pack.getDocuments();
-    const prayers = docs.filter(d =>
-      d.type === "prayer" && d.system?.religion === newReligion
-    );
-
-    // De-dup against anything already on the actor — e.g. if the player
-    // had manually dragged one before changing religion via dropdown.
-    const existingNames = new Set(
-      actor.items
-        .filter(i => i.type === "prayer" && i.system?.religion === newReligion)
-        .map(i => i.name)
-    );
-    const toCreate = prayers
-      .filter(p => !existingNames.has(p.name))
-      .map(p => p.toObject());
-
-    if (toCreate.length) {
-      await actor.createEmbeddedDocuments("Item", toCreate);
-      const label = FLAIL.religions[newReligion]?.label ?? newReligion;
-      ui.notifications?.info(
-        `FLAIL: added ${toCreate.length} ${label} prayer${toCreate.length === 1 ? "" : "s"}.`
-      );
-    }
-  } catch (err) {
-    console.error(`${TAG} updateActor (religion sync) failed:`, err);
-  }
-});
+/* -------------------------------------------- */
+/*  Religion-sync updateActor hook — DELETED    */
+/*                                              */
+/*  Removed in v0.4.65. It watched for changes  */
+/*  to `system.classOptions.religion` (the      */
+/*  legacy string dropdown, gone since v0.4.63) */
+/*  and used FLAIL.religions to auto-populate   */
+/*  prayers. Both consumers are gone; religion  */
+/*  drops onto a Cleric now go through the      */
+/*  createItem hook + importReligionPrayers.    */
+/* -------------------------------------------- */
 
 /**
  * Toxic Secretion (Druid Amphibian primal gift) — remind the player

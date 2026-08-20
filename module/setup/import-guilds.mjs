@@ -12,12 +12,46 @@ import { GUILDS } from "./guilds-data.mjs";
  *       eye-ring, hand-brooch, tentacle-clasp).
  *   3 — FLAIL v1 rulebook (p.26): Necrotic Blade damage bumped from
  *       d6 to 2d6.
+ *   4 — SCHEMA CHANGE (v0.4.68): sigil field converted from string
+ *       ("crimson coin") to item-ref { uuid, name } (drag-drop, like
+ *       Religion's holySymbol). Old string content moved to the new
+ *       sigilNote free-text field. Sigil UUIDs auto-resolve against
+ *       the world's Item compendia at sync time.
  */
-export const GUILDS_VERSION = 3;
+export const GUILDS_VERSION = 4;
 
 const VERSION_SETTING = "guildsVersion";
 const PACK_NAME = "flail-guilds";
 const PACK_LABEL = "FLAIL Cutthroat Guilds";
+
+/**
+ * Resolve each guild's sigil item-ref to a concrete UUID by looking
+ * up the sigil name in every Item compendium. Same pattern as
+ * `resolveReferences` in import-religions.mjs. Missing names log a
+ * warning and leave uuid = "" — the character-side sigil check
+ * falls back to the substring "sigil" match on carried gear.
+ */
+async function resolveSigilReferences(bundle) {
+  const byName = new Map();
+  for (const pack of game.packs) {
+    if (pack.metadata.type !== "Item") continue;
+    const idx = await pack.getIndex();
+    for (const e of idx) {
+      const key = (e.name ?? "").toLowerCase();
+      if (!byName.has(key)) {
+        byName.set(key, `Compendium.${pack.collection}.Item.${e._id}`);
+      }
+    }
+  }
+  for (const guild of bundle) {
+    const s = guild.system?.sigil;
+    if (s?.name && !s.uuid) {
+      const uuid = byName.get(s.name.toLowerCase());
+      if (uuid) s.uuid = uuid;
+      else console.warn(`FLAIL | Guilds sync: sigil "${s.name}" not found for guild "${guild.name}".`);
+    }
+  }
+}
 
 /**
  * On `ready`, ensure a world-level compendium exists with all FLAIL
@@ -46,16 +80,21 @@ export async function ensureGuildsCompendium() {
     }
   }
 
+  // Deep-clone bundle so sigil UUID stamping doesn't mutate the
+  // shared module export across re-syncs.
+  const bundle = foundry.utils.deepClone(GUILDS);
+  await resolveSigilReferences(bundle);
+
   const index = await pack.getIndex();
   const storedVersion = game.settings.get("flail", VERSION_SETTING);
-  const upToDate = index.size >= GUILDS.length
+  const upToDate = index.size >= bundle.length
                 && storedVersion >= GUILDS_VERSION;
   if (upToDate) return;
 
   const existingIds = new Set([...index].map(e => e._id));
-  const toCreate = GUILDS.filter(it => !existingIds.has(it._id));
+  const toCreate = bundle.filter(it => !existingIds.has(it._id));
   const toUpdate = storedVersion < GUILDS_VERSION
-    ? GUILDS.filter(it => existingIds.has(it._id))
+    ? bundle.filter(it => existingIds.has(it._id))
     : [];
 
   console.log(

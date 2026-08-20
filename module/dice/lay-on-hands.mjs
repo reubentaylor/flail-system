@@ -1,4 +1,5 @@
 import { FLAIL } from "../helpers/config.mjs";
+import { rollGodsWrath } from "./gods-wrath.mjs";
 
 /**
  * Lay on Hands (Cleric special skill).
@@ -52,11 +53,9 @@ export async function rollLayOnHands({ actor, target } = {}) {
     ? storedThreshold
     : 20;
   const level = actor.system.level ?? 1;
-  const religionKey = actor.system.classOptions?.religion ?? "";
-  const religion    = FLAIL.religions[religionKey] ?? null;
-  // v0.4.62: prefer embedded religion Item for fumble text + label
-  // (the item's HTML field overrides the legacy config string). Legacy
-  // fallback remains for unmigrated characters.
+  // Religion is a first-class Item document; legacy config fallback
+  // removed in v0.4.65. Pre-migration Clerics get no fumble text
+  // (GM opens sheet to trigger migration).
   const religionItem = actor.items.find(i => i.type === "religion");
 
   /* ---------- 2. Roll the LUCK save ---------- */
@@ -111,10 +110,9 @@ export async function rollLayOnHands({ actor, target } = {}) {
     } : null,
     fumbleText: outcome === "fumble"
       ? (religionItem?.system?.layOnHandsFumble
-         ?? religion?.layOnHandsFumble
          ?? "Suffer consequences as per the Cleric's religion.")
       : null,
-    religionLabel: religionItem?.name ?? religion?.label ?? ""
+    religionLabel: religionItem?.name ?? ""
   };
 
   const content = await foundry.applications.handlebars.renderTemplate(
@@ -124,7 +122,7 @@ export async function rollLayOnHands({ actor, target } = {}) {
 
   const rolls = healRoll ? [saveRoll, healRoll] : [saveRoll];
 
-  return ChatMessage.create({
+  const chatMsg = await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     rolls,
     content,
@@ -143,4 +141,18 @@ export async function rollLayOnHands({ actor, target } = {}) {
       }
     }
   });
+
+  // v0.4.65 — Shadow Demon (or any homebrew religion whose LoH fumble
+  // text references "God's Wrath") auto-fires the Wrath roll after
+  // the LoH card posts. Substring match on the religion's own fumble
+  // HTML means homebrew religions that write "roll on God's Wrath"
+  // also trigger it — no hard-coded religion key needed.
+  if (outcome === "fumble") {
+    const fumbleHtml = religionItem?.system?.layOnHandsFumble ?? "";
+    if (/god['']?s\s+wrath/i.test(fumbleHtml)) {
+      await rollGodsWrath({ actor, reason: "Lay on Hands fumble" });
+    }
+  }
+
+  return chatMsg;
 }

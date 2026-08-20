@@ -339,29 +339,12 @@
       </dl>
       <p class="religion-swap-hint"><em>Drag another religion Item onto this character to change.</em></p>
 
-      {{else if religion}}
-      {{!-- Legacy pre-migration display — reads FLAIL.religions[key].
-           The GM's next sheet open triggers auto-migration; no way
-           to change religion here (drag a Religion Item onto the
-           character sheet to switch). --}}
-      <p class="religion-migration-pending"><em>Legacy religion — will migrate to Item form the next time a GM opens this sheet.</em></p>
-      <dl class="religion-derived">
-        <div class="row"><dt>{{localize "FLAIL.Field.God"}}</dt>
-          <dd><strong>{{religion.god}}</strong> — {{religion.godBlurb}}</dd></div>
-        <div class="row"><dt>{{localize "FLAIL.Field.HolySymbol"}}</dt>
-          <dd>{{religion.holySymbol}}.</dd></div>
-        <div class="row"><dt>{{localize "FLAIL.Field.Weapons"}}</dt>
-          <dd>{{religion.weaponsLabel}}.</dd></div>
-        <div class="row"><dt>{{localize "FLAIL.Field.Armour"}}</dt>
-          <dd>{{religion.armour}}.</dd></div>
-        <div class="row"><dt>{{localize "FLAIL.Field.LayOnHandsFumble"}}</dt>
-          <dd>{{religion.layOnHandsFumble}}</dd></div>
-      </dl>
-
       {{else}}
       {{!-- No religion — drop zone. Foundry's native item-drop pathway
            on the character sheet catches the drop and fires the
-           preCreateItem hook which routes to religion-embed logic. --}}
+           preCreateItem hook which routes to religion-embed logic.
+           Pre-migration Clerics also see this once their sheet has
+           been opened by a GM (migration auto-embeds the item). --}}
       <div class="religion-drop-zone">
         <i class="fas fa-hands-praying"></i>
         <p>{{localize "FLAIL.Religion.DropPrompt"}}</p>
@@ -375,25 +358,6 @@
     {{#if religionItem}}
       {{!-- Drop zone — accepts prayer Items (also filled automatically
            when a religion is embedded per its own prayer list). --}}
-      <ul class="known-spells-list known-spells-dropzone prayer-dropzone" data-drop-target="divinePrayers">
-        {{#each knownDivinePrayers as |p|}}
-        <li class="known-spell known-prayer" draggable="true" data-item-id="{{p.id}}" data-tooltip="{{p.tooltipText}}">
-          <img class="spell-img" src="{{p.img}}" alt="{{p.name}}" />
-          <span class="spell-name">{{p.name}}</span>
-          <span class="spell-meta">
-            <button type="button" data-action="itemEdit"   data-item-id="{{p.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
-            <button type="button" data-action="itemDelete" data-item-id="{{p.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="spell-delete"><i class="fas fa-trash"></i></button>
-          </span>
-          {{#if ../hasHolySymbol}}
-          <button type="button" class="prayer-cast-btn" data-action="castPrayer" data-item-id="{{p.id}}" title="{{localize 'FLAIL.Prayer.CastTooltip'}}">
-            <i class="fas fa-hands-praying"></i>
-          </button>
-          {{/if}}
-        </li>
-        {{/each}}
-      </ul>
-    {{else if religion}}
-      {{!-- Drop zone — accepts prayer Items matching the chosen religion --}}
       <ul class="known-spells-list known-spells-dropzone prayer-dropzone" data-drop-target="divinePrayers">
         {{#each knownDivinePrayers as |p|}}
         <li class="known-spell known-prayer" draggable="true" data-item-id="{{p.id}}" data-tooltip="{{p.tooltipText}}">
@@ -441,7 +405,7 @@
         </div>
         <div class="guild-meta-cell">
           <strong>{{localize "FLAIL.Field.Sigil"}}:</strong>
-          <span>{{currentGuild.sigil}}</span>
+          <span>{{currentGuild.sigilName}}{{#if currentGuild.sigilNote}} <em>({{currentGuild.sigilNote}})</em>{{/if}}</span>
         </div>
       </div>
       <div class="guild-actions-section">
