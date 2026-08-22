@@ -474,6 +474,23 @@
 <div class="druid-row">
   {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
 
+  {{!-- Druid special-skill quick-action buttons (v0.4.69).
+       Animal Handling: CHA save with advantage-if-dominant.
+       Nature Adept:    CHA save; on fail, auto-apply Drained. --}}
+  <section class="tabbed-card druid-actions-card">
+    <header class="tab-label">{{localize "FLAIL.Druid.SkillsSectionLabel"}}</header>
+    <div class="druid-actions-body">
+      <button type="button" class="druid-action-btn" data-action="animalHandling" title="{{localize 'FLAIL.Druid.AnimalHandlingTooltip'}}">
+        <i class="fas fa-paw"></i>
+        {{localize "FLAIL.Druid.AnimalHandlingButton"}}
+      </button>
+      <button type="button" class="druid-action-btn" data-action="natureAdept" title="{{localize 'FLAIL.Druid.NatureAdeptTooltip'}}">
+        <i class="fas fa-mountain-sun"></i>
+        {{localize "FLAIL.Druid.NatureAdeptButton"}}
+      </button>
+    </div>
+  </section>
+
   {{!-- Shapeshift panel — always visible on the Druid class tab.
        While inactive, shows current dominant-kingdom preview and
        the Shapeshift button. While active, shows the beast form
@@ -545,11 +562,11 @@
           {{#each kingdom.gifts as |gift|}}
             <li class="owned-gift owned-gift-{{kingdom.key}}" data-item-id="{{gift.id}}" draggable="true" data-tooltip="{{gift.description}}">
               <img class="owned-gift-img" src="{{gift.img}}" alt="{{gift.name}}" />
-              {{#if gift.activatable}}
-              <button type="button" class="owned-gift-name owned-gift-activate" data-action="activateGift" data-gift-kingdom="{{gift.kingdom}}" data-gift-key="{{gift.giftKey}}" title="{{gift.activateHint}}">{{gift.name}}</button>
-              {{else}}
-              <span class="owned-gift-name">{{gift.name}}</span>
-              {{/if}}
+              {{!-- v0.4.71: every owned gift is a clickable button.
+                   Bespoke mechanics (e.g. Regeneration's auto-heal)
+                   route via #onActivateGift's special-case; every
+                   other gift falls through to a chat-card post. --}}
+              <button type="button" class="owned-gift-name owned-gift-activate" data-action="activateGift" data-gift-kingdom="{{gift.kingdom}}" data-gift-key="{{gift.giftKey}}" title="{{#if gift.activateHint}}{{gift.activateHint}}{{else}}Click to post this gift to chat.{{/if}}">{{gift.name}}</button>
               <span class="owned-gift-meta">
                 <button type="button" data-action="itemEdit"   data-item-id="{{gift.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
                 <button type="button" data-action="itemDelete" data-item-id="{{gift.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="owned-gift-delete"><i class="fas fa-trash"></i></button>

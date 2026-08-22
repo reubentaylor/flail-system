@@ -434,8 +434,8 @@ FLAIL.druidBeastForms = {
     tagline: "Some lessons are best taught by clawing someone in half.",
     hp: 18, defence: 2, mov: "A",
     attacks: [
-      { name: "Bite", th: 5, dmg: 4, special: "Death Blow: eat target; go without grub for d6 days." },
-      { name: "Claw", th: 6, dmg: 3, special: "Any hit: on a four-number sequence, deal an extra d10 damage." }
+      { name: "Bite", th: 6, dmg: 4, special: "Death Blow: eat target; go without grub for d6 days." },
+      { name: "Claw", th: 7, dmg: 3, special: "Any hit: on a four-number sequence, deal an extra d10 damage." }
     ]
   },
   reptile: {
@@ -443,17 +443,17 @@ FLAIL.druidBeastForms = {
     tagline: "Known to give formidable hugs.",
     hp: 20, defence: 0, mov: "A",
     attacks: [
-      { name: "Bite",         th: 6, dmg: 4, special: "Any hit: on three pairs, cause an additional 2d6 damage." },
-      { name: "Constriction", th: 7, dmg: 2, special: "Any hit: constrict target; target may save at the start of their round to break free, or takes d4 damage and loses the round; may attack new targets while constricting up to two others." }
+      { name: "Bite",         th: 7, dmg: 4, special: "Any hit: on three pairs, cause an additional 2d6 damage." },
+      { name: "Constriction", th: 8, dmg: 2, special: "Any hit: constrict target; target may save at the start of their round to break free, or takes d4 damage and loses the round; may attack new targets while constricting up to two others." }
     ]
   },
   bird: {
     name: "Ostrich",
     tagline: "When you can't fly, run hard.",
-    hp: 17, defence: 1, mov: "A",
+    hp: 17, defence: 1, mov: "F",
     attacks: [
-      { name: "Trample", th: 6, dmg: 4, special: "Any hit: on a four-number sequence, run over two Nearby targets for d10 damage." },
-      { name: "Beak",    th: 5, dmg: 3, special: "Major Hit: causes an immediate Morale save on ally of target." }
+      { name: "Trample", th: 7, dmg: 4, special: "Any hit: on a four-number sequence, run over two Nearby targets for d10 damage." },
+      { name: "Beak",    th: 7, dmg: 3, special: "Major Hit: force a Morale save on target's ally." }
     ]
   },
   amphibian: {
@@ -461,8 +461,8 @@ FLAIL.druidBeastForms = {
     tagline: "Poison is nature's way of setting boundaries.",
     hp: 15, defence: 0, mov: "A",
     attacks: [
-      { name: "Acid Spit", th: 5, dmg: 3, special: "Any hit: give target a poison token; target dies on third token." },
-      { name: "Bite",      th: 7, dmg: 4, special: "Death Blow: may revert to human without making the mutation saves." }
+      { name: "Acid Spit", th: 6, dmg: 3, special: "Any hit: give target a poison token; target dies on third token." },
+      { name: "Bite",      th: 7, dmg: 4, special: "Death Blow: gain an additional +1 TH and +4 DMG until reverting back." }
     ]
   },
   fish: {
@@ -470,8 +470,8 @@ FLAIL.druidBeastForms = {
     tagline: "Knows only the language of bite marks.",
     hp: 20, defence: 1, mov: "A",
     attacks: [
-      { name: "Bite",      th: 7, dmg: 5, special: "Any hit: on triplets, deal an additional d10 damage." },
-      { name: "Tail Slam", th: 5, dmg: 3, special: "Special: can hit two Nearby targets in the same attack." }
+      { name: "Bite",      th: 8, dmg: 5, special: "Any hit: on triplets, deal an additional d10 damage." },
+      { name: "Tail Slam", th: 6, dmg: 3, special: "Special: can hit two Nearby targets in the same attack." }
     ]
   }
 };

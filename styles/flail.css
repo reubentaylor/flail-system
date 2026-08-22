@@ -10956,3 +10956,37 @@
   font-weight: normal;
   color: var(--flail-muted, #6a5a2a);
 }
+
+/* Druid special-skills action buttons (v0.4.69) — Animal Handling +
+   Nature Adept. Compact two-button row on the class card. Matches
+   the visual language of the shapeshift buttons. */
+.druid-actions-card .druid-actions-body {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.35rem;
+}
+.druid-action-btn {
+  flex: 1 1 auto;
+  min-width: 8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.7rem;
+  background: var(--flail-parchment, #f4ebd4);
+  border: 2px solid var(--flail-rule);
+  border-radius: 3px;
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--flail-ink);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.druid-action-btn:hover {
+  background: rgba(74, 125, 58, 0.15);
+  border-color: #4c7d3a;
+}
+.druid-action-btn i {
+  color: #4c7d3a;
+}

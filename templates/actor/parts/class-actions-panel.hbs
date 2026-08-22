@@ -198,6 +198,25 @@
           <span class="ca-name">{{localize "FLAIL.Shapeshift.StartButton"}}</span>
         </button>
       {{/if}}
+      {{!-- Animal Handling + Nature Adept quick-actions (v0.4.70).
+           Always visible on the abilities-tab class actions panel,
+           regardless of shapeshift state. --}}
+      <button type="button"
+              class="ca-btn"
+              data-action="animalHandling"
+              title="{{localize 'FLAIL.Druid.AnimalHandlingTooltip'}}"
+              {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-paw ca-icon"></i>
+        <span class="ca-name">{{localize "FLAIL.Druid.AnimalHandlingButton"}}</span>
+      </button>
+      <button type="button"
+              class="ca-btn"
+              data-action="natureAdept"
+              title="{{localize 'FLAIL.Druid.NatureAdeptTooltip'}}"
+              {{#unless editable}}disabled{{/unless}}>
+        <i class="fas fa-mountain-sun ca-icon"></i>
+        <span class="ca-name">{{localize "FLAIL.Druid.NatureAdeptButton"}}</span>
+      </button>
       {{#each knownPrimalGiftsByKingdom as |kingdom|}}
         {{#each kingdom.gifts as |gift|}}
         <button type="button"

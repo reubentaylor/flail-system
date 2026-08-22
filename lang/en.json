@@ -1117,6 +1117,13 @@
       "LegacyTag":        "bundled",
       "SigilNamingHint":  "For guild-token spending to work, a Cutthroat must equip a physical sigil item with the word \"sigil\" in its name (case-insensitive) in the hands, body, or adornment slot. Homebrew sigil items must follow the same naming convention."
     },
+    "Druid": {
+      "SkillsSectionLabel":     "Special Skills",
+      "AnimalHandlingButton":   "Animal Handling",
+      "AnimalHandlingTooltip":  "CHA save to befriend / tame / mount a wild animal. Advantage if it matches your dominant kingdom.",
+      "NatureAdeptButton":      "Nature Adept",
+      "NatureAdeptTooltip":     "CHA save to manipulate a small amount of fire / water / earth / air. On fail: gain Drained."
+    },
     "GuildAction": {
       "ConfirmTitle":  "Spend a token: {name}",
       "SpendCost":     "This will spend 1 guild token: {before} → {after}."

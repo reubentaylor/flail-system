@@ -92,6 +92,8 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       shapeshiftStart:   FlailCharacterSheet.#onShapeshiftStart,
       shapeshiftRoll:    FlailCharacterSheet.#onShapeshiftRoll,
       shapeshiftRevert:  FlailCharacterSheet.#onShapeshiftRevert,
+      animalHandling:    FlailCharacterSheet.#onAnimalHandling,
+      natureAdept:       FlailCharacterSheet.#onNatureAdept,
       repairItem:        FlailCharacterSheet.#onRepairItem,
       quickCraft:        FlailCharacterSheet.#onQuickCraft,
       fixConstruct:      FlailCharacterSheet.#onFixConstruct,
@@ -3823,8 +3825,18 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
    * selected — a defensive check against stale UI or race conditions.
    */
   static async #onActivateGift(event, target) {
-    const kingdom = target.dataset.giftKingdom;
-    const key = target.dataset.giftKey;
+    // v0.4.71: buttons on the class tab pass data-gift-kingdom +
+    // data-gift-key; buttons on the abilities-tab class-actions
+    // panel pass data-item-id. Accept either — resolve the item and
+    // derive kingdom/key from its own system fields when only the
+    // item-id was passed.
+    let kingdom = target.dataset.giftKingdom;
+    let key     = target.dataset.giftKey;
+    if ((!kingdom || !key) && target.dataset.itemId) {
+      const giftItem = this.actor.items.get(target.dataset.itemId);
+      kingdom ??= giftItem?.system?.kingdom;
+      key     ??= giftItem?.system?.giftKey;
+    }
     if (!kingdom || !key) return;
 
     // Sanity: the gift must actually be selected.
@@ -3833,13 +3845,53 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       return;
     }
 
-    // Route to the specific gift's action.
+    // Special-case: Regeneration has its own mechanics (rolls 4+d4
+    // and applies healing before posting). Skip the generic card.
     if (kingdom === "reptile" && key === "regeneration") {
       return FlailCharacterSheet.#activateRegeneration.call(this);
     }
 
-    // Fallthrough — unknown activatable gift; likely a dev oversight.
-    ui.notifications?.warn(`FLAIL: no handler wired for ${kingdom}.${key}.`);
+    // Generic activation (v0.4.70) — for every other gift, post a
+    // simple chat card headed with the gift name and its description
+    // so the party sees what the Druid just used. This is purely
+    // narrative; the mechanical effect is GM-adjudicated per the
+    // gift's rulebook text.
+    return FlailCharacterSheet.#postGiftCard.call(this, kingdom, key);
+  }
+
+  /**
+   * Post a chat card for an activated primal gift — name header +
+   * description body + kingdom badge. Used by #onActivateGift for
+   * all gifts that don't have bespoke mechanics.
+   */
+  static async #postGiftCard(kingdom, key) {
+    const actor = this.actor;
+    const kingdomDef = FLAIL.druidPrimalGifts[kingdom];
+    const giftDef = kingdomDef?.gifts?.find(g => g.key === key);
+    if (!giftDef) {
+      ui.notifications?.warn(`FLAIL: unknown primal gift ${kingdom}.${key}`);
+      return;
+    }
+    const kingdomLabel = kingdomDef.label ?? kingdom;
+    const kingdomImg = FLAIL.druidKingdomImages?.[kingdom] ?? "";
+    const level = actor.system.level ?? 1;
+
+    const content = `
+      <div class="flail-chat-card primal-gift-card">
+        <header class="flail-chat-header">
+          ${kingdomImg ? `<img class="pg-kingdom-img" src="${kingdomImg}" alt="${kingdomLabel}" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;margin-right:6px;" />` : `<i class="fas fa-leaf"></i>`}
+          <span><strong>${giftDef.label}</strong> <em style="font-size:0.85em;color:#6a5a2a;">— ${kingdomLabel} primal gift</em></span>
+        </header>
+        <div class="flail-chat-body">
+          <p>${giftDef.desc ?? ""}</p>
+          <p class="pg-duration" style="font-size:0.8em;color:#6a5a2a;font-style:italic;margin-top:0.4rem;">Lasts up to ${level} turn${level === 1 ? "" : "s"} (Druid current level). Can be activated once per day.</p>
+        </div>
+      </div>
+    `;
+    return ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content
+    });
   }
 
   /**
@@ -3887,6 +3939,197 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
   /* -------------------------------------------- */
   /*  Druid Shapeshift                            */
   /* -------------------------------------------- */
+
+  /**
+   * Animal Handling (Druid, v0.4.69). Attempts to befriend / tame /
+   * mount a wild animal. FLAIL v1 p.26:
+   *   • CHA save
+   *   • Advantage if the target animal matches the Druid's dominant
+   *     primal-gift kingdom
+   *   • On success, animal follows and responds to basic orders
+   *   • If put in danger later, must pass a Morale save or run away
+   *
+   * Flow: prompt for the animal's kingdom → compute dominant → roll
+   * CHA save with advantage as appropriate. `actor.rollSave` posts
+   * its own chat card; the pick-kingdom prompt gives us enough
+   * context in the flavor line for the GM to adjudicate.
+   */
+  static async #onAnimalHandling(event, target) {
+    const actor = this.actor;
+    if (actor.system.class !== "druid") return;
+
+    const kingdomKey = await FlailCharacterSheet.#promptAnimalKingdom();
+    if (!kingdomKey) return;
+
+    const kingdomDef = FLAIL.druidPrimalGifts[kingdomKey];
+    const kingdomLabel = kingdomDef?.label ?? kingdomKey;
+
+    // Compute dominant kingdom (same logic as shapeshift). If the
+    // Druid has zero gifts, dominant is undefined and there's no
+    // advantage.
+    const gifts = actor.system.primalGifts ?? {};
+    const counts = Object.entries(FLAIL.druidPrimalGifts).map(([key, def]) => {
+      const kg = gifts[key] ?? {};
+      const count = def.gifts.filter(g => !!kg[g.key]).length;
+      return { key, count };
+    });
+    const maxCount = Math.max(0, ...counts.map(c => c.count));
+    const dominant = maxCount > 0 ? counts.filter(c => c.count === maxCount).map(c => c.key) : [];
+    // Advantage only if the target kingdom is uniquely dominant (or
+    // among the tied-for-dominant). Matches rulebook wording.
+    const advantage = dominant.includes(kingdomKey);
+
+    const flavor = `<div class="flail-chat-card">
+      <p><i class="fas fa-paw"></i> <strong>Animal Handling</strong> — ${kingdomLabel} target</p>
+      ${advantage
+        ? `<p><em>Rolling with advantage (${kingdomLabel} is your dominant kingdom).</em></p>`
+        : `<p><em>No advantage (dominant: ${dominant.map(k => FLAIL.druidPrimalGifts[k]?.label ?? k).join("/") || "none"}).</em></p>`}
+      <p class="flail-hint" style="font-size:0.85em;color:#6a5a2a;"><em>On success: animal follows &amp; responds to basic orders. If put in danger, it must pass a Morale save or run away.</em></p>
+    </div>`;
+
+    return actor.rollSave("cha", {
+      advantage: advantage ? 1 : 0,
+      flavor
+    });
+  }
+
+  /**
+   * Nature Adept (Druid, v0.4.69). Manipulates small amounts of an
+   * element (fire/water/earth/air) via a CHA save. On fail the
+   * Druid gains the Drained condition. FLAIL v1 p.26.
+   *
+   * Drained is auto-applied on fail — the Drained condition Item is
+   * looked up from the world's flail-conditions compendium and
+   * embedded on the actor.
+   */
+  static async #onNatureAdept(event, target) {
+    const actor = this.actor;
+    if (actor.system.class !== "druid") return;
+
+    const element = await FlailCharacterSheet.#promptNatureElement();
+    if (!element) return;
+
+    const flavor = `<div class="flail-chat-card">
+      <p><i class="fas fa-mountain-sun"></i> <strong>Nature Adept</strong> — ${element.label} ${element.icon}</p>
+      <p class="flail-hint" style="font-size:0.85em;color:#6a5a2a;"><em>On fail: gain the Drained condition.</em></p>
+    </div>`;
+
+    const chatMsg = await actor.rollSave("cha", { flavor });
+
+    // Inspect the save outcome from the message's own flag payload.
+    // rollSave stashes a `save` block on the ChatMessage's flail flag;
+    // if that changes, this branch degrades safely (no auto-apply).
+    const saveFlag = chatMsg?.getFlag?.("flail", "save");
+    const passed = saveFlag?.pass ?? saveFlag?.outcome === "pass" ?? saveFlag?.outcome === "crit";
+    if (passed) return chatMsg;
+
+    // Fail path — look up Drained in the world conditions compendium
+    // and embed on the actor. If the compendium/item is missing we
+    // fall back to a chat-log hint rather than erroring.
+    const pack = game.packs.get("world.flail-conditions");
+    if (!pack) {
+      ui.notifications?.warn("FLAIL: conditions compendium missing — apply Drained manually.");
+      return chatMsg;
+    }
+    const index = await pack.getIndex();
+    const entry = [...index].find(e => (e.name ?? "").toLowerCase() === "drained");
+    if (!entry) {
+      ui.notifications?.warn("FLAIL: Drained condition not found — apply manually.");
+      return chatMsg;
+    }
+    const source = await pack.getDocument(entry._id);
+    if (!source) return chatMsg;
+    const data = source.toObject();
+    delete data._id;
+    await actor.createEmbeddedDocuments("Item", [data]);
+    ui.notifications?.info(`FLAIL: ${actor.name} gained Drained (Nature Adept fumble).`);
+    return chatMsg;
+  }
+
+  /**
+   * DialogV2 prompt asking which animal-kingdom the target belongs
+   * to. Returns a key (mammal/reptile/bird/amphibian/fish) or null.
+   */
+  static async #promptAnimalKingdom() {
+    const choices = Object.entries(FLAIL.druidPrimalGifts)
+      .map(([key, def]) => `<option value="${key}">${def.label}</option>`)
+      .join("");
+    const content = `
+      <form class="flail-modifier-form">
+        <p class="flail-modifier-prompt">Which kingdom does the target animal belong to?</p>
+        <div class="form-group flail-modifier-row">
+          <label for="flail-ah-kingdom">Kingdom</label>
+          <select id="flail-ah-kingdom" name="kingdom" autofocus>${choices}</select>
+        </div>
+        <p class="flail-modifier-hint">You roll with advantage if this matches your dominant primal-gift kingdom.</p>
+      </form>
+    `;
+    return foundry.applications.api.DialogV2.wait({
+      window: { title: "Animal Handling", icon: "fas fa-paw" },
+      classes: ["flail-modifier-dialog"],
+      content,
+      buttons: [
+        {
+          action: "roll",
+          label: "Roll CHA Save",
+          icon: "fas fa-dice-d20",
+          default: true,
+          callback: (event, button, dialog) => {
+            const form = dialog.element.querySelector("form");
+            return form?.querySelector("[name='kingdom']")?.value ?? null;
+          }
+        },
+        { action: "cancel", label: "Cancel" }
+      ],
+      rejectClose: false
+    });
+  }
+
+  /**
+   * DialogV2 prompt asking which element to manipulate. Returns
+   * `{ key, label, icon }` or null.
+   */
+  static async #promptNatureElement() {
+    const elements = [
+      { key: "fire",  label: "Fire",  icon: "🔥" },
+      { key: "water", label: "Water", icon: "💧" },
+      { key: "earth", label: "Earth", icon: "🪨" },
+      { key: "air",   label: "Air",   icon: "💨" }
+    ];
+    const options = elements
+      .map(e => `<option value="${e.key}">${e.icon} ${e.label}</option>`)
+      .join("");
+    const content = `
+      <form class="flail-modifier-form">
+        <p class="flail-modifier-prompt">Which element do you want to manipulate?</p>
+        <div class="form-group flail-modifier-row">
+          <label for="flail-na-element">Element</label>
+          <select id="flail-na-element" name="element" autofocus>${options}</select>
+        </div>
+        <p class="flail-modifier-hint">CHA save. On fail: gain Drained.</p>
+      </form>
+    `;
+    const key = await foundry.applications.api.DialogV2.wait({
+      window: { title: "Nature Adept", icon: "fas fa-mountain-sun" },
+      classes: ["flail-modifier-dialog"],
+      content,
+      buttons: [
+        {
+          action: "roll",
+          label: "Roll CHA Save",
+          icon: "fas fa-dice-d20",
+          default: true,
+          callback: (event, button, dialog) => {
+            const form = dialog.element.querySelector("form");
+            return form?.querySelector("[name='element']")?.value ?? null;
+          }
+        },
+        { action: "cancel", label: "Cancel" }
+      ],
+      rejectClose: false
+    });
+    return elements.find(e => e.key === key) ?? null;
+  }
 
   /**
    * Start the Shapeshift ability. Prompts for a dice count (1-6),
