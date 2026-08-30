@@ -46,6 +46,7 @@ import { ensurePrimalGiftsCompendium } from "./setup/import-primal-gifts.mjs";
 import { ensureTinkererGadgetsCompendium } from "./setup/import-tinkerer-gadgets.mjs";
 import { ensureThievingTalentsCompendium } from "./setup/import-thieving-talents.mjs";
 import { ensureReligionsCompendium } from "./setup/import-religions.mjs";
+import { ensureCompendiumOrganization } from "./setup/compendium-organization.mjs";
 import { ensureUndeadPuppetActor, deleteUndeadPuppetTokens } from "./documents/undead-puppet.mjs";
 import { importReligionPrayers, handleReligionSwap, handleReligionDelete } from "./documents/religion-embed.mjs";
 import { ensureFlailRollTables, ensureFlailMacros } from "./setup/import-rolltables.mjs";
@@ -123,6 +124,14 @@ Hooks.once("init", () => {
     game.settings.register("flail", "religionsVersion", {
       name: "FLAIL Religions version",
       hint: "Internal — last bundled-religions version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "compendiumOrgVersion", {
+      name: "FLAIL Compendium organization version",
+      hint: "Internal — last version of the sidebar folder + in-pack folder layout applied. Do not edit.",
       scope: "world",
       config: false,
       type: Number,
@@ -465,6 +474,9 @@ Hooks.once("ready", async () => {
   await ensureFlailPotions();
   await ensureDivinePrayersCompendium();
   await ensureReligionsCompendium();
+  // Ensure sidebar folders + in-pack folders LAST — after all packs
+  // exist. GM-only, version-gated, "don't clobber" for user changes.
+  await ensureCompendiumOrganization();
   await ensureConditionsCompendium();
   await ensureGuildsCompendium();
   await ensureHexcrawlTablesCompendium();
@@ -921,6 +933,12 @@ Hooks.on("preUpdateActor", (actor, changes, options) => {
     if (actor.type !== "character") return;
     if (actor.system.class !== "druid") return;
     if (!actor.system.primalGifts?.amphibian?.toxicSecretion) return;
+    // v0.4.73: skip if this update is a shapeshift revert — the
+    // beast → character HP swap can look like damage but isn't.
+    if (options?.flailShapeshiftRevert) return;
+    // Also skip while the Druid is currently shifted: gifts are
+    // disabled in beast shape (v1 rulebook) so no retaliation card.
+    if (actor.system.shapeshift?.active) return;
 
     const newHp = foundry.utils.getProperty(changes, "system.hp.value");
     if (newHp === undefined) return;

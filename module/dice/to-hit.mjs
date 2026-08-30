@@ -1,4 +1,5 @@
 import { analyzePool } from "./poker.mjs";
+import { detectBeastSpecial } from "./beast-specials.mjs";
 import { FLAIL } from "../helpers/config.mjs";
 
 /**
@@ -353,15 +354,82 @@ export async function rollToHit({
    * the outcome.
    */
   const isDruidActor = actor?.type === "character" && actor.system?.class === "druid";
-  const druidGifts = isDruidActor ? (actor.system.primalGifts ?? {}) : {};
-  const packMentality = (isDruidActor && druidGifts.mammal?.packMentality) ? true : false;
+  // v0.4.73: gate all primal-gift effects on "not currently shapeshifted"
+  // per v1 rulebook — "Gifts are not active while the Druid is in beast
+  // shape." Beast form attacks bypass gift bonuses; only beast-specials
+  // (below) trigger while shifted.
+  const isShifted = !!actor?.system?.shapeshift?.active;
+  const druidGifts = (isDruidActor && !isShifted) ? (actor.system.primalGifts ?? {}) : {};
+  const packMentality = (isDruidActor && !isShifted && druidGifts.mammal?.packMentality) ? true : false;
   let vipersAgility = null;
-  if (isDruidActor && druidGifts.reptile?.vipersAgility) {
+  if (isDruidActor && !isShifted && druidGifts.reptile?.vipersAgility) {
     vipersAgility = {
       actorUuid: actor.uuid,
       weaponId,
       resolved: false
     };
+  }
+
+  /* ----- Druid beast-form special detection (v0.4.72, C2/C4) -----
+   * If the acting actor is a shifted Druid and this attack is a beast
+   * weapon (flagged during shapeshift-start), inspect the roll analysis
+   * for the beast attack's rulebook trigger. Auto-rolls bonus damage
+   * for pattern-based specials, and auto-applies the persistent buff
+   * for Salamander Bite Death Blow (C4). Nothing fires if the actor
+   * isn't a shifted Druid.
+   */
+  let beastSpecial = null;
+  let beastSpecialRoll = null;
+  if (isDruidActor && isShifted && weaponId) {
+    const kingdom = actor.system.shapeshift?.kingdom;
+    // weaponId is the actor-local item id (see actor.mjs rollAttack:
+    // `weaponId: weapon.id`), NOT a full UUID. Use .get, not
+    // .find(i => i.uuid === ...).
+    const weaponItem = actor.items.get(weaponId);
+    const detected = detectBeastSpecial(weaponItem, analysis, analysis.tier, kingdom);
+    if (detected) {
+      beastSpecial = detected;
+      // Auto-roll bonus damage if the rule specifies one.
+      if (detected.damage) {
+        beastSpecialRoll = new Roll(detected.damage);
+        await beastSpecialRoll.evaluate();
+        damageDealt += beastSpecialRoll.total;
+        beastSpecial.damageRolled = beastSpecialRoll.total;
+      }
+      // C4 auto-buff: Salamander Bite death-blow bumps shapeshift
+      // bonuses persistently. Round-roll code and beast-attack items
+      // pick up the new totals on the next update; here we bump the
+      // stored bonuses AND write through to the beast attack items
+      // immediately so subsequent attacks show the updated stats.
+      if (detected.buff) {
+        const shift = actor.system.shapeshift ?? {};
+        const beast = FLAIL.druidBeastForms[kingdom];
+        const newThBonus  = (shift.thBonus  ?? 0) + (detected.buff.thBonus  ?? 0);
+        const newDmgBonus = (shift.dmgBonus ?? 0) + (detected.buff.dmgBonus ?? 0);
+        await actor.update({
+          "system.shapeshift.thBonus":  newThBonus,
+          "system.shapeshift.dmgBonus": newDmgBonus
+        });
+        if (beast?.attacks?.length) {
+          const beastItems = actor.items.filter(i => i.getFlag("flail", "beastAttack"));
+          const itemUpdates = [];
+          for (const item of beastItems) {
+            const idx = item.getFlag("flail", "beastAttackIndex") ?? 0;
+            const base = beast.attacks[idx];
+            if (!base) continue;
+            itemUpdates.push({
+              _id: item.id,
+              "system.th":     (base.th  ?? 0) + newThBonus,
+              "system.damage": (base.dmg ?? 0) + newDmgBonus
+            });
+          }
+          if (itemUpdates.length) {
+            await actor.updateEmbeddedDocuments("Item", itemUpdates);
+          }
+        }
+        beastSpecial.buffApplied = { thBonus: newThBonus, dmgBonus: newDmgBonus };
+      }
+    }
   }
 
   /* ----- build chat data ----- */
@@ -399,7 +467,8 @@ export async function rollToHit({
     rawForce,
     precisionMark,
     armourNegate,
-    specialFeature
+    specialFeature,
+    beastSpecial
   };
 
   const content = await foundry.applications.handlebars.renderTemplate(
@@ -407,11 +476,12 @@ export async function rollToHit({
     templateData
   );
 
-  // If Witness Me fired, attach the bonus d6 to the message rolls so DSN
-  // animates it alongside the main pool and the rolls drawer reflects both.
-  const messageRolls = roll._flailWitnessRoll
-    ? [roll, roll._flailWitnessRoll]
-    : [roll];
+  // Attach any bonus rolls so DSN animates them and the rolls drawer
+  // reflects them: Witness Me's extra d6, and any beast-special
+  // bonus damage die (Grizzly Claw d10, etc.).
+  const messageRolls = [roll];
+  if (roll._flailWitnessRoll) messageRolls.push(roll._flailWitnessRoll);
+  if (beastSpecialRoll)       messageRolls.push(beastSpecialRoll);
 
   const message = await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),

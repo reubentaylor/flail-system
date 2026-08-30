@@ -152,6 +152,7 @@ export class FlailActor extends Actor {
         const targetActor = token.actor;
         if (targetActor?.type === "character"
             && targetActor.system.class === "druid"
+            && !targetActor.system.shapeshift?.active
             && targetActor.system.primalGifts?.amphibian?.slimySkin) {
           slimySkinTarget = { name: token.name ?? targetActor.name };
           break;

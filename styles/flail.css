@@ -3447,7 +3447,8 @@
   flex: 1 1 auto;
   min-width: 0;
 }
-.flail-card .tier-banner .fumble-consequence {
+.flail-card .tier-banner .fumble-consequence,
+.flail-card .tier-banner .deathblow-consequence {
   font-weight: 600;
   font-size: 0.8rem;
   text-transform: none;
@@ -10990,3 +10991,44 @@
 .druid-action-btn i {
   color: #4c7d3a;
 }
+
+/* Beast-form special banner (v0.4.72). Green/mossy palette to match
+   the druidic theme; matches the Witness Me banner layout so shifted
+   Druids get the same visual weight as Warrior special triggers. */
+.beast-special-banner {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.7rem;
+  background: rgba(76, 125, 58, 0.10);
+  border-left: 3px solid #4c7d3a;
+  border-radius: 3px;
+}
+.beast-special-banner header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+.beast-special-banner header i { color: #4c7d3a; }
+.beast-special-banner header .title {
+  font-weight: 800;
+  color: #2f4e21;
+}
+.beast-special-banner header .trigger {
+  font-size: 0.75rem;
+  color: #6a5a2a;
+  font-style: italic;
+  margin-left: auto;
+}
+.beast-special-banner .beast-special-effect {
+  margin: 0.2rem 0;
+  font-size: 0.88rem;
+}
+.beast-special-banner .beast-special-buff {
+  margin: 0.35rem 0 0;
+  padding-top: 0.3rem;
+  border-top: 1px dashed rgba(76, 125, 58, 0.35);
+  font-size: 0.82rem;
+  color: #2f4e21;
+  font-weight: 700;
+}
+.beast-special-banner .beast-special-buff i { margin-right: 0.3rem; }

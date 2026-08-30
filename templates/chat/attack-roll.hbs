@@ -43,11 +43,20 @@
         <span class="tier-label">{{tier.label}}</span>
         <span class="fumble-consequence">{{localize "FLAIL.Hit.FumbleDesc"}}</span>
       </div>
+    {{else if (flail-eq tier.key "deathBlow")}}
+      {{!-- Death Blow — same two-column pattern as Fumble: icon on
+           the left (already emitted above), label + consequence
+           stacked on the right. Consequence text is long enough that
+           the horizontal layout would wrap awkwardly in narrow
+           chat panels. --}}
+      <div class="tier-banner-stack">
+        <span class="tier-label">{{tier.label}}</span>
+        <span class="deathblow-consequence">{{localize "FLAIL.Hit.DeathBlowDesc"}}</span>
+      </div>
     {{else}}
       <span class="tier-label">{{tier.label}}</span>
       {{#if (flail-eq tier.key "minor")}}<span class="dmg">{{damageDealt}} {{localize "FLAIL.Field.Damage"}}</span>{{/if}}
       {{#if (flail-eq tier.key "major")}}<span class="dmg">{{damageDealt}} {{localize "FLAIL.Field.Damage"}} (2× {{weaponDamage}})</span>{{/if}}
-      {{#if (flail-eq tier.key "deathBlow")}}<span class="dmg">{{localize "FLAIL.Hit.DeathBlowDesc"}}</span>{{/if}}
     {{/if}}
   </div>
 
@@ -123,6 +132,36 @@
       <i class="fas fa-dice-d6"></i>
       {{localize "FLAIL.Effect.WitnessMe.AllyBuff"}}
     </p>
+  </div>
+  {{/if}}
+
+  {{!-- Druid beast-form special trigger (v0.4.72). Shown when a
+       shifted Druid's attack satisfies its rulebook trigger — pattern
+       match (sequences / triplets / three pairs) OR hit tier (major,
+       death blow). Bonus damage rolls (Grizzly Claw, Anaconda Bite,
+       Shark Bite) show the die + rolled value; persistent buffs
+       (Salamander Bite death blow) show the new totals. --}}
+  {{#if beastSpecial}}
+  <div class="beast-special-banner">
+    <header>
+      <i class="fas fa-paw"></i>
+      <span class="title">{{beastSpecial.name}}</span>
+      <span class="trigger">beast-form trigger</span>
+    </header>
+    <p class="beast-special-effect">{{beastSpecial.effect}}</p>
+    {{#if beastSpecial.damageRolled}}
+    <div class="witness-bonus">
+      <span class="formula">{{beastSpecial.damage}}</span>
+      <span class="arrow">→</span>
+      <span class="value">+{{beastSpecial.damageRolled}} {{localize "FLAIL.Field.Damage"}}</span>
+    </div>
+    {{/if}}
+    {{#if beastSpecial.buffApplied}}
+    <p class="beast-special-buff">
+      <i class="fas fa-arrow-up"></i>
+      Now +{{beastSpecial.buffApplied.thBonus}} TH / +{{beastSpecial.buffApplied.dmgBonus}} DMG until reverting.
+    </p>
+    {{/if}}
   </div>
   {{/if}}
 

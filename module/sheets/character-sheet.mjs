@@ -4572,7 +4572,10 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       const oldScore = actor.system.attributes[attrLoss.key]?.base ?? 0;
       update[`system.attributes.${attrLoss.key}.base`] = Math.max(0, oldScore - 1);
     }
-    await actor.update(update);
+    // Pass `flailShapeshiftRevert: true` so the Toxic Secretion
+    // updateActor hook (flail.mjs) can ignore the HP change — the
+    // beast → character HP swap can look like damage but isn't.
+    await actor.update(update, { flailShapeshiftRevert: true });
 
     // Restore pre-shift token art.
     const restoreImg = shift.preShiftTokenImg || actor.img || "";
