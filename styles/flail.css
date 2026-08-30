@@ -10148,16 +10148,20 @@
 
 .background-grants-dialog .bg-grants-dialog-body {
   padding: 0.6rem;
-  background: var(--flail-paper, #fbf3d9);
-  color: var(--flail-ink);
+  background: #fbf3d9;
+  color: #2a1f0f;
   font-family: inherit;
 }
 .background-grants-dialog .bg-grants-intro {
   margin: 0 0 0.5rem;
   padding: 0.35rem 0.5rem;
   background: rgba(139, 105, 20, 0.1);
-  border-left: 3px solid var(--flail-rule);
+  border-left: 3px solid #8b6914;
+  color: #2a1f0f;
   font-size: 0.85rem;
+}
+.background-grants-dialog .bg-grants-intro strong {
+  color: #2a1f0f;
 }
 .background-grants-dialog .bg-grants-checklist {
   list-style: none;
