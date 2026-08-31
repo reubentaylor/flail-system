@@ -47,6 +47,7 @@ import { ensureTinkererGadgetsCompendium } from "./setup/import-tinkerer-gadgets
 import { ensureThievingTalentsCompendium } from "./setup/import-thieving-talents.mjs";
 import { ensureReligionsCompendium } from "./setup/import-religions.mjs";
 import { ensureCompendiumOrganization } from "./setup/compendium-organization.mjs";
+import { registerEffectsChatListeners } from "./dice/effects-runner.mjs";
 import { ensureUndeadPuppetActor, deleteUndeadPuppetTokens } from "./documents/undead-puppet.mjs";
 import { importReligionPrayers, handleReligionSwap, handleReligionDelete } from "./documents/religion-embed.mjs";
 import { ensureFlailRollTables, ensureFlailMacros } from "./setup/import-rolltables.mjs";
@@ -481,6 +482,11 @@ Hooks.once("ready", async () => {
   await ensureGuildsCompendium();
   await ensureHexcrawlTablesCompendium();
   await ensureUndeadPuppetActor();
+
+  // v0.4.80: register the shared effects-runner chat listener. Handles
+  // Apply Damage / Apply Heal / Apply Condition / Suppress / Roll Saves
+  // buttons on feature-effects chat cards.
+  registerEffectsChatListeners();
 
   // Socket relay — players can't create Active Effects on actors they
   // don't own, so player-triggered buffs (Bard's Witness Me!) are

@@ -11036,3 +11036,214 @@
   font-weight: 700;
 }
 .beast-special-banner .beast-special-buff i { margin-right: 0.3rem; }
+
+/* ================================================================== */
+/*  Gadget Mechanics Editor (v0.4.80)                                 */
+/* ================================================================== */
+
+.fx-mechanics-card { padding: 0.6rem; }
+.fx-mechanics-card h3 { margin: 0 0 0.4rem; }
+.fx-hint-line {
+  font-size: 0.8rem; color: #6a5a2a; font-style: italic;
+  margin: 0 0 0.5rem;
+}
+.fx-fieldset {
+  border: 1px solid #8b6914;
+  border-radius: 3px;
+  padding: 0.4rem 0.6rem 0.5rem;
+  margin: 0 0 0.5rem;
+  background: rgba(139, 105, 20, 0.05);
+}
+.fx-fieldset legend {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #2a1f0f;
+  padding: 0 0.3rem;
+}
+.fx-count { color: #6a5a2a; font-weight: 400; }
+.fx-field-row {
+  display: block; margin: 0.25rem 0;
+  font-size: 0.85rem;
+}
+.fx-field-row > input,
+.fx-field-row > select {
+  display: block; width: 100%; box-sizing: border-box;
+}
+.fx-field-label { display: block; font-weight: 600; margin-bottom: 0.15rem; }
+.fx-checkbox-label {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.85rem;
+}
+.fx-checkbox-row {
+  display: flex; gap: 0.7rem; flex-wrap: wrap;
+  margin-top: 0.15rem;
+}
+
+.fx-effects-list {
+  list-style: none; padding: 0; margin: 0.2rem 0;
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.fx-effect-card {
+  border: 1px solid #8b6914; border-radius: 3px;
+  background: #fbf3d9; padding: 0.4rem;
+}
+.fx-effect-header {
+  display: flex; align-items: center; gap: 0.4rem;
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px dashed rgba(139, 105, 20, 0.4);
+}
+.fx-effect-type-badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  background: rgba(76, 125, 58, 0.2);
+  border-radius: 2px;
+  font-weight: 700;
+  color: #2a1f0f;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.fx-effect-controls {
+  margin-left: auto;
+  display: flex; gap: 0.15rem;
+}
+.fx-effect-controls button {
+  padding: 0.2rem 0.35rem;
+  background: transparent;
+  border: 1px solid #8b6914;
+  border-radius: 2px;
+  cursor: pointer;
+  color: #2a1f0f;
+}
+.fx-effect-controls button:hover {
+  background: rgba(139, 105, 20, 0.15);
+}
+.fx-effect-body { display: flex; flex-direction: column; gap: 0.2rem; }
+
+.fx-condition-slot { display: block; }
+.fx-condition-drop {
+  min-height: 2rem;
+  padding: 0.3rem 0.5rem;
+  background: rgba(139, 105, 20, 0.08);
+  border: 1px dashed #8b6914;
+  border-radius: 3px;
+  font-size: 0.82rem;
+  color: #2a1f0f;
+}
+.fx-condition-drop.drop-active {
+  background: rgba(76, 125, 58, 0.2);
+  border-color: #4c7d3a;
+  border-style: solid;
+}
+.fx-condition-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.15rem 0.4rem;
+  background: #4c7d3a; color: #fff;
+  border-radius: 2px;
+  font-weight: 600;
+}
+.fx-condition-chip button {
+  background: transparent; border: none; color: #fff;
+  cursor: pointer; padding: 0 0.15rem;
+}
+.fx-empty {
+  color: #6a5a2a; font-style: italic;
+}
+
+.fx-add-row {
+  display: flex; gap: 0.35rem; margin-top: 0.4rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed rgba(139, 105, 20, 0.4);
+}
+.fx-add-row select { flex: 1 1 auto; }
+.fx-add-row button {
+  padding: 0.3rem 0.6rem;
+  background: #4c7d3a; color: #fff;
+  border: none; border-radius: 3px;
+  font-weight: 700; cursor: pointer;
+}
+.fx-add-row button:hover { background: #3d6a2d; }
+
+/* ================================================================== */
+/*  Feature-Effects Chat Card (v0.4.80)                               */
+/* ================================================================== */
+
+.feature-effects-card {
+  padding: 0.5rem;
+}
+.feature-effects-card .fx-header {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid #8b6914;
+  margin-bottom: 0.4rem;
+}
+.feature-effects-card .fx-header i { color: #4c7d3a; font-size: 1.1rem; }
+.feature-effects-card .fx-title {
+  font-weight: 800; font-size: 1rem; color: #2a1f0f;
+}
+.feature-effects-card .fx-flavor {
+  font-style: italic; color: #6a5a2a;
+  margin: 0.2rem 0 0.4rem; font-size: 0.9rem;
+}
+.feature-effects-card .fx-target-hint {
+  font-size: 0.82rem; color: #6a5a2a;
+  margin: 0 0 0.4rem;
+}
+.feature-effects-card .fx-blocks {
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.feature-effects-card .fx-block {
+  padding: 0.4rem 0.5rem;
+  background: rgba(139, 105, 20, 0.06);
+  border-left: 3px solid #8b6914;
+  border-radius: 2px;
+}
+.feature-effects-card .fx-block-damage    { border-left-color: #a33a2a; }
+.feature-effects-card .fx-block-save      { border-left-color: #2a5aa3; }
+.feature-effects-card .fx-block-heal      { border-left-color: #4c7d3a; }
+.feature-effects-card .fx-block-condition { border-left-color: #7a2a8b; }
+.feature-effects-card .fx-block-suppress  { border-left-color: #6a5a2a; }
+.feature-effects-card .fx-block-passive   { border-left-color: #4a4a4a; }
+.feature-effects-card .fx-block-custom    { border-left-color: #8b6914; }
+
+.fx-block-header {
+  display: flex; align-items: center; gap: 0.3rem;
+  font-weight: 700; font-size: 0.85rem;
+  color: #2a1f0f; margin-bottom: 0.25rem;
+}
+.fx-dmg-type {
+  font-weight: 400; font-size: 0.75rem;
+  color: #6a5a2a; text-transform: lowercase;
+}
+.fx-roll {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.2rem 0; font-size: 0.9rem;
+}
+.fx-formula {
+  padding: 0.15rem 0.35rem;
+  background: rgba(139, 105, 20, 0.15);
+  border-radius: 2px;
+  font-family: monospace;
+}
+.fx-arrow { color: #6a5a2a; }
+.fx-total {
+  font-weight: 800; font-size: 1.05rem;
+  color: #2a1f0f;
+}
+.fx-detail { font-size: 0.72rem; color: #6a5a2a; }
+.fx-trigger, .fx-detail-line, .fx-save-detail, .fx-target-line, .fx-hint {
+  margin: 0.25rem 0; font-size: 0.82rem; color: #2a1f0f;
+}
+.fx-hint { color: #6a5a2a; font-style: italic; }
+.fx-btn {
+  margin-top: 0.3rem; margin-right: 0.25rem;
+  padding: 0.3rem 0.55rem;
+  background: #fbf3d9; color: #2a1f0f;
+  border: 1px solid #8b6914; border-radius: 3px;
+  font-weight: 600; font-size: 0.82rem;
+  cursor: pointer;
+}
+.fx-btn:hover { background: rgba(139, 105, 20, 0.2); }
+.fx-btn-apply-damage { background: rgba(163, 58, 42, 0.15); }
+.fx-btn-apply-damage:hover { background: rgba(163, 58, 42, 0.3); }
+.fx-custom-body { font-size: 0.88rem; color: #2a1f0f; }

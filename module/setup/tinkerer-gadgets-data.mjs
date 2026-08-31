@@ -178,7 +178,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"near","delayRounds":0,"targetScope":"allNearby","cost":"action","daily":false},
+      "chatBlurb": "Blinding flash — all Nearby save or go blind.",
+      "targetHint": "Target all Nearby creatures.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"save","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"int","saveOnFailConditionUuid":"","saveOnFailConditionName":"Blinded","saveDurationRounds":1,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":""}]
     },
     "flags": {}
   },
@@ -201,7 +206,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"distant","delayRounds":0,"targetScope":"none","cost":"action","daily":false},
+      "chatBlurb": "Draws all small metal objects within Distant range.",
+      "targetHint": "No targets — GM adjudicates which metal objects respond.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>All small metal objects within <strong>Distant</strong> range are drawn toward the orb. GM adjudicates specifics — coins, keys, buckles, small blades, and similar loose items are pulled.</p>"}]
     },
     "flags": {}
   },
@@ -224,7 +234,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"distant","delayRounds":0,"targetScope":"single","cost":"action","daily":false},
+      "chatBlurb": "Fires a sticky net to immobilise a Distant target.",
+      "targetHint": "Target one creature within Distant.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"save","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"dex","saveOnFailConditionUuid":"","saveOnFailConditionName":"Immobilised","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":""}]
     },
     "flags": {}
   },
@@ -247,7 +262,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"self","delayRounds":0,"targetScope":"none","cost":"action","daily":false},
+      "chatBlurb": "Fills the room with obscuring smoke.",
+      "targetHint": "Environmental — no target roll needed.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>Fills the room with thick smoke. Grants <strong>advantage on stealth</strong> to those within and <strong>obscures vision</strong> for anyone trying to see or shoot through it. Lasts until the smoke disperses (GM adjudicates duration by ventilation).</p>"}]
     },
     "flags": {}
   },
@@ -270,7 +290,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"near","delayRounds":0,"targetScope":"allNearby","cost":"action","daily":false},
+      "chatBlurb": "Concussive push — Nearby save or hurled to Distant.",
+      "targetHint": "Target all Nearby creatures.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"save","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"str","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"near","savePushTo":"distant","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":""}]
     },
     "flags": {}
   },
@@ -293,7 +318,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"self","delayRounds":0,"targetScope":"self","cost":"action","daily":false},
+      "chatBlurb": "Sprays a rope of quick-hardening liquid.",
+      "targetHint": "Self — climb with advantage.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>Sprays a rope of quick-hardening liquid that grips any surface. Grants <strong>advantage on climbing</strong> checks. Liquid hardens for <strong>two minutes</strong>, then dissolves.</p>"}]
     },
     "flags": {}
   },
@@ -316,7 +346,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"self","delayRounds":0,"targetScope":"none","cost":"action","daily":false},
+      "chatBlurb": "Cuts a small hole through walls, doors, or locks.",
+      "targetHint": "Environmental — applies to a wall / door / lock.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>Cuts a small hole through a <strong>wall, door, or lock</strong>. GM adjudicates material thickness and whether the drill succeeds in a single action or needs several turns.</p>"}]
     },
     "flags": {}
   },
@@ -339,7 +374,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"distant","delayRounds":0,"targetScope":"none","cost":"action","daily":false},
+      "chatBlurb": "Launches a bright light into the sky.",
+      "targetHint": "Environmental — attracts attention.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>Launches a bright light into the sky, <strong>visible for miles</strong>. Useful for signalling allies or marking a location. Attracts attention from anything nearby that might be watching.</p>"}]
     },
     "flags": {}
   },
@@ -362,7 +402,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"distant","delayRounds":0,"targetScope":"none","cost":"action","daily":false},
+      "chatBlurb": "Silent-moving scout emits warning flashes on movement.",
+      "targetHint": "Environmental — deploys to scout an area.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>Moves silently and <strong>emits warning flashes</strong> if it registers movement within its detection range. Useful for scouting corridors, guarding a rest, or spotting ambushes.</p>"}]
     },
     "flags": {}
   },
@@ -385,7 +430,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"near","delayRounds":0,"targetScope":"none","cost":"action","daily":false},
+      "chatBlurb": "Coats a Nearby surface with slippery, flammable oil.",
+      "targetHint": "Environmental — target a Nearby surface.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>Coats a <strong>Nearby surface</strong> with slippery, flammable oil. Creatures moving across it must save vs DEX or fall prone. The oil is <strong>flammable</strong> — a nearby spark ignites the whole slick for GM-adjudicated damage.</p>"}]
     },
     "flags": {}
   },
@@ -408,7 +458,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"self","delayRounds":0,"targetScope":"self","cost":"action","daily":false},
+      "chatBlurb": "Suppresses Injured OR Exhausted for two turns.",
+      "targetHint": "Self — pick ONE of Injured or Exhausted to suppress.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"suppressCondition","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"Injured","conditionDurationRounds":0,"conditionDurationTurns":2,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":""},{"type":"suppressCondition","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"Exhausted","conditionDurationRounds":0,"conditionDurationTurns":2,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":""}]
     },
     "flags": {}
   },
@@ -431,7 +486,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"self","delayRounds":0,"targetScope":"none","cost":"action","daily":false},
+      "chatBlurb": "Seals a crack or leak for one turn.",
+      "targetHint": "Environmental — target a crack, leak, or gap.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>Rapidly seals a crack or leak. Holds for <strong>one turn</strong>, then flakes off. Enough to stop a boat from sinking briefly, or to block a doorway just long enough.</p>"}]
     },
     "flags": {}
   },
@@ -454,7 +514,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"near","delayRounds":0,"targetScope":"ally","cost":"action","daily":false},
+      "chatBlurb": "Injects healing fluid — d4 HP restored.",
+      "targetHint": "Target self or an ally within reach.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"heal","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"1d4","healAllowsSelf":true,"healAllowsAlly":true,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":""}]
     },
     "flags": {}
   },
@@ -477,7 +542,12 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"distant","delayRounds":0,"targetScope":"anyConstruct","cost":"action","daily":false},
+      "chatBlurb": "Airborne drone repairs a construct — d4 HP.",
+      "targetHint": "Target any construct within Distant range.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"heal","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"1d4","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":true,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":""}]
     },
     "flags": {}
   },
@@ -500,7 +570,40 @@ export const TINKERER_GADGETS = [
         "max": 1,
         "value": 0
       },
-      "lastUsed": 0
+      "lastUsed": 0,
+      "activation": {"type":"reactive","range":"self","delayRounds":0,"targetScope":"self","cost":"none","daily":false},
+      "chatBlurb": "Reactive shield — absorbs up to 6 damage, then shatters.",
+      "targetHint": "Reactive — trigger on being hit.",
+      "isCustomTemplate": false,
+      "effects": [{"type":"custom","formula":"","damageType":"","triggerOnResult":"","triggerEffect":"","triggerConditionUuid":"","triggerConditionName":"","saveAttribute":"","saveOnFailConditionUuid":"","saveOnFailConditionName":"","saveDurationRounds":0,"savePushFrom":"","savePushTo":"","healFormula":"","healAllowsSelf":false,"healAllowsAlly":false,"healAllowsConstruct":false,"conditionUuid":"","conditionName":"","conditionDurationRounds":0,"conditionDurationTurns":0,"passiveValue":0,"passiveAttribute":"","passiveSkill":"","passiveCondition":"","customHtml":"<p>Reactive shield. When you are hit by a single attack, this shield <strong>absorbs up to 6 damage</strong>, then shatters. Deploys instantly — no action required.</p>"}]
+    },
+    "flags": {}
+  },
+  {
+    "_id": "cc001cc001cc0000",
+    "name": "Custom Gadget (Template)",
+    "type": "gadget",
+    "img": "icons/tools/hand/mallet-wooden-tan.webp",
+    "folder": "60059ddda48ec64d",
+    "system": {
+      "description": "<p><em>Duplicate this item and rewrite it to author your own gadget.</em></p><p>Set the gadget type (damage / control / utility / support), pick an activation model on the Mechanics tab, and add one or more effect entries. See the existing canonical gadgets for reference — Healing Injector (heal), Flash Bomb (save + condition), Adrenaline Booster (two chained suppressions), etc.</p>",
+      "gadgetType": "utility",
+      "gadgetKey": "",
+      "slotsRequired": 0,
+      "location": "unequipped",
+      "slotIndex": 0,
+      "twoHanded": false,
+      "cost": 0,
+      "usage": {
+        "max": 1,
+        "value": 0
+      },
+      "lastUsed": 0,
+      "activation": {"type":"activated","range":"near","delayRounds":0,"targetScope":"single","cost":"action","daily":false},
+      "chatBlurb": "",
+      "targetHint": "",
+      "isCustomTemplate": true,
+      "effects": []
     },
     "flags": {}
   }

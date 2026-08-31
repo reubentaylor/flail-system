@@ -25,7 +25,13 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       holySymbolRemove:   FlailItemSheet.#onReligionHolySymbolRemove,
       weaponSpecRemove:   FlailItemSheet.#onReligionWeaponSpecRemove,
       armourSpecRemove:   FlailItemSheet.#onReligionArmourSpecRemove,
-      guildSigilRemove:   FlailItemSheet.#onGuildSigilRemove
+      guildSigilRemove:   FlailItemSheet.#onGuildSigilRemove,
+      // v0.4.80 — gadget effects framework
+      gadgetEffectAdd:      FlailItemSheet.#onGadgetEffectAdd,
+      gadgetEffectRemove:   FlailItemSheet.#onGadgetEffectRemove,
+      gadgetEffectMoveUp:   FlailItemSheet.#onGadgetEffectMoveUp,
+      gadgetEffectMoveDown: FlailItemSheet.#onGadgetEffectMoveDown,
+      gadgetEffectClearRef: FlailItemSheet.#onGadgetEffectClearRef
     }
   };
 
@@ -505,6 +511,11 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
         await this.#activateEditor(btn);
       });
     });
+
+    // v0.4.80 — condition drop zones on gadget effects (mechanics tab).
+    if (this.item.type === "gadget") {
+      this.#attachGadgetEffectDropZones(root);
+    }
   }
 
   /**
@@ -564,5 +575,170 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       editorEl.classList.remove("prosemirror-editing");
       ui.notifications?.error("Editor failed to open — see console.");
     }
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  Gadget Effects Framework (v0.4.80)                              */
+  /* ---------------------------------------------------------------- */
+
+  /**
+   * Append a new blank effect entry with the type from the picker
+   * select. Selected type governs which fields the sheet renders.
+   */
+  static async #onGadgetEffectAdd(event, target) {
+    if (this.item.type !== "gadget") return;
+    // Prevent the form's submit-on-change from processing this click
+    // (it doesn't need to, and interference caused pre-v0.4.83 bugs).
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    // Read picker via class (not name — a name attribute would enrol
+    // the input into Foundry's form serialisation and corrupt updates).
+    const picker = this.element?.querySelector('.fx-add-type-picker');
+    const type = picker?.value ?? "damage";
+    const current = [...(this.item.system.effects ?? [])];
+    // Fully-defaulted entry — Foundry's ArrayField/SchemaField pipeline
+    // silently rejects partial entries. Every field explicitly set.
+    current.push({
+      type,
+      formula: "",
+      damageType: "",
+      triggerOnResult: "",
+      triggerEffect: "",
+      triggerConditionUuid: "",
+      triggerConditionName: "",
+      saveAttribute: "",
+      saveOnFailConditionUuid: "",
+      saveOnFailConditionName: "",
+      saveDurationRounds: 0,
+      savePushFrom: "",
+      savePushTo: "",
+      healFormula: "",
+      healAllowsSelf: false,
+      healAllowsAlly: false,
+      healAllowsConstruct: false,
+      conditionUuid: "",
+      conditionName: "",
+      conditionDurationRounds: 0,
+      conditionDurationTurns: 0,
+      passiveValue: 0,
+      passiveAttribute: "",
+      passiveSkill: "",
+      passiveCondition: "",
+      customHtml: ""
+    });
+    await this.item.update({ "system.effects": current });
+    // Force render — Foundry's auto-render on document update was
+    // observed to skip when the change originates inside an
+    // ApplicationV2 form with submitOnChange:true. Explicit render is
+    // defensive and cheap.
+    this.render();
+  }
+
+  static async #onGadgetEffectRemove(event, target) {
+    if (this.item.type !== "gadget") return;
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    const idx = Number(target.dataset.index);
+    if (!Number.isInteger(idx)) return;
+    const current = [...(this.item.system.effects ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current.splice(idx, 1);
+    await this.item.update({ "system.effects": current });
+    this.render();
+  }
+
+  static async #onGadgetEffectMoveUp(event, target) {
+    if (this.item.type !== "gadget") return;
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    const idx = Number(target.dataset.index);
+    if (!Number.isInteger(idx) || idx <= 0) return;
+    const current = [...(this.item.system.effects ?? [])];
+    if (idx >= current.length) return;
+    [current[idx - 1], current[idx]] = [current[idx], current[idx - 1]];
+    await this.item.update({ "system.effects": current });
+    this.render();
+  }
+
+  static async #onGadgetEffectMoveDown(event, target) {
+    if (this.item.type !== "gadget") return;
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    const idx = Number(target.dataset.index);
+    if (!Number.isInteger(idx)) return;
+    const current = [...(this.item.system.effects ?? [])];
+    if (idx < 0 || idx >= current.length - 1) return;
+    [current[idx], current[idx + 1]] = [current[idx + 1], current[idx]];
+    await this.item.update({ "system.effects": current });
+    this.render();
+  }
+
+  /**
+   * Clear a condition reference on an effect. `data-ref-field` names
+   * the ref group — one of "triggerCondition", "saveOnFailCondition",
+   * or "condition" — and the handler clears its Uuid + Name pair.
+   */
+  static async #onGadgetEffectClearRef(event, target) {
+    if (this.item.type !== "gadget") return;
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    const idx = Number(target.dataset.index);
+    const group = target.dataset.refField;
+    if (!Number.isInteger(idx) || !group) return;
+    const current = [...(this.item.system.effects ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current[idx] = {
+      ...current[idx],
+      [`${group}Uuid`]: "",
+      [`${group}Name`]: ""
+    };
+    await this.item.update({ "system.effects": current });
+    this.render();
+  }
+
+  /**
+   * Attach drop-zone listeners to any condition-drop targets on the
+   * gadget mechanics tab. Called from _onRender for gadget items.
+   * A single delegated listener would be lighter but per-zone lets us
+   * key the update precisely (effect index + which ref field).
+   */
+  #attachGadgetEffectDropZones(root) {
+    root.querySelectorAll('[data-fx-condition-drop]').forEach(zone => {
+      const idx = Number(zone.dataset.effectIndex);
+      const group = zone.dataset.refField;   // "triggerCondition" | "saveOnFailCondition" | "condition"
+      if (!Number.isInteger(idx) || !group) return;
+      zone.addEventListener("dragover", ev => {
+        ev.preventDefault();
+        if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
+        zone.classList.add("drop-active");
+      });
+      zone.addEventListener("dragleave", () => zone.classList.remove("drop-active"));
+      zone.addEventListener("drop", async ev => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        zone.classList.remove("drop-active");
+        let payload;
+        try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); }
+        catch { return; }
+        const dropped = await Item.implementation.fromDropData(payload);
+        if (!dropped) return;
+        if (dropped.type !== "condition") {
+          ui.notifications?.warn("Condition drop zone only accepts condition items.");
+          return;
+        }
+        const uuid = dropped.uuid || payload.uuid || "";
+        if (!uuid) return;
+        const current = [...(this.item.system.effects ?? [])];
+        if (idx < 0 || idx >= current.length) return;
+        // v0.4.83: flat ref pattern — write Uuid + Name separately.
+        current[idx] = {
+          ...current[idx],
+          [`${group}Uuid`]: uuid,
+          [`${group}Name`]: dropped.name
+        };
+        await this.item.update({ "system.effects": current });
+        this.render();
+      });
+    });
   }
 }

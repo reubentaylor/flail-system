@@ -1,11 +1,18 @@
-{{!-- Gadget body — Tinkerer gadgets. --}}
+{{!-- Gadget body — Tinkerer gadgets. v0.4.80 introduces the
+     Mechanics tab (activation + effects array + display niceties)
+     for authored automation. Legacy fields remain at the top. --}}
+
 <section class="card">
   <div class="row">
     <label>{{localize "FLAIL.Field.GadgetType"}}
-      <input type="text" name="system.gadgetType" value="{{system.gadgetType}}" placeholder="explosive, trap, contraption…" {{#unless editable}}disabled{{/unless}} />
+      <input type="text" name="system.gadgetType" value="{{system.gadgetType}}" placeholder="damage / control / utility / support" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>Gadget key
+      <input type="text" name="system.gadgetKey" value="{{system.gadgetKey}}" placeholder="e.g. buzzsawDisk (canonicals only)" {{#unless editable}}disabled{{/unless}} />
     </label>
   </div>
 </section>
+
 <section class="card">
   <h3>{{localize "FLAIL.Section.Usage"}}</h3>
   <div class="row">
@@ -16,4 +23,327 @@
       <input type="number" name="system.usage.value" value="{{system.usage.value}}" min="0" {{#unless editable}}disabled{{/unless}} />
     </label>
   </div>
+</section>
+
+{{!-- ─── Mechanics ─────────────────────────────────────── --}}
+<section class="card fx-mechanics-card">
+  <h3><i class="fas fa-cogs"></i> Mechanics</h3>
+  <p class="fx-hint-line">Author effects here to enable automation. Empty means the gadget falls through to legacy behaviour (canonical damage gadgets keep their bespoke handlers; other legacy gadgets just post a description card).</p>
+
+  {{!-- Activation --}}
+  <fieldset class="fx-fieldset">
+    <legend>Activation</legend>
+    <div class="row">
+      <label>Type
+        <select name="system.activation.type" {{#unless editable}}disabled{{/unless}}>
+          <option value="activated"     {{#if (flail-eq system.activation.type 'activated')}}selected{{/if}}>Activated</option>
+          <option value="passive"       {{#if (flail-eq system.activation.type 'passive')}}selected{{/if}}>Passive</option>
+          <option value="reactive"      {{#if (flail-eq system.activation.type 'reactive')}}selected{{/if}}>Reactive</option>
+          <option value="transformation" {{#if (flail-eq system.activation.type 'transformation')}}selected{{/if}}>Transformation</option>
+        </select>
+      </label>
+      <label>Cost
+        <select name="system.activation.cost" {{#unless editable}}disabled{{/unless}}>
+          <option value="none"   {{#if (flail-eq system.activation.cost 'none')}}selected{{/if}}>None</option>
+          <option value="round"  {{#if (flail-eq system.activation.cost 'round')}}selected{{/if}}>Round</option>
+          <option value="turn"   {{#if (flail-eq system.activation.cost 'turn')}}selected{{/if}}>Turn</option>
+          <option value="action" {{#if (flail-eq system.activation.cost 'action')}}selected{{/if}}>Action</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Range
+        <select name="system.activation.range" {{#unless editable}}disabled{{/unless}}>
+          <option value="self"    {{#if (flail-eq system.activation.range 'self')}}selected{{/if}}>Self</option>
+          <option value="near"    {{#if (flail-eq system.activation.range 'near')}}selected{{/if}}>Near</option>
+          <option value="distant" {{#if (flail-eq system.activation.range 'distant')}}selected{{/if}}>Distant</option>
+        </select>
+      </label>
+      <label>Target scope
+        <select name="system.activation.targetScope" {{#unless editable}}disabled{{/unless}}>
+          <option value="none"         {{#if (flail-eq system.activation.targetScope 'none')}}selected{{/if}}>None</option>
+          <option value="self"         {{#if (flail-eq system.activation.targetScope 'self')}}selected{{/if}}>Self</option>
+          <option value="single"       {{#if (flail-eq system.activation.targetScope 'single')}}selected{{/if}}>Single target</option>
+          <option value="ally"         {{#if (flail-eq system.activation.targetScope 'ally')}}selected{{/if}}>Ally</option>
+          <option value="anyConstruct" {{#if (flail-eq system.activation.targetScope 'anyConstruct')}}selected{{/if}}>Any construct</option>
+          <option value="allNearby"    {{#if (flail-eq system.activation.targetScope 'allNearby')}}selected{{/if}}>All Nearby</option>
+          <option value="coneUpTo2"    {{#if (flail-eq system.activation.targetScope 'coneUpTo2')}}selected{{/if}}>Cone (up to 2)</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Delay (rounds)
+        <input type="number" name="system.activation.delayRounds" value="{{system.activation.delayRounds}}" min="0" {{#unless editable}}disabled{{/unless}} />
+      </label>
+      <label class="fx-checkbox-label">
+        <input type="checkbox" name="system.activation.daily" {{checked system.activation.daily}} {{#unless editable}}disabled{{/unless}} />
+        Daily cap (once per day)
+      </label>
+    </div>
+  </fieldset>
+
+  {{!-- Effects list --}}
+  <fieldset class="fx-fieldset">
+    <legend>Effects <span class="fx-count">({{system.effects.length}})</span></legend>
+
+    {{#if system.effects.length}}
+      <ol class="fx-effects-list">
+        {{#each system.effects as |eff idx|}}
+        <li class="fx-effect-card fx-effect-{{eff.type}}">
+          <header class="fx-effect-header">
+            <span class="fx-effect-type-badge">{{eff.type}}</span>
+            <div class="fx-effect-controls">
+              <button type="button" data-action="gadgetEffectMoveUp"   data-index="{{idx}}" title="Move up" {{#unless editable}}disabled{{/unless}}><i class="fas fa-arrow-up"></i></button>
+              <button type="button" data-action="gadgetEffectMoveDown" data-index="{{idx}}" title="Move down" {{#unless editable}}disabled{{/unless}}><i class="fas fa-arrow-down"></i></button>
+              <button type="button" data-action="gadgetEffectRemove"   data-index="{{idx}}" title="Remove effect" {{#unless editable}}disabled{{/unless}}><i class="fas fa-trash"></i></button>
+            </div>
+          </header>
+
+          <div class="fx-effect-body">
+            {{!-- Type dropdown (allows converting an effect after creation) --}}
+            <label class="fx-field-row">Type
+              <select name="system.effects.{{idx}}.type" {{#unless ../editable}}disabled{{/unless}}>
+                <option value="damage"              {{#if (flail-eq eff.type 'damage')}}selected{{/if}}>Damage</option>
+                <option value="save"                {{#if (flail-eq eff.type 'save')}}selected{{/if}}>Save vs condition/push</option>
+                <option value="heal"                {{#if (flail-eq eff.type 'heal')}}selected{{/if}}>Heal</option>
+                <option value="applyCondition"      {{#if (flail-eq eff.type 'applyCondition')}}selected{{/if}}>Apply condition (auto)</option>
+                <option value="suppressCondition"   {{#if (flail-eq eff.type 'suppressCondition')}}selected{{/if}}>Suppress condition</option>
+                <option value="thBonus"             {{#if (flail-eq eff.type 'thBonus')}}selected{{/if}}>Passive: To Hit bonus</option>
+                <option value="defenceBonus"        {{#if (flail-eq eff.type 'defenceBonus')}}selected{{/if}}>Passive: Defence bonus</option>
+                <option value="attributeAdvantage"  {{#if (flail-eq eff.type 'attributeAdvantage')}}selected{{/if}}>Passive: Attribute advantage</option>
+                <option value="skillAdvantage"      {{#if (flail-eq eff.type 'skillAdvantage')}}selected{{/if}}>Passive: Skill advantage</option>
+                <option value="custom"              {{#if (flail-eq eff.type 'custom')}}selected{{/if}}>Custom (HTML)</option>
+              </select>
+            </label>
+
+            {{!-- Damage --}}
+            {{#if (flail-eq eff.type 'damage')}}
+              <label class="fx-field-row">Formula
+                <input type="text" name="system.effects.{{idx}}.formula" value="{{eff.formula}}" placeholder="e.g. 1d8, 3d6" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+              <label class="fx-field-row">Damage type
+                <select name="system.effects.{{idx}}.damageType" {{#unless ../editable}}disabled{{/unless}}>
+                  <option value=""           {{#if (flail-eq eff.damageType '')}}selected{{/if}}>—</option>
+                  <option value="physical"   {{#if (flail-eq eff.damageType 'physical')}}selected{{/if}}>Physical</option>
+                  <option value="fire"       {{#if (flail-eq eff.damageType 'fire')}}selected{{/if}}>Fire</option>
+                  <option value="electrical" {{#if (flail-eq eff.damageType 'electrical')}}selected{{/if}}>Electrical</option>
+                  <option value="acid"       {{#if (flail-eq eff.damageType 'acid')}}selected{{/if}}>Acid</option>
+                  <option value="cold"       {{#if (flail-eq eff.damageType 'cold')}}selected{{/if}}>Cold</option>
+                  <option value="poison"     {{#if (flail-eq eff.damageType 'poison')}}selected{{/if}}>Poison</option>
+                </select>
+              </label>
+              <label class="fx-field-row">Trigger on die result(s)
+                <input type="text" name="system.effects.{{idx}}.triggerOnResult" value="{{eff.triggerOnResult}}" placeholder="e.g. 8 or 4,5,6" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+              <label class="fx-field-row">Trigger effect
+                <select name="system.effects.{{idx}}.triggerEffect" {{#unless ../editable}}disabled{{/unless}}>
+                  <option value=""          {{#if (flail-eq eff.triggerEffect '')}}selected{{/if}}>None</option>
+                  <option value="ricochet"  {{#if (flail-eq eff.triggerEffect 'ricochet')}}selected{{/if}}>Ricochet (extra hit)</option>
+                  <option value="condition" {{#if (flail-eq eff.triggerEffect 'condition')}}selected{{/if}}>Apply condition</option>
+                </select>
+              </label>
+              {{#if (flail-eq eff.triggerEffect 'condition')}}
+              <div class="fx-field-row fx-condition-slot">
+                <span class="fx-field-label">Trigger condition</span>
+                <div class="fx-condition-drop" data-fx-condition-drop data-effect-index="{{idx}}" data-ref-field="triggerCondition">
+                  {{#if eff.triggerConditionName}}
+                    <span class="fx-condition-chip">{{eff.triggerConditionName}}
+                      <button type="button" data-action="gadgetEffectClearRef" data-index="{{idx}}" data-ref-field="triggerCondition" title="Clear"><i class="fas fa-times"></i></button>
+                    </span>
+                  {{else}}
+                    <span class="fx-empty">Drop a condition here.</span>
+                  {{/if}}
+                </div>
+              </div>
+              {{/if}}
+            {{/if}}
+
+            {{!-- Save --}}
+            {{#if (flail-eq eff.type 'save')}}
+              <label class="fx-field-row">Save attribute
+                <select name="system.effects.{{idx}}.saveAttribute" {{#unless ../editable}}disabled{{/unless}}>
+                  <option value=""     {{#if (flail-eq eff.saveAttribute '')}}selected{{/if}}>—</option>
+                  <option value="str"  {{#if (flail-eq eff.saveAttribute 'str')}}selected{{/if}}>STR</option>
+                  <option value="dex"  {{#if (flail-eq eff.saveAttribute 'dex')}}selected{{/if}}>DEX</option>
+                  <option value="cha"  {{#if (flail-eq eff.saveAttribute 'cha')}}selected{{/if}}>CHA</option>
+                  <option value="int"  {{#if (flail-eq eff.saveAttribute 'int')}}selected{{/if}}>INT</option>
+                  <option value="luck" {{#if (flail-eq eff.saveAttribute 'luck')}}selected{{/if}}>LUCK</option>
+                </select>
+              </label>
+              <div class="fx-field-row fx-condition-slot">
+                <span class="fx-field-label">Condition on fail</span>
+                <div class="fx-condition-drop" data-fx-condition-drop data-effect-index="{{idx}}" data-ref-field="saveOnFailCondition">
+                  {{#if eff.saveOnFailConditionName}}
+                    <span class="fx-condition-chip">{{eff.saveOnFailConditionName}}
+                      <button type="button" data-action="gadgetEffectClearRef" data-index="{{idx}}" data-ref-field="saveOnFailCondition" title="Clear"><i class="fas fa-times"></i></button>
+                    </span>
+                  {{else}}
+                    <span class="fx-empty">Drop a condition here (optional — leave empty for push-only or narrative saves).</span>
+                  {{/if}}
+                </div>
+              </div>
+              <label class="fx-field-row">Duration (rounds, 0 = permanent)
+                <input type="number" name="system.effects.{{idx}}.saveDurationRounds" value="{{eff.saveDurationRounds}}" min="0" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+              <div class="row">
+                <label>Push from
+                  <select name="system.effects.{{idx}}.savePushFrom" {{#unless ../editable}}disabled{{/unless}}>
+                    <option value=""        {{#if (flail-eq eff.savePushFrom '')}}selected{{/if}}>—</option>
+                    <option value="near"    {{#if (flail-eq eff.savePushFrom 'near')}}selected{{/if}}>Near</option>
+                    <option value="distant" {{#if (flail-eq eff.savePushFrom 'distant')}}selected{{/if}}>Distant</option>
+                  </select>
+                </label>
+                <label>Push to
+                  <select name="system.effects.{{idx}}.savePushTo" {{#unless ../editable}}disabled{{/unless}}>
+                    <option value=""        {{#if (flail-eq eff.savePushTo '')}}selected{{/if}}>—</option>
+                    <option value="near"    {{#if (flail-eq eff.savePushTo 'near')}}selected{{/if}}>Near</option>
+                    <option value="distant" {{#if (flail-eq eff.savePushTo 'distant')}}selected{{/if}}>Distant</option>
+                  </select>
+                </label>
+              </div>
+            {{/if}}
+
+            {{!-- Heal --}}
+            {{#if (flail-eq eff.type 'heal')}}
+              <label class="fx-field-row">Heal formula
+                <input type="text" name="system.effects.{{idx}}.healFormula" value="{{eff.healFormula}}" placeholder="e.g. 1d4, 2d4+2" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+              <div class="fx-field-row">
+                <span class="fx-field-label">Legal target scopes</span>
+                <div class="fx-checkbox-row">
+                  <label><input type="checkbox" name="system.effects.{{idx}}.healAllowsSelf" {{checked eff.healAllowsSelf}} {{#unless ../editable}}disabled{{/unless}} /> Self</label>
+                  <label><input type="checkbox" name="system.effects.{{idx}}.healAllowsAlly" {{checked eff.healAllowsAlly}} {{#unless ../editable}}disabled{{/unless}} /> Ally</label>
+                  <label><input type="checkbox" name="system.effects.{{idx}}.healAllowsConstruct" {{checked eff.healAllowsConstruct}} {{#unless ../editable}}disabled{{/unless}} /> Construct</label>
+                </div>
+              </div>
+            {{/if}}
+
+            {{!-- Apply Condition --}}
+            {{#if (flail-eq eff.type 'applyCondition')}}
+              <div class="fx-field-row fx-condition-slot">
+                <span class="fx-field-label">Condition</span>
+                <div class="fx-condition-drop" data-fx-condition-drop data-effect-index="{{idx}}" data-ref-field="condition">
+                  {{#if eff.conditionName}}
+                    <span class="fx-condition-chip">{{eff.conditionName}}
+                      <button type="button" data-action="gadgetEffectClearRef" data-index="{{idx}}" data-ref-field="condition" title="Clear"><i class="fas fa-times"></i></button>
+                    </span>
+                  {{else}}
+                    <span class="fx-empty">Drop a condition here.</span>
+                  {{/if}}
+                </div>
+              </div>
+              <label class="fx-field-row">Duration (rounds, 0 = permanent)
+                <input type="number" name="system.effects.{{idx}}.conditionDurationRounds" value="{{eff.conditionDurationRounds}}" min="0" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+            {{/if}}
+
+            {{!-- Suppress Condition --}}
+            {{#if (flail-eq eff.type 'suppressCondition')}}
+              <div class="fx-field-row fx-condition-slot">
+                <span class="fx-field-label">Condition to suppress</span>
+                <div class="fx-condition-drop" data-fx-condition-drop data-effect-index="{{idx}}" data-ref-field="condition">
+                  {{#if eff.conditionName}}
+                    <span class="fx-condition-chip">{{eff.conditionName}}
+                      <button type="button" data-action="gadgetEffectClearRef" data-index="{{idx}}" data-ref-field="condition" title="Clear"><i class="fas fa-times"></i></button>
+                    </span>
+                  {{else}}
+                    <span class="fx-empty">Drop a condition here.</span>
+                  {{/if}}
+                </div>
+              </div>
+              <label class="fx-field-row">Suppress duration (turns, 0 = permanent)
+                <input type="number" name="system.effects.{{idx}}.conditionDurationTurns" value="{{eff.conditionDurationTurns}}" min="0" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+            {{/if}}
+
+            {{!-- Passive: TH bonus / Defence bonus --}}
+            {{#if (flail-eq eff.type 'thBonus')}}
+              <label class="fx-field-row">Bonus value
+                <input type="number" name="system.effects.{{idx}}.passiveValue" value="{{eff.passiveValue}}" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+              <label class="fx-field-row">Condition (optional, e.g. "ally nearby")
+                <input type="text" name="system.effects.{{idx}}.passiveCondition" value="{{eff.passiveCondition}}" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+            {{/if}}
+            {{#if (flail-eq eff.type 'defenceBonus')}}
+              <label class="fx-field-row">Bonus value
+                <input type="number" name="system.effects.{{idx}}.passiveValue" value="{{eff.passiveValue}}" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+              <label class="fx-field-row">Condition (optional)
+                <input type="text" name="system.effects.{{idx}}.passiveCondition" value="{{eff.passiveCondition}}" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+            {{/if}}
+            {{#if (flail-eq eff.type 'attributeAdvantage')}}
+              <label class="fx-field-row">Attribute
+                <select name="system.effects.{{idx}}.passiveAttribute" {{#unless ../editable}}disabled{{/unless}}>
+                  <option value="str"  {{#if (flail-eq eff.passiveAttribute 'str')}}selected{{/if}}>STR</option>
+                  <option value="dex"  {{#if (flail-eq eff.passiveAttribute 'dex')}}selected{{/if}}>DEX</option>
+                  <option value="cha"  {{#if (flail-eq eff.passiveAttribute 'cha')}}selected{{/if}}>CHA</option>
+                  <option value="int"  {{#if (flail-eq eff.passiveAttribute 'int')}}selected{{/if}}>INT</option>
+                  <option value="luck" {{#if (flail-eq eff.passiveAttribute 'luck')}}selected{{/if}}>LUCK</option>
+                </select>
+              </label>
+              <label class="fx-field-row">Condition (optional)
+                <input type="text" name="system.effects.{{idx}}.passiveCondition" value="{{eff.passiveCondition}}" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+            {{/if}}
+            {{#if (flail-eq eff.type 'skillAdvantage')}}
+              <label class="fx-field-row">Skill
+                <input type="text" name="system.effects.{{idx}}.passiveSkill" value="{{eff.passiveSkill}}" placeholder="e.g. climb, hide" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+              <label class="fx-field-row">Condition (optional)
+                <input type="text" name="system.effects.{{idx}}.passiveCondition" value="{{eff.passiveCondition}}" {{#unless ../editable}}disabled{{/unless}} />
+              </label>
+            {{/if}}
+
+            {{!-- Custom --}}
+            {{#if (flail-eq eff.type 'custom')}}
+              <label class="fx-field-row">Custom HTML
+                <textarea name="system.effects.{{idx}}.customHtml" rows="4" placeholder="Free-form HTML rendered as-is on the chat card." {{#unless ../editable}}disabled{{/unless}}>{{eff.customHtml}}</textarea>
+              </label>
+            {{/if}}
+          </div>
+        </li>
+        {{/each}}
+      </ol>
+    {{else}}
+      <p class="fx-empty">No effects authored — this gadget will use its legacy behaviour (or post a description card).</p>
+    {{/if}}
+
+    {{#if editable}}
+    <div class="fx-add-row">
+      {{!-- No `name` attribute — Foundry's submitOnChange would
+           otherwise treat this as a schema field and corrupt the
+           update. The add handler reads the value via .fx-add-type-picker class. --}}
+      <select class="fx-add-type-picker">
+        <option value="damage">Damage</option>
+        <option value="save">Save vs condition/push</option>
+        <option value="heal">Heal</option>
+        <option value="applyCondition">Apply condition (auto)</option>
+        <option value="suppressCondition">Suppress condition</option>
+        <option value="thBonus">Passive: To Hit bonus</option>
+        <option value="defenceBonus">Passive: Defence bonus</option>
+        <option value="attributeAdvantage">Passive: Attribute advantage</option>
+        <option value="skillAdvantage">Passive: Skill advantage</option>
+        <option value="custom">Custom (HTML)</option>
+      </select>
+      <button type="button" data-action="gadgetEffectAdd" title="Add effect"><i class="fas fa-plus"></i> Add Effect</button>
+    </div>
+    {{/if}}
+  </fieldset>
+
+  {{!-- Display niceties --}}
+  <fieldset class="fx-fieldset">
+    <legend>Display</legend>
+    <label class="fx-field-row">Chat blurb (short one-liner)
+      <input type="text" name="system.chatBlurb" value="{{system.chatBlurb}}" placeholder="Shown as flavour under the header" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label class="fx-field-row">Target hint
+      <input type="text" name="system.targetHint" value="{{system.targetHint}}" placeholder="e.g. Pick one Nearby target" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label class="fx-checkbox-label">
+      <input type="checkbox" name="system.isCustomTemplate" {{checked system.isCustomTemplate}} {{#unless editable}}disabled{{/unless}} />
+      Mark as custom template (for GMs seeding homebrew)
+    </label>
+  </fieldset>
 </section>

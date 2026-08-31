@@ -16,8 +16,23 @@ import { TINKERER_GADGETS, TINKERER_GADGET_FOLDERS } from "./tinkerer-gadgets-da
  *       • Sticky Net: removed the save (direct immobilise).
  *       • Magnetic Orb: "all metal" → "all small metal objects".
  *       • Healing Injector: added "self or ally" clarification.
+ *   3 — (reserved — no external changes; version bumped inadvertently
+ *       during v0.4.83 debugging).
+ *   4 — v0.4.85: authored `activation` + `effects` primitives on all
+ *       15 non-damage canonicals so they get automation out of the
+ *       box (Flash Bomb save-vs-Blinded, Sticky Net save-vs-Immobilised,
+ *       Repulsor Blast push, Healing Injector 1d4 heal, Repair Drone
+ *       1d4 heal to construct, Adrenaline Booster suppress
+ *       Injured/Exhausted, etc.). Environmental/narrative gadgets
+ *       (Magnetic Orb, Smoke Screen, Liquid Rope, etc.) use `custom`
+ *       HTML effects so the chat card still surfaces the rulebook
+ *       text. Five damage canonicals unchanged — they keep the
+ *       legacy releaseDamageGadget dispatch path (bespoke ricochet /
+ *       delayed-AoE mechanics not yet in the shared primitives).
+ *       Also added a "Custom Gadget (Template)" seed entry with
+ *       `isCustomTemplate: true` for GMs to duplicate + rewrite.
  */
-export const TINKERER_GADGETS_VERSION = 2;
+export const TINKERER_GADGETS_VERSION = 4;
 
 const VERSION_SETTING = "tinkererGadgetsVersion";
 const PACK_NAME = "flail-tinkerer-gadgets";

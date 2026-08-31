@@ -1,7 +1,7 @@
 import { FLAIL } from "../helpers/config.mjs";
 import { rollDarkSpell } from "../dice/cast-dark-spell.mjs";
 import { rollWizardSpell } from "../dice/cast-wizard-spell.mjs";
-import { releaseDamageGadget } from "../dice/use-damage-gadget.mjs";
+import { releaseGadget } from "../dice/release-gadget.mjs";
 import { rollPrayer } from "../dice/cast-prayer.mjs";
 import { rollLayOnHands } from "../dice/lay-on-hands.mjs";
 import { rollMiracleCall } from "../dice/miracle-call.mjs";
@@ -3353,7 +3353,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const itemId = target.dataset.itemId;
     const gadget = this.actor.items.get(itemId);
     if (!gadget) return;
-    return releaseDamageGadget({ actor: this.actor, gadget });
+    return releaseGadget({ actor: this.actor, gadget });
   }
 
   /**

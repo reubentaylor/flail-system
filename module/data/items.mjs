@@ -183,7 +183,93 @@ export class FlailGadgetModel extends foundry.abstract.TypeDataModel {
       gadgetKey: new fields.StringField({ blank: true, initial: "" }),
       // Quick-fire flag: triplet on a To Hit lets the Tinkerer release one
       // gadget for free without marking belt usage.
-      lastUsed: new fields.NumberField({ integer: true, min: 0, initial: 0 })
+      lastUsed: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+
+      // v0.4.80 — SHARED EFFECTS FRAMEWORK.
+      //
+      // The gadget schema is the first consumer of a shared primitive
+      // system that other feature types (primal gifts, prayers, dark
+      // spells, wizard spells) will adopt in later ships. Legacy
+      // items with no effects fall through to their existing dispatch
+      // path (releaseDamageGadget for canonical damage gadgets, or a
+      // plain description card for others). See dice/effects-runner.mjs.
+      activation: new fields.SchemaField({
+        type:         new fields.StringField({
+          choices: ["passive", "activated", "reactive", "transformation"],
+          initial: "activated"
+        }),
+        range:        new fields.StringField({
+          choices: ["self", "near", "distant"],
+          initial: "near"
+        }),
+        delayRounds:  new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+        targetScope:  new fields.StringField({
+          choices: ["none", "self", "single", "ally", "anyConstruct",
+                    "allNearby", "coneUpTo2"],
+          initial: "single"
+        }),
+        cost:         new fields.StringField({
+          choices: ["none", "round", "turn", "action"],
+          initial: "action"
+        }),
+        daily:        new fields.BooleanField({ initial: false })
+      }),
+      effects: new fields.ArrayField(
+        new fields.SchemaField({
+          // Discriminator — determines which of the fields below are
+          // meaningful. The runner dispatches per-type; the sheet UI
+          // hides irrelevant fields based on this value.
+          //
+          // v0.4.83: `choices` restriction dropped. Foundry silently
+          // rejected the whole entry when validation failed on the
+          // inner ArrayField/SchemaField pipeline. Free-form string is
+          // safe here — the sheet UI is the only writer, and it
+          // constrains selection via <select> options.
+          type: new fields.StringField({ blank: false, initial: "damage" }),
+          // Damage: formula + damageType + optional trigger (extra
+          // effect fired when die result is in triggerOnResult set).
+          formula:              new fields.StringField({ blank: true, initial: "" }),
+          damageType:           new fields.StringField({ blank: true, initial: "" }),
+          triggerOnResult:      new fields.StringField({ blank: true, initial: "" }), // comma list "8" or "4,5,6"
+          triggerEffect:        new fields.StringField({ blank: true, initial: "" }),
+          // v0.4.83: flattened refs (was nested SchemaField {uuid, name}
+          // — nested SchemaFields inside ArrayField+SchemaField are
+          // silently rejected in some Foundry versions).
+          triggerConditionUuid: new fields.StringField({ blank: true, initial: "" }),
+          triggerConditionName: new fields.StringField({ blank: true, initial: "" }),
+          // Save: attribute + condition-on-fail + optional push.
+          saveAttribute:        new fields.StringField({ blank: true, initial: "" }),
+          saveOnFailConditionUuid: new fields.StringField({ blank: true, initial: "" }),
+          saveOnFailConditionName: new fields.StringField({ blank: true, initial: "" }),
+          saveDurationRounds:   new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+          savePushFrom:         new fields.StringField({ blank: true, initial: "" }),
+          savePushTo:           new fields.StringField({ blank: true, initial: "" }),
+          // Heal: formula + which target scopes are legal.
+          healFormula:          new fields.StringField({ blank: true, initial: "" }),
+          healAllowsSelf:       new fields.BooleanField({ initial: false }),
+          healAllowsAlly:       new fields.BooleanField({ initial: false }),
+          healAllowsConstruct:  new fields.BooleanField({ initial: false }),
+          // Apply / Suppress condition: shared flat conditionRef + durations.
+          conditionUuid:        new fields.StringField({ blank: true, initial: "" }),
+          conditionName:        new fields.StringField({ blank: true, initial: "" }),
+          conditionDurationRounds: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+          conditionDurationTurns:  new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+          // Passive primitives (not consumed by gadgets — reserved for
+          // future gift/prayer schema adoption). Sheet still lets you
+          // author them so the framework is ready.
+          passiveValue:         new fields.NumberField({ integer: true, initial: 0 }),
+          passiveAttribute:     new fields.StringField({ blank: true, initial: "" }),
+          passiveSkill:         new fields.StringField({ blank: true, initial: "" }),
+          passiveCondition:     new fields.StringField({ blank: true, initial: "" }),
+          // Custom: freeform HTML rendered as-is.
+          customHtml:           new fields.HTMLField({ required: false, blank: true, initial: "" })
+        }),
+        { initial: () => [] }
+      ),
+      // Chat card niceties.
+      chatBlurb:        new fields.StringField({ blank: true, initial: "" }),
+      targetHint:       new fields.StringField({ blank: true, initial: "" }),
+      isCustomTemplate: new fields.BooleanField({ initial: false })
     };
   }
 }
