@@ -407,6 +407,19 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     ctx.isDruid    = classKey === "druid";
     ctx.isTinkerer = classKey === "tinkerer";
 
+    // E4 (v0.4.86) — Tinkerer level-up gadget-pick reminder.
+    // Rulebook: 4 gadgets at level 1 (one per type) + 1 new gadget of
+    // any type per level advance. So a level-L Tinkerer should own
+    // (4 + (L - 1)) = (L + 3) gadgets. If they own fewer, the banner
+    // surfaces the shortfall as pending picks. If they own more (e.g.
+    // GM handed them extras), the value floors at 0 and nothing shows.
+    if (ctx.isTinkerer) {
+      const level = actor.system?.level ?? 1;
+      const owned = actor.items?.filter(i => i.type === "gadget").length ?? 0;
+      const expected = level + 3;
+      ctx.pendingGadgetPicks = Math.max(0, expected - owned);
+    }
+
     // Tracker card top-right of Special Skills:
     //   Bone Whisperer → Spirit (d20)
     //   Cleric         → Fumble Range (d20)

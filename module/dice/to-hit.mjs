@@ -273,30 +273,32 @@ export async function rollToHit({
   const isTinkererActor = actor?.type === "character" && actor.system?.class === "tinkerer";
   const tripletCombo = analysis.combinations.find(c => c.key === "triplet");
   const isSuccessfulHit = ["minor", "major", "deathBlow"].includes(analysis.tier);
-  let gadgetBeltRecovery = null;
+  let freeGadgetRelease = null;
   if (isTinkererActor && isSuccessfulHit && tripletCombo) {
-    const belt = actor.items?.find(i =>
-      i.type === "gear" && (i.name?.toLowerCase().includes("gadget belt"))
-    );
-    if (!belt) {
-      gadgetBeltRecovery = { missing: true };
-    } else {
-      const before = belt.system?.usage?.value ?? 0;
-      const max    = belt.system?.usage?.max   ?? 0;
-      if (before > 0) {
-        const next = before - 1;
-        await belt.update({ "system.usage.value": next });
-        gadgetBeltRecovery = {
-          beltName: belt.name,
-          before,
-          after: next,
-          max
-        };
-      } else {
-        // Belt has no marks to remove — surface the trigger anyway.
-        gadgetBeltRecovery = { beltName: belt.name, clean: true, max };
-      }
-    }
+    // v0.4.86 (C4): v1 rulebook says the Tinkerer can "release one for
+    // free" on a triplet — a mark on the belt is NOT consumed for the
+    // free release. Previous behaviour refunded a used mark, which
+    // gave nothing on a fresh belt. New behaviour surfaces every
+    // gadget currently on the belt as an inline button; clicking one
+    // fires releaseGadget with `{ free: true }`, bypassing the
+    // usage-increment step in the dispatcher.
+    const beltGadgets = actor.items
+      ?.filter(i => i.type === "gadget" && (i.system?.location ?? "") !== "unequipped")
+      ?? [];
+    // Fall back to ANY gadget on the character if none are marked as
+    // equipped — the belt-slot metadata may not be set on legacy items.
+    const gadgets = beltGadgets.length
+      ? beltGadgets
+      : (actor.items?.filter(i => i.type === "gadget") ?? []);
+    freeGadgetRelease = {
+      actorUuid: actor.uuid,
+      beltGadgets: gadgets.map(g => ({
+        id: g.id,
+        name: g.name,
+        img: g.img,
+        description: (g.system?.description ?? "").replace(/<[^>]+>/g, "").trim().slice(0, 200)
+      }))
+    };
   }
 
   /*
@@ -462,7 +464,8 @@ export async function rollToHit({
     packMentality,
     vipersAgility,
     slimySkinTarget,
-    gadgetBeltRecovery,
+    gadgetBeltRecovery: null,  // superseded by freeGadgetRelease (v0.4.86)
+    freeGadgetRelease,
     fineCuts,
     rawForce,
     precisionMark,

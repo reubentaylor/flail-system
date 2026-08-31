@@ -307,6 +307,15 @@ export class FlailConstructSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const root = this.element;
     if (!root) return;
 
+    // v0.4.86 (D4): toggle sheet-level state class so CSS can grey
+    // out attack + action controls when inactive. Read from the
+    // context (already computed hasSparkle) rather than recomputing.
+    if (context?.hasSparkle) {
+      root.classList.remove("construct-inactive");
+    } else {
+      root.classList.add("construct-inactive");
+    }
+
     // Attach drop handlers to each slot cell. Drag is handled by the
     // built-in ApplicationV2 dragDrop config on ".construct-slot .slot-item".
     root.querySelectorAll(".construct-slot").forEach(el => {
@@ -530,6 +539,12 @@ export class FlailConstructSheet extends HandlebarsApplicationMixin(ActorSheetV2
   }
 
   static async #onRollAttack(event, target) {
+    // v0.4.86 (D4): sparkle gating — no Sparkle of Life means the
+    // construct is inanimate and cannot act.
+    if (!this.#isAnimated()) {
+      ui.notifications?.warn("FLAIL: this construct is inactive — insert a Sparkle of Life first.");
+      return;
+    }
     const itemId = target.dataset.itemId;
     const item = this.actor.items.get(itemId);
     if (!item) return;
@@ -542,10 +557,26 @@ export class FlailConstructSheet extends HandlebarsApplicationMixin(ActorSheetV2
   }
 
   /**
+   * Whether the construct currently has a Sparkle of Life in a carried
+   * (equipped) inventory slot. Used by the attack + inherent-attack
+   * guards to enforce the v1 rulebook's active/inactive gating.
+   */
+  #isAnimated() {
+    const carried = this.actor.items?.filter(i =>
+      i.type === "gear" && (i.system?.location ?? "") !== "unequipped"
+    ) ?? [];
+    return carried.some(i => (i.name ?? "").toLowerCase().includes("sparkle of life"));
+  }
+
+  /**
    * Fire the construct's inherent attack — uses actor.rollInherentAttack
    * which delegates to rollToHit with the construct's TH and DMG.
    */
   static async #onRollInherentAttack(event, target) {
+    if (!this.#isAnimated()) {
+      ui.notifications?.warn("FLAIL: this construct is inactive — insert a Sparkle of Life first.");
+      return;
+    }
     // Same click modifiers as weapon attacks — Shift = +1 die,
     // Ctrl/Meta = -1 die. Alt could open a picker later; for now
     // it's ignored.

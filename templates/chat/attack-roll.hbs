@@ -280,17 +280,31 @@
   </div>
   {{/if}}
 
-  {{!-- Gadget Belt Recovery — Tinkerer triplet + hit auto-removes a mark of usage --}}
-  {{#if gadgetBeltRecovery}}
-  <div class="gadget-recovery-banner {{#if gadgetBeltRecovery.clean}}gadget-recovery-empty{{/if}}{{#if gadgetBeltRecovery.missing}} gadget-recovery-empty{{/if}}">
-    <i class="fas fa-toolbox"></i>
-    <span class="title">{{localize "FLAIL.Tinkerer.GadgetRecoveryTitle"}}</span>
-    {{#if gadgetBeltRecovery.missing}}
-    <span class="note">{{localize "FLAIL.Tinkerer.GadgetRecoveryMissing"}}</span>
-    {{else if gadgetBeltRecovery.clean}}
-    <span class="note">{{localize "FLAIL.Tinkerer.GadgetRecoveryClean" belt=gadgetBeltRecovery.beltName}}</span>
+  {{!-- Free Gadget Release — Tinkerer triplet on hit lets them
+       release one gadget without marking their belt. v1 rulebook. --}}
+  {{#if freeGadgetRelease}}
+  <div class="free-gadget-banner">
+    <header>
+      <i class="fas fa-bolt"></i>
+      <span class="title">Free Gadget!</span>
+      <span class="trigger">triplet on a successful hit</span>
+    </header>
+    <p class="free-gadget-hint">Release one gadget without marking your belt.</p>
+    {{#if freeGadgetRelease.beltGadgets.length}}
+    <div class="free-gadget-picker">
+      {{#each freeGadgetRelease.beltGadgets as |g|}}
+      <button type="button" class="free-gadget-btn"
+              data-action="tinkererFreeRelease"
+              data-item-id="{{g.id}}"
+              data-actor-uuid="{{../freeGadgetRelease.actorUuid}}"
+              title="{{g.description}}">
+        <img src="{{g.img}}" alt="{{g.name}}" />
+        <span>{{g.name}}</span>
+      </button>
+      {{/each}}
+    </div>
     {{else}}
-    <span class="note">{{localize "FLAIL.Tinkerer.GadgetRecoveryRestored" belt=gadgetBeltRecovery.beltName before=gadgetBeltRecovery.before after=gadgetBeltRecovery.after max=gadgetBeltRecovery.max}}</span>
+    <p class="free-gadget-empty"><em>No gadgets on your belt — attach one first, then release manually.</em></p>
     {{/if}}
   </div>
   {{/if}}

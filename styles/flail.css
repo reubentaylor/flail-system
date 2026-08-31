@@ -11247,3 +11247,97 @@
 .fx-btn-apply-damage { background: rgba(163, 58, 42, 0.15); }
 .fx-btn-apply-damage:hover { background: rgba(163, 58, 42, 0.3); }
 .fx-custom-body { font-size: 0.88rem; color: #2a1f0f; }
+
+/* Tinkerer C4 (v0.4.86) — free gadget release banner on attack chat card */
+.flail-card .free-gadget-banner {
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  background: rgba(42, 92, 100, 0.12);
+  border-left: 3px solid #2a5c64;
+  border-radius: 3px;
+}
+.flail-card .free-gadget-banner header {
+  display: flex; align-items: center; gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+.flail-card .free-gadget-banner header i { color: #2a5c64; }
+.flail-card .free-gadget-banner .title {
+  font-weight: 800; color: #1a3d43;
+}
+.flail-card .free-gadget-banner .trigger {
+  font-size: 0.75rem; color: #6a5a2a; font-style: italic;
+  margin-left: auto;
+}
+.flail-card .free-gadget-hint,
+.flail-card .free-gadget-empty {
+  margin: 0.2rem 0; font-size: 0.82rem; color: #2a1f0f;
+}
+.flail-card .free-gadget-empty { color: #6a5a2a; }
+.flail-card .free-gadget-picker {
+  display: flex; flex-wrap: wrap; gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+.flail-card .free-gadget-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  background: #fbf3d9; color: #2a1f0f;
+  border: 1px solid #2a5c64; border-radius: 3px;
+  font-weight: 600; font-size: 0.82rem;
+  cursor: pointer;
+}
+.flail-card .free-gadget-btn:hover {
+  background: rgba(42, 92, 100, 0.2);
+}
+.flail-card .free-gadget-btn img {
+  width: 20px; height: 20px; object-fit: contain;
+}
+.flail-card .free-gadget-btn[disabled] { cursor: not-allowed; }
+
+/* ============================================================
+   D4 (v0.4.86) — Construct inactive overlay + disabled state
+   ============================================================ */
+.construct-inactive-banner {
+  padding: 0.6rem 0.8rem;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, rgba(90, 20, 20, 0.15), rgba(90, 20, 20, 0.08));
+  border: 2px solid #8b1a1a;
+  border-radius: 4px;
+  display: flex; align-items: center; gap: 0.5rem;
+  color: #5a1010;
+  font-weight: 700;
+}
+.construct-inactive-banner i { font-size: 1.3rem; }
+.construct-inactive-banner .banner-title {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+}
+.construct-inactive-banner .banner-hint {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 0.82rem;
+  font-style: italic;
+}
+/* Grey out actions on the sheet when inactive. */
+.flail-sheet.actor.construct.construct-inactive .construct-actions button,
+.flail-sheet.actor.construct.construct-inactive .inherent-attack-btn,
+.flail-sheet.actor.construct.construct-inactive .quick-weapon {
+  opacity: 0.45;
+  filter: grayscale(0.7);
+}
+
+/* E4 (v0.4.86) — Tinkerer level-up gadget-pick banner */
+.gadget-pick-banner {
+  background: linear-gradient(135deg, rgba(139, 105, 20, 0.15), rgba(139, 105, 20, 0.05));
+  border: 2px solid #8b6914;
+}
+.gadget-pick-banner .tab-label {
+  background: #8b6914;
+  color: #fff;
+}
+.gadget-pick-banner .tab-label i { margin-right: 0.35rem; }
+.gadget-pick-banner .gadget-pick-body {
+  padding: 0.5rem 0.7rem;
+  color: #2a1f0f;
+  font-size: 0.9rem;
+}

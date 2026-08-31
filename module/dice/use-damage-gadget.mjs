@@ -35,17 +35,9 @@ export async function releaseDamageGadget({ actor, gadget } = {}) {
     return null;
   }
 
-  // Prevent double-use unless it's been reset. `usage.value < usage.max`
-  // is the standard "available" test.
-  const cur = gadget.system.usage?.value ?? 0;
-  const max = gadget.system.usage?.max ?? 0;
-  if (max > 0 && cur >= max) {
-    ui.notifications?.warn(
-      game.i18n.format("FLAIL.Notify.GadgetAlreadyUsed", { name: gadget.name })
-    );
-    return null;
-  }
-
+  // v0.4.89: usage gate + marking moved to release-gadget dispatcher.
+  // The dispatcher decides whether to mark the belt (Tinkerer) or the
+  // gadget itself (Bard JOAT) before calling this function.
   const gadgetKey = gadget.system?.gadgetKey ?? "";
   const mechanic = DAMAGE_GADGET_MECHANICS[gadgetKey];
   if (!mechanic) {
@@ -68,12 +60,7 @@ export async function releaseDamageGadget({ actor, gadget } = {}) {
   /* ---------- 2. Compute damage amount ---------- */
   const damage = mechanic.damage({ total, dieResults });
 
-  /* ---------- 3. Mark gadget usage ---------- */
-  if (max > 0) {
-    await gadget.update({ "system.usage.value": Math.min(max, cur + 1) });
-  }
-
-  /* ---------- 4. Build chat card ---------- */
+  /* ---------- 3. Build chat card ---------- */
   const templateData = {
     actor: { name: actor.name, img: actor.img, uuid: actor.uuid },
     gadget: {

@@ -1,5 +1,5 @@
 /**
- * Gadget release dispatcher (v0.4.80).
+ * Gadget release dispatcher.
  *
  * Routes gadget release requests to the correct handler:
  *   1. If the gadget has any effects authored → runs them via the
@@ -9,36 +9,71 @@
  *      legacy releaseDamageGadget.
  *   3. Else → posts a simple description chat card.
  *
- * The 3-way split preserves legacy behavior exactly. Existing gadgets
- * in existing worlds keep working; new gadgets with authored effects
- * fire the shared runner. Homebrew items with no effects and no key
- * still surface a card so the player has something to reference.
+ * ─── v0.4.89 — RAW usage model (belt-based) ──────────────────────
+ *
+ * v1 rulebook p.30: "To launch a gadget, Tinkerers must mark usage
+ * on their belt." Usage marks live on the Gadget Belt gear item (3
+ * dots, standard gear). Individual gadgets are always available as
+ * long as the belt has capacity — releasing does NOT mark the
+ * gadget itself.
+ *
+ * Bards using JOAT to pick up a Tinkerer gadget don't have a belt
+ * — they use per-gadget usage (one-shot, resets on long rest via
+ * the existing JOAT reset).
+ *
+ * Class branching:
+ *   - Tinkerer: check belt capacity, mark belt on release.
+ *   - Anyone else (Bard, etc.): fall back to per-gadget usage.
+ *   - `free: true`: bypass ALL usage marking (triplet-on-hit).
  */
 
 import { releaseDamageGadget } from "./use-damage-gadget.mjs";
 import { runEffects } from "./effects-runner.mjs";
 
-export async function releaseGadget({ actor, gadget } = {}) {
+export async function releaseGadget({ actor, gadget, free = false } = {}) {
   if (!actor || !gadget) return null;
   if (gadget.type !== "gadget") {
     ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.NotAGadget"));
     return null;
   }
 
-  // Prevent double-use.
-  const cur = gadget.system?.usage?.value ?? 0;
-  const max = gadget.system?.usage?.max ?? 0;
-  if (max > 0 && cur >= max) {
-    ui.notifications?.warn(game.i18n.format("FLAIL.Notify.GadgetAlreadyUsed", { name: gadget.name }));
-    return null;
+  const isTinkerer = actor.type === "character" && actor.system?.class === "tinkerer";
+
+  /* ─── Usage gate ─── */
+  // Tinkerers use the belt; everyone else uses per-gadget usage.
+  // `free: true` (triplet-on-hit) bypasses both.
+  let belt = null;
+  if (!free) {
+    if (isTinkerer) {
+      belt = findGadgetBelt(actor);
+      if (!belt) {
+        ui.notifications?.warn("FLAIL: no Gadget Belt equipped — cannot release gadgets.");
+        return null;
+      }
+      const bCur = belt.system?.usage?.value ?? 0;
+      const bMax = belt.system?.usage?.max ?? 0;
+      if (bMax > 0 && bCur >= bMax) {
+        ui.notifications?.warn(`FLAIL: your Gadget Belt is fully marked (${bCur}/${bMax}) — repair it before releasing another gadget.`);
+        return null;
+      }
+    } else {
+      // Non-Tinkerer (Bard JOAT etc.): per-gadget one-shot usage.
+      const gCur = gadget.system?.usage?.value ?? 0;
+      const gMax = gadget.system?.usage?.max ?? 0;
+      if (gMax > 0 && gCur >= gMax) {
+        ui.notifications?.warn(game.i18n.format("FLAIL.Notify.GadgetAlreadyUsed", { name: gadget.name }));
+        return null;
+      }
+    }
   }
 
+  /* ─── Post chat card via the appropriate handler ─── */
   const effects = gadget.system?.effects ?? [];
   const activation = gadget.system?.activation ?? {};
 
+  let msg = null;
   if (Array.isArray(effects) && effects.length > 0) {
-    // New path — shared effects runner.
-    const msg = await runEffects({
+    msg = await runEffects({
       actor,
       source: gadget,
       effects,
@@ -49,34 +84,53 @@ export async function releaseGadget({ actor, gadget } = {}) {
         flavor: gadget.system?.chatBlurb ?? ""
       }
     });
-    // Consume belt usage as with legacy path.
-    if (msg && max > 0) {
-      await gadget.update({ "system.usage.value": Math.min(max, cur + 1) });
+  } else if (gadget.system?.gadgetType === "damage" && gadget.system?.gadgetKey) {
+    msg = await releaseDamageGadget({ actor, gadget });
+  } else {
+    const content = `
+      <div class="flail-chat-card">
+        <header><i class="fas fa-cog"></i> <strong>${escapeHtml(gadget.name)}</strong></header>
+        <div class="flail-chat-body">${gadget.system?.description ?? ""}</div>
+      </div>
+    `;
+    msg = await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor }),
+      content
+    });
+  }
+
+  /* ─── Mark usage ─── */
+  if (msg && !free) {
+    if (isTinkerer && belt) {
+      const bCur = belt.system?.usage?.value ?? 0;
+      const bMax = belt.system?.usage?.max ?? 0;
+      await belt.update({ "system.usage.value": Math.min(bMax, bCur + 1) });
+      // Follow-up note if the belt just filled — helpful reminder.
+      if (bCur + 1 >= bMax) {
+        ui.notifications?.info(`FLAIL: Gadget Belt fully marked (${bCur + 1}/${bMax}). Repair it before releasing another gadget.`);
+      }
+    } else {
+      const gCur = gadget.system?.usage?.value ?? 0;
+      const gMax = gadget.system?.usage?.max ?? 0;
+      if (gMax > 0) {
+        await gadget.update({ "system.usage.value": Math.min(gMax, gCur + 1) });
+      }
     }
-    return msg;
   }
 
-  // Legacy paths — damage gadget has a bespoke dispatcher; others
-  // just post the description card.
-  if (gadget.system?.gadgetType === "damage" && gadget.system?.gadgetKey) {
-    return releaseDamageGadget({ actor, gadget });
-  }
-
-  // Description-only fallback.
-  const content = `
-    <div class="flail-chat-card">
-      <header><i class="fas fa-cog"></i> <strong>${escapeHtml(gadget.name)}</strong></header>
-      <div class="flail-chat-body">${gadget.system?.description ?? ""}</div>
-    </div>
-  `;
-  const msg = await ChatMessage.create({
-    speaker: ChatMessage.getSpeaker({ actor }),
-    content
-  });
-  if (msg && max > 0) {
-    await gadget.update({ "system.usage.value": Math.min(max, cur + 1) });
-  }
   return msg;
+}
+
+/**
+ * Find the Gadget Belt gear item on the actor.  Matches
+ * case-insensitive on "gadget belt" substring so homebrew renames
+ * still work as long as they keep the phrase.
+ */
+function findGadgetBelt(actor) {
+  return actor.items?.find(i =>
+    i.type === "gear"
+    && (i.name ?? "").toLowerCase().includes("gadget belt")
+  ) ?? null;
 }
 
 function iconForCategory(cat) {

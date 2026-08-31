@@ -15,6 +15,20 @@
 
   <div class="construct-body">
 
+    {{!-- Sparkle of Life gating (v0.4.86, D4). Without a Sparkle of
+         Life in a carried slot, the construct is inanimate. This
+         banner sits at the top and the .construct-inactive class on
+         the sheet root grays out attack + action buttons. --}}
+    {{#unless hasSparkle}}
+    <section class="construct-inactive-banner">
+      <i class="fas fa-star-half-alt"></i>
+      <div>
+        <div class="banner-title">Inactive — no Sparkle of Life</div>
+        <div class="banner-hint">Drop a Sparkle of Life into a carried inventory slot to animate this construct.</div>
+      </div>
+    </section>
+    {{/unless}}
+
     {{!-- Broken banner + Break Down / Rebuild UI --}}
     {{#if isBroken}}
     <section class="construct-broken-banner">

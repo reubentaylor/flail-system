@@ -598,6 +598,23 @@
 <div class="tinkerer-row">
   {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
 
+  {{!-- E4 (v0.4.86) — level-up gadget pick reminder. v1: "When
+       advancing a level, they may add a new gadget of any type to
+       their belt." Banner is visible whenever the Tinkerer's level
+       exceeds the number of owned gadget items; dismisses silently
+       once they drag a fresh gadget from the compendium. --}}
+  {{#if pendingGadgetPicks}}
+  <section class="tabbed-card gadget-pick-banner">
+    <header class="tab-label"><i class="fas fa-star"></i> Level-up: Pending Gadget Pick{{#unless (flail-eq pendingGadgetPicks 1)}}s{{/unless}}</header>
+    <div class="gadget-pick-body">
+      <p>
+        You have <strong>{{pendingGadgetPicks}}</strong> gadget pick{{#unless (flail-eq pendingGadgetPicks 1)}}s{{/unless}} pending from level-up.
+        Drag a gadget from the <em>FLAIL Tinkerer Gadgets</em> compendium onto your sheet to claim it.
+      </p>
+    </div>
+  </section>
+  {{/if}}
+
   {{!-- Resourcefulness — Tinkerer special skill. Modifies gear usage
        threshold (5-6 instead of 4-6) and enables the repair flow. --}}
   <section class="tabbed-card resourcefulness-card">

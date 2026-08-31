@@ -366,19 +366,50 @@ export function registerEffectsChatListeners() {
 }
 
 async function onChatBtnClick(event) {
-  const btn = event.target.closest?.("[data-fx-action]");
+  const btn = event.target.closest?.("[data-fx-action], [data-action='tinkererFreeRelease']");
   if (!btn) return;
-  const action = btn.dataset.fxAction;
+  const action = btn.dataset.fxAction || btn.dataset.action;
   try {
-    if (action === "applyDamage")       return await onApplyDamage(btn);
-    if (action === "applyHeal")         return await onApplyHeal(btn);
-    if (action === "applyCondition")    return await onApplyCondition(btn);
-    if (action === "suppressCondition") return await onSuppressCondition(btn);
-    if (action === "rollSaves")         return await onRollSaves(btn);
+    if (action === "applyDamage")           return await onApplyDamage(btn);
+    if (action === "applyHeal")             return await onApplyHeal(btn);
+    if (action === "applyCondition")        return await onApplyCondition(btn);
+    if (action === "suppressCondition")     return await onSuppressCondition(btn);
+    if (action === "rollSaves")             return await onRollSaves(btn);
+    if (action === "tinkererFreeRelease")   return await onTinkererFreeRelease(btn);
   } catch (err) {
     console.error(`FLAIL | fx action "${action}" failed:`, err);
     ui.notifications?.error(`FLAIL: effect action failed. See console.`);
   }
+}
+
+/**
+ * Tinkerer C4 (v0.4.86): triplet on hit lets the Tinkerer release a
+ * gadget for free (no belt mark consumed). Buttons on the attack chat
+ * card list the belt gadgets; a click fires releaseGadget with
+ * `free: true`.
+ */
+async function onTinkererFreeRelease(btn) {
+  const actorUuid = btn.dataset.actorUuid;
+  const itemId    = btn.dataset.itemId;
+  if (!actorUuid || !itemId) return;
+  const actor = await fromUuid(actorUuid);
+  if (!actor) {
+    ui.notifications?.warn("FLAIL: acting Tinkerer not found.");
+    return;
+  }
+  const gadget = actor.items?.get(itemId);
+  if (!gadget) {
+    ui.notifications?.warn("FLAIL: gadget not on this Tinkerer's belt any more.");
+    return;
+  }
+  // Lazy import to avoid cyclic module deps.
+  const { releaseGadget } = await import("./release-gadget.mjs");
+  await releaseGadget({ actor, gadget, free: true });
+  // Fade the picker buttons so the free release can't be clicked twice.
+  btn.closest?.(".free-gadget-picker")?.querySelectorAll("button").forEach(b => {
+    b.setAttribute("disabled", "disabled");
+    b.style.opacity = "0.5";
+  });
 }
 
 async function resolveTargets(btn) {
