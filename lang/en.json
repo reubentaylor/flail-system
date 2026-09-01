@@ -650,7 +650,7 @@
       "RepairCancelButton":         "Cancel",
       "RepairSaveFlavor":           "Repair attempt — DEX save",
       "RepairCardTitle":            "Repair Attempt",
-      "RepairSuccessBody":          "Repaired <strong>{target}</strong>. <strong>{donor}</strong> loses 1 usage ({donorBefore} → {donorAfter}/{donorMax}).",
+      "RepairSuccessBody":          "Cleared 1 usage on <strong>{target}</strong> ({targetBefore} → {targetAfter}/{targetMax}). <strong>{donor}</strong> gains 1 usage ({donorBefore} → {donorAfter}/{donorMax}).",
       "RepairFailBody":             "The repair on <strong>{target}</strong> fails. No materials expended.",
       "QuickCraftButton":            "Quick Craft",
       "QuickCraftDialogTitle":       "Quick Craft — Cobble a Contraption",

@@ -5142,16 +5142,30 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
 
     let repairSummary;
     if (success) {
-      // Repair the target (clear usage) and mark one usage on the donor.
-      // Snapshot values first so the chat card can show deltas.
+      // v0.4.90: RAW is one-for-one — clear ONE dot on the target,
+      // mark ONE dot on the donor.  `repair()` (clear all) is used
+      // by the inventory "clear usage" button but that would make
+      // Resourcefulness a 3-for-1 trade, which isn't what the
+      // rulebook implies. Snapshot before values so the chat card
+      // can show accurate deltas.
       const targetBefore = targetItem.system.usage.value;
       const donorBefore  = donorItem.system.usage.value;
-      await targetItem.repair();
+      await targetItem.clearOneUsage();
       await donorItem.markUsage();
       repairSummary = {
         success: true,
-        target: { name: targetItem.name, before: targetBefore, after: 0 },
-        donor:  { name: donorItem.name,  before: donorBefore, after: Math.min(donorItem.system.usage.max, donorBefore + 1), max: donorItem.system.usage.max }
+        target: {
+          name: targetItem.name,
+          before: targetBefore,
+          after: Math.max(0, targetBefore - 1),
+          max: targetItem.system.usage.max
+        },
+        donor: {
+          name: donorItem.name,
+          before: donorBefore,
+          after: Math.min(donorItem.system.usage.max, donorBefore + 1),
+          max: donorItem.system.usage.max
+        }
       };
     } else {
       repairSummary = {
@@ -5171,7 +5185,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         </header>
         <div class="flail-chat-body">
           ${repairSummary.success
-            ? `<p><strong>${game.i18n.localize("FLAIL.Save.Success")}.</strong> ${game.i18n.format("FLAIL.Tinkerer.RepairSuccessBody", { target: repairSummary.target.name, donor: repairSummary.donor.name, donorBefore: repairSummary.donor.before, donorAfter: repairSummary.donor.after, donorMax: repairSummary.donor.max })}</p>`
+            ? `<p><strong>${game.i18n.localize("FLAIL.Save.Success")}.</strong> ${game.i18n.format("FLAIL.Tinkerer.RepairSuccessBody", { target: repairSummary.target.name, targetBefore: repairSummary.target.before, targetAfter: repairSummary.target.after, targetMax: repairSummary.target.max, donor: repairSummary.donor.name, donorBefore: repairSummary.donor.before, donorAfter: repairSummary.donor.after, donorMax: repairSummary.donor.max })}</p>`
             : `<p><strong>${game.i18n.localize("FLAIL.Save.Fail")}.</strong> ${game.i18n.format("FLAIL.Tinkerer.RepairFailBody", { target: repairSummary.target.name })}</p>`
           }
         </div>
