@@ -5140,18 +5140,20 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const outcome = message?.flags?.flail?.saveRoll?.outcome ?? null;
     const success = outcome === "crit" || outcome === "success";
 
+    // v0.4.93: Donor materials are always expended — a Tinkerer fiddles
+    // with a spare component to attempt the repair, and that component
+    // is consumed whether the tinkering works or not.  Snapshot the
+    // donor's before/after so the chat card can show its delta on both
+    // success AND failure branches. The target is only repaired on
+    // success (RAW is one-for-one on save success, per v0.4.90).
+    const donorBefore = donorItem.system.usage.value;
+    await donorItem.markUsage();
+    const donorAfter  = Math.min(donorItem.system.usage.max, donorBefore + 1);
+
     let repairSummary;
     if (success) {
-      // v0.4.90: RAW is one-for-one — clear ONE dot on the target,
-      // mark ONE dot on the donor.  `repair()` (clear all) is used
-      // by the inventory "clear usage" button but that would make
-      // Resourcefulness a 3-for-1 trade, which isn't what the
-      // rulebook implies. Snapshot before values so the chat card
-      // can show accurate deltas.
       const targetBefore = targetItem.system.usage.value;
-      const donorBefore  = donorItem.system.usage.value;
       await targetItem.clearOneUsage();
-      await donorItem.markUsage();
       repairSummary = {
         success: true,
         target: {
@@ -5163,15 +5165,20 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         donor: {
           name: donorItem.name,
           before: donorBefore,
-          after: Math.min(donorItem.system.usage.max, donorBefore + 1),
+          after: donorAfter,
           max: donorItem.system.usage.max
         }
       };
     } else {
       repairSummary = {
         success: false,
-        target:  { name: targetItem.name },
-        donor:   { name: donorItem.name  }
+        target: { name: targetItem.name },
+        donor: {
+          name: donorItem.name,
+          before: donorBefore,
+          after: donorAfter,
+          max: donorItem.system.usage.max
+        }
       };
     }
 
@@ -5186,7 +5193,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         <div class="flail-chat-body">
           ${repairSummary.success
             ? `<p><strong>${game.i18n.localize("FLAIL.Save.Success")}.</strong> ${game.i18n.format("FLAIL.Tinkerer.RepairSuccessBody", { target: repairSummary.target.name, targetBefore: repairSummary.target.before, targetAfter: repairSummary.target.after, targetMax: repairSummary.target.max, donor: repairSummary.donor.name, donorBefore: repairSummary.donor.before, donorAfter: repairSummary.donor.after, donorMax: repairSummary.donor.max })}</p>`
-            : `<p><strong>${game.i18n.localize("FLAIL.Save.Fail")}.</strong> ${game.i18n.format("FLAIL.Tinkerer.RepairFailBody", { target: repairSummary.target.name })}</p>`
+            : `<p><strong>${game.i18n.localize("FLAIL.Save.Fail")}.</strong> ${game.i18n.format("FLAIL.Tinkerer.RepairFailBody", { target: repairSummary.target.name, donor: repairSummary.donor.name, donorBefore: repairSummary.donor.before, donorAfter: repairSummary.donor.after, donorMax: repairSummary.donor.max })}</p>`
           }
         </div>
       </div>

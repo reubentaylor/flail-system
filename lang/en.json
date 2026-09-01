@@ -651,7 +651,7 @@
       "RepairSaveFlavor":           "Repair attempt — DEX save",
       "RepairCardTitle":            "Repair Attempt",
       "RepairSuccessBody":          "Cleared 1 usage on <strong>{target}</strong> ({targetBefore} → {targetAfter}/{targetMax}). <strong>{donor}</strong> gains 1 usage ({donorBefore} → {donorAfter}/{donorMax}).",
-      "RepairFailBody":             "The repair on <strong>{target}</strong> fails. No materials expended.",
+      "RepairFailBody":             "The repair on <strong>{target}</strong> fails. <strong>{donor}</strong> is still consumed ({donorBefore} → {donorAfter}/{donorMax}).",
       "QuickCraftButton":            "Quick Craft",
       "QuickCraftDialogTitle":       "Quick Craft — Cobble a Contraption",
       "QuickCraftPrompt":            "Describe the invention and pick 3-6 items to discard as components. Then roll DEX. Items are consumed regardless of the roll's outcome.",
