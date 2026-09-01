@@ -649,18 +649,21 @@
           <ul class="category-owned-list">
           {{#each category.gadgets as |gadget|}}
             <li class="owned-gadget owned-gadget-{{category.key}} {{#if gadget.used}}owned-gadget-used{{/if}}" data-item-id="{{gadget.id}}" draggable="true" data-tooltip="{{gadget.description}}">
-              <img class="owned-gadget-img" src="{{gadget.img}}" alt="{{gadget.name}}" />
-              <span class="owned-gadget-name">{{gadget.name}}</span>
-              {{#if gadget.releasable}}
+              {{!-- v0.4.92: click the icon/name to fire the gadget,
+                   matching the Abilities-tab class-actions panel.
+                   Under the belt-based usage model the fire button
+                   is enabled for ALL gadget categories (the old
+                   `releasable` gate only allowed damage gadgets
+                   before the effects framework was in place). --}}
               <button type="button"
-                      class="owned-gadget-release"
+                      class="owned-gadget-fire"
                       data-action="useDamageGadget"
                       data-item-id="{{gadget.id}}"
                       title="{{#if gadget.used}}{{localize 'FLAIL.Gadget.ReleaseUsedHint'}}{{else}}{{localize 'FLAIL.Gadget.ReleaseHint'}}{{/if}}"
                       {{#if gadget.used}}disabled{{/if}}>
-                <i class="fas fa-bomb"></i>
+                <img class="owned-gadget-img" src="{{gadget.img}}" alt="{{gadget.name}}" />
+                <span class="owned-gadget-name">{{gadget.name}}</span>
               </button>
-              {{/if}}
               <span class="owned-gadget-meta">
                 <button type="button" data-action="itemEdit"   data-item-id="{{gadget.id}}" title="{{localize 'FLAIL.Action.Edit'}}"><i class="fas fa-edit"></i></button>
                 <button type="button" data-action="itemDelete" data-item-id="{{gadget.id}}" title="{{localize 'FLAIL.Action.Delete'}}" class="owned-gadget-delete"><i class="fas fa-trash"></i></button>

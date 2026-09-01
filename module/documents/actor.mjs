@@ -81,6 +81,21 @@ export class FlailActor extends Actor {
       return null;
     }
 
+    // v0.4.91: Spent weapon — all usage dots marked. RAW: weapons and
+    // gear "become useless until repaired" once all dots are filled
+    // (p.40). Refuse the attack and tell the wielder to repair (via
+    // the general 20%-price rule, Tinkerer Resourcefulness, or a
+    // GM-provided means). The check is gated on `usage.max > 0` so
+    // weapons without usage tracking (typical for NPCs, or a homebrew
+    // weapon with no dots) still fire normally.
+    const usage = weapon.system?.usage;
+    if (usage && (usage.max ?? 0) > 0 && (usage.value ?? 0) >= usage.max) {
+      ui.notifications?.warn(
+        game.i18n.format("FLAIL.Notify.WeaponSpent", { name: weapon.name })
+      );
+      return null;
+    }
+
     // Two-handed weapon check. Firing a two-handed weapon (long bow,
     // great sword, short bow, crossbow, etc.) requires both hands
     // free — any OTHER item occupying the hands zone (a shield, a

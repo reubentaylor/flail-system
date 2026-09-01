@@ -893,6 +893,7 @@
       "FixConstructSameItem":      "The two marked items must be different.",
       "FixConstructBroken":        "{name} is broken — repair with Rebuild, not Fix Construct.",
       "ConstructBroken":           "This construct is broken — no actions until it's rebuilt.",
+      "WeaponSpent":                "{name} has all usage marked — repair it before attacking with it.",
       "RebuildNoOwner":            "No linked Tinkerer. Set an owner on the construct's Sketch card first.",
       "RebuildNoCoins":            "{owner} needs {needed} coins to rebuild (currently has {have}).",
       "ReassembleLocked":          "Unlock the Improvements tab before starting a reassemble session.",

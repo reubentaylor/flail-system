@@ -9041,7 +9041,7 @@
 }
 .flail.sheet .owned-gadget {
   display: grid;
-  grid-template-columns: 22px 1fr auto;
+  grid-template-columns: 1fr auto;
   gap: 0.35rem;
   align-items: center;
   padding: 0.15rem 0.35rem;
@@ -9056,6 +9056,37 @@
 .flail.sheet .owned-gadget-control { border-left-color: #4a2a6b; }
 .flail.sheet .owned-gadget-utility { border-left-color: #5a4810; }
 .flail.sheet .owned-gadget-support { border-left-color: #2a5c64; }
+
+/* v0.4.92: the fire button wraps img + name and covers most of the
+   li — clicking anywhere on the icon/name fires the gadget. Styled
+   as a transparent inline element so it doesn't look like a button,
+   with subtle hover feedback. */
+.flail.sheet .owned-gadget .owned-gadget-fire {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: none;
+  padding: 0.1rem 0.15rem;
+  margin: 0;
+  color: var(--flail-ink, #1a1410);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 3px;
+  transition: background 100ms ease;
+  min-width: 0;
+}
+.flail.sheet .owned-gadget .owned-gadget-fire:hover:not(:disabled) {
+  background: rgba(139, 105, 20, 0.15);
+}
+.flail.sheet .owned-gadget .owned-gadget-fire:active:not(:disabled) {
+  background: rgba(139, 105, 20, 0.25);
+}
+.flail.sheet .owned-gadget .owned-gadget-fire:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 .flail.sheet .owned-gadget-img {
   width: 22px;
   height: 22px;
@@ -9066,6 +9097,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--flail-ink, #1a1410);
+  min-width: 0;
 }
 .flail.sheet .owned-gadget-meta {
   display: none;
