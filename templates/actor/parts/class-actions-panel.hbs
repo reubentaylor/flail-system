@@ -27,14 +27,11 @@
         <i class="fas fa-{{#if system.weatheredAvailable}}check-circle{{else}}times-circle{{/if}} ca-icon"></i>
         <span class="ca-name">{{localize "FLAIL.Warrior.WeatheredButton"}}</span>
       </button>
-      {{#each combatTalents as |slot|}}
-        {{#if slot.currentDisplay}}
-        <div class="ca-info ca-talent-info"
-             data-tooltip="{{slot.currentDisplay.label}}">
-          <span class="ca-tier-badge ca-tier-{{slot.currentDisplay.tier}}">{{slot.currentDisplay.tier}}</span>
-          <span class="ca-name">{{slot.currentDisplay.label}}</span>
+      {{#each pickedCombatTalents as |talent|}}
+        <div class="ca-info ca-talent-info" data-tooltip="{{talent.label}}">
+          <span class="ca-tier-badge ca-tier-{{talent.tier}}">{{talent.tier}}</span>
+          <span class="ca-name">{{talent.label}}</span>
         </div>
-        {{/if}}
       {{/each}}
     {{/if}}
 

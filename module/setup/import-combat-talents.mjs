@@ -7,8 +7,16 @@ import { buildCombatTalentsData } from "./combat-talents-data.mjs";
  *
  *   1 — initial bundle. All Warrior tree talents (Basic + Expert +
  *       Master per tree) plus a Custom Combat Talent template.
+ *   2 — v0.4.94: rulebook fixes for four talents whose text had
+ *       drifted from v1:
+ *       • Raw Force: bonus is TWICE the triplet face (not the face);
+ *         e.g. triplet of 4 → 8 extra damage. To-hit calc + text.
+ *       • Bone Breaker: extra damage is d10, not d6.
+ *       • Iron Fist: base DMG is 3 (was 2). Flows through to
+ *         getIronFistStats() → 3 base / 4 with expert.
+ *       • Focused Force: extra +d6 per pair (was +d3).
  */
-export const COMBAT_TALENTS_VERSION = 1;
+export const COMBAT_TALENTS_VERSION = 3;
 
 const VERSION_SETTING = "combatTalentsVersion";
 const PACK_NAME  = "flail-combat-talents";

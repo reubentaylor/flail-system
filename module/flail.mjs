@@ -19,6 +19,7 @@ import {
   FlailGuildModel,
   FlailBackgroundModel,
   FlailCombatTalentModel,
+  FlailCombatTreeModel,
   FlailReligionModel
 } from "./data/items.mjs";
 
@@ -40,6 +41,7 @@ import { registerChatListeners }     from "./chat/chat-listeners.mjs";
 import { ensureCommonItemsCompendium } from "./setup/import-common-items.mjs";
 import { ensureBackgroundsCompendium } from "./setup/import-backgrounds.mjs";
 import { ensureCombatTalentsCompendium } from "./setup/import-combat-talents.mjs";
+import { ensureCombatTreesCompendium } from "./setup/import-combat-trees.mjs";
 import { ensureDarkSpellsCompendium } from "./setup/import-dark-spells.mjs";
 import { ensureWizardSpellsCompendium } from "./setup/import-wizard-spells.mjs";
 import { ensurePrimalGiftsCompendium } from "./setup/import-primal-gifts.mjs";
@@ -117,6 +119,14 @@ Hooks.once("init", () => {
     game.settings.register("flail", "combatTalentsVersion", {
       name: "FLAIL Combat Talents version",
       hint: "Internal — last bundled-combat-talents version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "combatTreesVersion", {
+      name: "FLAIL Combat Trees version",
+      hint: "Internal — last bundled-combat-trees version this world synced from. Do not edit.",
       scope: "world",
       config: false,
       type: Number,
@@ -307,6 +317,7 @@ Hooks.once("init", () => {
       guild:        FlailGuildModel,
       background:   FlailBackgroundModel,
       combatTalent: FlailCombatTalentModel,
+      combatTree:   FlailCombatTreeModel,
       religion:     FlailReligionModel
     };
     console.log(`${TAG} init — data models registered`);
@@ -367,7 +378,6 @@ Hooks.once("init", () => {
         "systems/flail/templates/actor/parts/loose-items.hbs",
         "systems/flail/templates/actor/parts/biography.hbs",
         "systems/flail/templates/actor/parts/notes-panel.hbs",
-        "systems/flail/templates/apps/combat-talent-picker.hbs",
         "systems/flail/templates/apps/background-picker.hbs",
         "systems/flail/templates/apps/background-grants-dialog.hbs",
         "systems/flail/templates/apps/background-validate-dialog.hbs",
@@ -388,6 +398,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/item/types/guild.hbs",
         "systems/flail/templates/item/types/background.hbs",
         "systems/flail/templates/item/types/combatTalent.hbs",
+        "systems/flail/templates/item/types/combatTree.hbs",
         "systems/flail/templates/item/types/religion.hbs",
         "systems/flail/templates/chat/attack-roll.hbs",
         "systems/flail/templates/chat/save-roll.hbs",
@@ -462,6 +473,7 @@ Hooks.once("ready", async () => {
   await ensureCommonItemsCompendium();
   await ensureBackgroundsCompendium();
   await ensureCombatTalentsCompendium();
+  await ensureCombatTreesCompendium();
   await ensureDarkSpellsCompendium();
   await ensureWizardSpellsCompendium();
   await ensurePrimalGiftsCompendium();
@@ -513,6 +525,14 @@ Hooks.once("ready", async () => {
   // isn't active in this world).
   game.flail = game.flail ?? {};
   Object.assign(game.flail, {
+    /**
+     * v0.4.95 — Force-resync the Combat Trees compendium. Run from
+     * the F12 console: `await game.flail.resyncCombatTrees()`.
+     */
+    resyncCombatTrees: async () => {
+      await game.settings.set("flail", "combatTreesVersion", 0);
+      await ensureCombatTreesCompendium();
+    },
     /** Roll a save (STR/DEX/CHA/INT/LUCK) for the given actor. */
     rollSave: (actor, attribute, options = {}) => rollSave({ actor, attribute, ...options }),
 

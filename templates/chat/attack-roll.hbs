@@ -309,6 +309,19 @@
   </div>
   {{/if}}
 
+  {{!-- Combat Talent reminder callouts (v0.4.99, Ship 2) --}}
+  {{#if talentReminders.length}}
+  <div class="talent-reminders">
+    <header class="tr-header"><i class="fas fa-scroll"></i> Combat Talent reminders</header>
+    {{#each talentReminders as |r|}}
+    <div class="talent-reminder-callout">
+      <header class="tr-title"><i class="fas {{r.icon}}"></i> {{r.title}}</header>
+      <div class="tr-body">{{{r.text}}}</div>
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+
   {{!-- Viper's Agility — Druid Reptile gift, offer second attack at disadvantage --}}
   {{#if vipersAgility}}
   <div class="gift-banner gift-vipers-agility">

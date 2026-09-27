@@ -72,6 +72,34 @@
   min-height: 0;
   overflow: hidden;
 }
+/* v0.4.102 — the window is resizable (window.resizable = true), but the
+   default resize handle is a faint corner glyph that's nearly invisible
+   on parchment and easy to miss. Make it explicit: a visible grab-tab in
+   the bottom-right corner, with a comfortable hit area, lifted above the
+   form content (whose overflow:hidden must never clip it). */
+.flail.sheet.actor.character .window-resize-handle {
+  display: block !important;
+  pointer-events: auto !important;
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 18px;
+  height: 18px;
+  z-index: 100;
+  cursor: nwse-resize;
+  opacity: 0.9;
+  color: var(--flail-rule, #1a1410);
+}
+.flail.sheet.actor.character .window-resize-handle::after {
+  content: "";
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 12px;
+  height: 12px;
+  background:
+    linear-gradient(135deg, transparent 0 55%, var(--flail-rule, #1a1410) 55% 62%, transparent 62% 72%, var(--flail-rule, #1a1410) 72% 79%, transparent 79% 89%, var(--flail-rule, #1a1410) 89% 96%, transparent 96%);
+}
 
 /* ============================================================
    BANNER (class title + name + backstory + FLAIL mark)
@@ -11373,3 +11401,71 @@
   color: #2a1f0f;
   font-size: 0.9rem;
 }
+
+/* Combat Tree Editor (v0.4.95, Ship 1) */
+.combat-tree-editor { padding: 0.6rem; }
+.combat-tree-editor h3 { margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+.combat-tree-editor h3 i { color: #4c7d3a; }
+.combat-tree-editor .tree-row { display: flex; justify-content: center; gap: 1rem; margin: 0.4rem 0; }
+.combat-tree-editor .tree-row-basic { margin-bottom: 0.6rem; }
+.combat-tree-editor .tree-branch { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.4rem; border: 1px dashed rgba(139, 105, 20, 0.3); border-radius: 4px; flex: 1 1 0; min-width: 0; }
+.combat-tree-editor .tree-row-masters { margin-top: 0.3rem; gap: 0.5rem; width: 100%; }
+.combat-tree-editor .ct-slot { display: flex; flex-direction: column; gap: 0.25rem; min-height: 3.4rem; padding: 0.4rem 0.5rem; border: 1px dashed #8b6914; border-radius: 3px; background: rgba(139, 105, 20, 0.06); flex: 1 1 0; min-width: 0; }
+.combat-tree-editor .ct-slot.drop-active { background: rgba(76, 125, 58, 0.2); border-color: #4c7d3a; border-style: solid; }
+.combat-tree-editor .ct-slot-basic { max-width: 240px; background: rgba(139, 105, 20, 0.12); }
+.combat-tree-editor .ct-slot-expert { background: rgba(76, 125, 58, 0.08); border-color: #4c7d3a; width: 100%; }
+.combat-tree-editor .ct-slot-master { background: rgba(74, 42, 107, 0.06); border-color: #4a2a6b; font-size: 0.82rem; }
+.combat-tree-editor .ct-slot-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #6a5a2a; }
+.combat-tree-editor .ct-slot-empty { font-size: 0.78rem; color: #6a5a2a; font-style: italic; }
+.combat-tree-editor .ct-slot-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.4rem; background: #fbf3d9; border: 1px solid #8b6914; border-radius: 3px; font-weight: 600; color: #2a1f0f; }
+.combat-tree-editor .ct-slot-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.combat-tree-editor .ct-slot-chip button { background: transparent; border: none; color: #6a5a2a; cursor: pointer; padding: 0 0.15rem; }
+.combat-tree-editor .ct-slot-chip button:hover { color: #922f24; }
+
+/* Warrior Combat Trees on class tab (v0.4.99, Ship 2) */
+.combat-trees-card { position: relative; }
+.combat-trees-card .ct-picks-counter { float: right; font-size: 0.82rem; color: #6a5a2a; }
+.combat-trees-card .ct-picks-counter strong { color: #2a1f0f; }
+.combat-trees-card .ct-empty { padding: 0.8rem; text-align: center; color: #6a5a2a; }
+.combat-trees-list { display: flex; flex-direction: column; gap: 0.8rem; padding: 0.4rem; }
+.ct-card { border: 1px solid #8b6914; border-radius: 4px; background: rgba(139, 105, 20, 0.04); padding: 0.5rem; }
+.ct-card-header { display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px solid rgba(139, 105, 20, 0.3); margin-bottom: 0.5rem; }
+.ct-card-img { width: 32px; height: 32px; object-fit: contain; }
+.ct-card-title { flex: 1 1 auto; min-width: 0; }
+.ct-card-title h4 { margin: 0; font-size: 0.95rem; color: #2a1f0f; }
+.ct-card-title .ct-restriction { font-size: 0.75rem; color: #6a5a2a; font-style: italic; }
+.ct-card-remove { background: transparent; border: 1px solid #922f24; color: #922f24; padding: 0.2rem 0.4rem; border-radius: 3px; cursor: pointer; }
+.ct-card-remove:hover { background: rgba(146, 47, 36, 0.15); }
+.ct-tree-row { display: flex; justify-content: center; gap: 0.8rem; margin: 0.3rem 0; }
+.ct-tree-row-experts { align-items: flex-start; }
+.ct-branch { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.3rem; border: 1px dashed rgba(139, 105, 20, 0.25); border-radius: 4px; flex: 1 1 0; min-width: 0; }
+.ct-tree-row-masters { margin-top: 0.25rem; gap: 0.4rem; width: 100%; }
+.ct-slot { display: flex; flex-direction: column; gap: 0.2rem; min-height: 3.6rem; padding: 0.4rem 0.5rem; border: 1px solid #8b6914; border-radius: 3px; background: rgba(139, 105, 20, 0.06); flex: 0 0 auto; min-width: 0; }
+.ct-slot-basic { background: rgba(139, 105, 20, 0.14); max-width: 260px; }
+/* Expert slots are direct children of the column branch, so they must
+   NOT take flex:1 1 0 (that applies to height and collapses the name).
+   flex:0 0 auto + width:100% keeps them full-width and content-sized. */
+.ct-slot-expert { background: rgba(76, 125, 58, 0.1); border-color: #4c7d3a; width: 100%; flex: 0 0 auto; }
+/* Master slots sit inside a flex ROW, so flex:1 1 0 correctly shares width. */
+.ct-tree-row-masters .ct-slot-master { flex: 1 1 0; }
+.ct-slot-master { background: rgba(74, 42, 107, 0.08); border-color: #4a2a6b; font-size: 0.82rem; }
+.ct-slot.ct-locked { opacity: 0.5; }
+.ct-slot.ct-picked { box-shadow: 0 0 0 2px #4c7d3a inset; background: rgba(76, 125, 58, 0.2); }
+.ct-slot-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: #6a5a2a; letter-spacing: 0.03em; }
+.ct-slot-name { font-weight: 600; color: #2a1f0f; cursor: pointer; overflow-wrap: anywhere; min-width: 0; }
+.ct-slot-name:hover { text-decoration: underline; }
+.ct-slot-empty { color: #6a5a2a; font-style: italic; font-size: 0.75rem; }
+.ct-btn { padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid #8b6914; }
+.ct-btn-pick { background: #fbf3d9; color: #2a1f0f; }
+.ct-btn-pick:hover:not(:disabled) { background: rgba(76, 125, 58, 0.2); border-color: #4c7d3a; }
+.ct-btn-pick:disabled { opacity: 0.4; cursor: not-allowed; }
+.ct-btn-picked { background: #4c7d3a; color: #fff; border-color: #3d6a2d; }
+.ct-btn-picked:hover:not(:disabled) { background: #922f24; border-color: #7a271e; }
+
+/* Combat Talent reminder callouts on attack chat card */
+.flail-card .talent-reminders { margin-top: 0.5rem; padding: 0.5rem; background: rgba(76, 125, 58, 0.08); border-left: 3px solid #4c7d3a; border-radius: 3px; }
+.flail-card .talent-reminders .tr-header { font-weight: 700; color: #2a1f0f; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-size: 0.85rem; }
+.flail-card .talent-reminder-callout { padding: 0.35rem 0.5rem; margin-top: 0.3rem; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(76, 125, 58, 0.4); border-radius: 3px; }
+.flail-card .talent-reminder-callout .tr-title { font-weight: 700; color: #1a3d43; display: flex; align-items: center; gap: 0.3rem; font-size: 0.83rem; margin-bottom: 0.15rem; }
+.flail-card .talent-reminder-callout .tr-body { font-size: 0.82rem; color: #2a1f0f; }
+.flail-card .talent-reminder-callout .tr-body p { margin: 0.2rem 0; }

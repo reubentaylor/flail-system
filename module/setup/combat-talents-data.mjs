@@ -22,6 +22,66 @@ const TIER_ICONS = {
   master: "icons/skills/melee/weapons-crossed-swords-black-gray.webp"
 };
 
+/**
+ * Per-canonical-talent trigger + reminder metadata (v0.4.97).
+ * Keyed by sourceKey. See combatTalent schema in items.mjs for
+ * field definitions. Homebrew talents (unknown sourceKey) get
+ * schema defaults.
+ */
+const TRIGGER_METADATA = {
+  "bladeFreak.basic":     { weaponRestriction: "oneHanded", activation: "passive", triggerKind: "onRoll", triggerPokerCombo: "sequence3", triggerHitTier: "anyHit", reminderTitle: "Fine Cuts!", reminderText: "<p>Deal extra damage equal to the highest die of the sequence.</p>" },
+  "bladeFreak.exp1":      { weaponRestriction: "oneHanded", activation: "passive", triggerKind: "passive" },
+  "bladeFreak.exp2":      { weaponRestriction: "oneHanded", activation: "active",  triggerKind: "onFailedRoll", triggerHitTier: "fail", usageLimitMax: 2, usageLimitWindow: "combat", reminderTitle: "Fencer's Luck available", reminderText: "<p>You may reroll this failed To Hit roll (2×/combat).</p>" },
+  "bladeFreak.mas1a":     { weaponRestriction: "oneHanded", activation: "passive", triggerKind: "onRoll", triggerHitTier: "anyHit", reminderTitle: "Cross Slash reminder", reminderText: "<p>If this is the second hit on the same adversary this round, add +d4 damage.</p>" },
+  "bladeFreak.mas1b":     { weaponRestriction: "oneHanded", activation: "passive", triggerKind: "onRoll", triggerHitTier: "anyHit", reminderTitle: "Bleeding Cut applied", reminderText: "<p>The adversary takes +d4 damage at the start of every subsequent round.</p>" },
+  "bladeFreak.mas2a":     { weaponRestriction: "oneHanded", activation: "reactive", triggerKind: "reactive", triggerReactiveEvent: "adversaryFumbles", reminderTitle: "Opportunist!", reminderText: "<p>The adversary fumbled — take a free attack immediately.</p>" },
+  "bladeFreak.mas2b":     { weaponRestriction: "oneHanded", activation: "passive", triggerKind: "onRoll", triggerPokerCombo: "triplet", triggerPokerFace: 2, triggerHitTier: "anyHit", reminderTitle: "The Undertaker — Death Blow!", reminderText: "<p>Triplets of 2 count as Death Blows.</p>" },
+  "brawlerMauler.basic":  { weaponRestriction: "twoHanded", activation: "passive", triggerKind: "onRoll", triggerPokerCombo: "triplet", triggerHitTier: "anyHit", reminderTitle: "Raw Force!", reminderText: "<p>Extra damage equal to twice the triplet's face value.</p>" },
+  "brawlerMauler.exp1":   { weaponRestriction: "twoHanded", activation: "passive", triggerKind: "passive" },
+  "brawlerMauler.exp2":   { weaponRestriction: "twoHanded", activation: "active",  triggerKind: "active", usageLimitMax: 1, usageLimitWindow: "combat" },
+  "brawlerMauler.mas1a":  { weaponRestriction: "twoHanded", activation: "active",  triggerKind: "active", usageLimitMax: 1, usageLimitWindow: "combat" },
+  "brawlerMauler.mas1b":  { weaponRestriction: "twoHanded", activation: "active",  triggerKind: "active" },
+  "brawlerMauler.mas2a":  { weaponRestriction: "twoHanded", activation: "passive", triggerKind: "passive" },
+  "brawlerMauler.mas2b":  { weaponRestriction: "twoHanded", activation: "passive", triggerKind: "onRoll", triggerHitTier: "major", reminderTitle: "Bone Breaker!", reminderText: "<p>Target must save vs STR or take an extra d10 damage.</p>" },
+  "archerMaster.basic":   { weaponRestriction: "bow", activation: "passive", triggerKind: "onRoll", triggerPokerCombo: "twoPair", triggerHitTier: "anyHit", reminderTitle: "Precision Mark applied", reminderText: "<p>Target is marked. The next attack against it has +2 To Hit.</p>" },
+  "archerMaster.exp1":    { weaponRestriction: "bow", activation: "active",  triggerKind: "active", usageLimitMax: 2, usageLimitWindow: "combat" },
+  "archerMaster.exp2":    { weaponRestriction: "bow", activation: "passive", triggerKind: "passive" },
+  "archerMaster.mas1a":   { weaponRestriction: "bow", activation: "active",  triggerKind: "active", usageLimitMax: 1, usageLimitWindow: "combat" },
+  "archerMaster.mas1b":   { weaponRestriction: "bow", activation: "passive", triggerKind: "onRoll", triggerHitTier: "anyHit", reminderTitle: "Deadly Aim", reminderText: "<p>Extra damage equal to your current character level.</p>" },
+  "archerMaster.mas2a":   { weaponRestriction: "bow", activation: "active",  triggerKind: "active" },
+  "archerMaster.mas2b":   { weaponRestriction: "bow", activation: "passive", triggerKind: "onRoll", triggerHitTier: "anyHit", reminderTitle: "Piercing Shot", reminderText: "<p>Ignores the target's Defence for this hit.</p>" },
+  "martialArtist.basic":  { weaponRestriction: "barehanded", activation: "passive", triggerKind: "passive" },
+  "martialArtist.exp1":   { weaponRestriction: "barehanded", activation: "passive", triggerKind: "passive" },
+  "martialArtist.exp2":   { weaponRestriction: "barehanded", activation: "active",  triggerKind: "active", usageLimitMax: 2, usageLimitWindow: "combat" },
+  "martialArtist.mas1a":  { weaponRestriction: "barehanded", activation: "passive", triggerKind: "onRoll", triggerPokerCombo: "pair", triggerHitTier: "anyHit", reminderTitle: "Focused Force!", reminderText: "<p>Extra +d6 damage per pair rolled.</p>" },
+  "martialArtist.mas1b":  { weaponRestriction: "barehanded", activation: "passive", triggerKind: "onRoll", triggerHitTier: "anyHit", reminderTitle: "Stunning Strike", reminderText: "<p>Target must save or become Stunned.</p>" },
+  "martialArtist.mas2a":  { weaponRestriction: "barehanded", activation: "reactive", triggerKind: "reactive", triggerReactiveEvent: "hitByRanged", reminderTitle: "Deflect!", reminderText: "<p>Make a DEX save to dodge the ranged attack entirely.</p>" },
+  "martialArtist.mas2b":  { weaponRestriction: "barehanded", activation: "reactive", triggerKind: "reactive", triggerReactiveEvent: "hitInMelee", reminderTitle: "Reflexes!", reminderText: "<p>Make an extra melee attack immediately as a free action.</p>" }
+};
+
+/**
+ * Fully-defaulted trigger block for a given sourceKey.
+ */
+function triggerBlock(sourceKey) {
+  const m = TRIGGER_METADATA[sourceKey] ?? {};
+  return {
+    weaponRestriction: m.weaponRestriction ?? "any",
+    weaponRestrictionCustom: "",
+    activation: m.activation ?? "passive",
+    usageLimitMax: m.usageLimitMax ?? 0,
+    usageLimitWindow: m.usageLimitWindow ?? "none",
+    triggerKind: m.triggerKind ?? "none",
+    triggerPokerCombo: m.triggerPokerCombo ?? "",
+    triggerPokerFace: m.triggerPokerFace ?? 0,
+    triggerHitTier: m.triggerHitTier ?? "",
+    triggerReactiveEvent: m.triggerReactiveEvent ?? "",
+    reminderTitle: m.reminderTitle ?? "",
+    reminderText: m.reminderText ?? "",
+    reminderIcon: m.reminderIcon ?? "",
+    notes: ""
+  };
+}
+
 export function buildCombatTalentsData() {
   const items = [];
 
@@ -39,7 +99,8 @@ export function buildCombatTalentsData() {
       prerequisite: "",
       sourceKey: "custom",
       slotIndex: 0,
-      isCustomTemplate: true
+      isCustomTemplate: true,
+      ...triggerBlock("")
     },
     effects: [],
     folder: null,
@@ -62,7 +123,8 @@ export function buildCombatTalentsData() {
         prerequisite: "",
         sourceKey: tree.basic.key,
         slotIndex: 0,
-        isCustomTemplate: false
+        isCustomTemplate: false,
+        ...triggerBlock(tree.basic.key)
       },
       effects: [],
       folder: null,
@@ -83,7 +145,8 @@ export function buildCombatTalentsData() {
           prerequisite: tree.basic.key,
           sourceKey: expert.key,
           slotIndex: 0,
-          isCustomTemplate: false
+          isCustomTemplate: false,
+          ...triggerBlock(expert.key)
         },
         effects: [],
         folder: null,
@@ -104,7 +167,8 @@ export function buildCombatTalentsData() {
             prerequisite: expert.key,
             sourceKey: master.key,
             slotIndex: 0,
-            isCustomTemplate: false
+            isCustomTemplate: false,
+            ...triggerBlock(master.key)
           },
           effects: [],
           folder: null,

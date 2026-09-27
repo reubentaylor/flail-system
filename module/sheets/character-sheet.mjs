@@ -6,7 +6,6 @@ import { rollPrayer } from "../dice/cast-prayer.mjs";
 import { rollLayOnHands } from "../dice/lay-on-hands.mjs";
 import { rollMiracleCall } from "../dice/miracle-call.mjs";
 import { resolveRest } from "../dice/rest.mjs";
-import { CombatTalentPicker } from "../apps/combat-talent-picker.mjs";
 import { BackgroundPicker } from "../apps/background-picker.mjs";
 import { BackgroundGrantsDialog } from "../apps/background-grants-dialog.mjs";
 import { StartingGearWizard } from "../apps/starting-gear-wizard.mjs";
@@ -47,13 +46,15 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       rollAttack:      FlailCharacterSheet.#onRollAttack,
       rollIronFistAttack: FlailCharacterSheet.#onRollIronFistAttack,
       toggleWeathered: FlailCharacterSheet.#onToggleWeathered,
-      openTalentPicker: FlailCharacterSheet.#onOpenTalentPicker,
+      pickTreeSlot:     FlailCharacterSheet.#onPickTreeSlot,
+      unpickTreeSlot:   FlailCharacterSheet.#onUnpickTreeSlot,
+      removeCombatTree: FlailCharacterSheet.#onRemoveCombatTree,
+      openCombatTreeSlotItem: FlailCharacterSheet.#onOpenCombatTreeSlotItem,
       openBackgroundPicker: FlailCharacterSheet.#onOpenBackgroundPicker,
       openBackgroundItem: FlailCharacterSheet.#onOpenBackgroundItem,
       openBackgroundGrants: FlailCharacterSheet.#onOpenBackgroundGrants,
       openStartingGearWizard: FlailCharacterSheet.#onOpenStartingGearWizard,
       resetStartingGear: FlailCharacterSheet.#onResetStartingGear,
-      openCombatTalentItem: FlailCharacterSheet.#onOpenCombatTalentItem,
       attributeAdjustUp:   FlailCharacterSheet.#onAttributeAdjustUp,
       attributeAdjustDown: FlailCharacterSheet.#onAttributeAdjustDown,
       attributeToggleLock: FlailCharacterSheet.#onAttributeToggleLock,
@@ -468,34 +469,58 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     // level slot (5 rows total), populated with the item currently in
     // that slot, or an empty placeholder + "Choose..." button.
     //
-    // Prerequisite validation moved into the CombatTalentPicker itself
-    // (opens per-slot). The sheet context just displays what's already
-    // there — nothing to filter here.
+    // v0.4.100 — the legacy per-level Combat Talent picker was retired.
+    // Warriors now acquire talents exclusively through embedded Combat
+    // Trees (below). `charLevel` still gates the tree pick counter.
     const charLevel = sys.level ?? 1;
-    const embeddedTalents = actor.items.filter(i => i.type === "combatTalent");
-    const talentsBySlot = new Map();
-    for (const t of embeddedTalents) {
-      const idx = t.system?.slotIndex ?? 0;
-      if (!talentsBySlot.has(idx)) talentsBySlot.set(idx, t);
+
+    // v0.4.99 (Ship 2) — Combat trees embedded on Warriors.
+    // Build a per-tree view with slot state + eligibility for the UI.
+    ctx.combatTrees = actor.items
+      .filter(i => i.type === "combatTree")
+      .map(tree => {
+        const s = tree.system ?? {};
+        const slotView = (key, tier, eligible) => ({
+          key, tier,
+          uuid: s[`${key}Uuid`] ?? "",
+          name: s[`${key}Name`] ?? "",
+          picked: !!s[`${key}Picked`],
+          hasTalent: !!(s[`${key}Uuid`]),
+          eligible
+        });
+        return {
+          id: tree.id,
+          name: tree.name,
+          img: tree.img,
+          weaponRestrictionHint: s.weaponRestrictionHint ?? "",
+          basic:    slotView("basic",    "basic",  true),
+          expert1:  slotView("expert1",  "expert", !!s.basicPicked),
+          expert2:  slotView("expert2",  "expert", !!s.basicPicked),
+          master1a: slotView("master1a", "master", !!s.expert1Picked),
+          master1b: slotView("master1b", "master", !!s.expert1Picked),
+          master2a: slotView("master2a", "master", !!s.expert2Picked),
+          master2b: slotView("master2b", "master", !!s.expert2Picked)
+        };
+      });
+    // Global pick counter — total picks across all embedded trees.
+    ctx.combatTreesPicksUsed = ctx.combatTrees.reduce((n, t) => {
+      for (const k of ["basic","expert1","expert2","master1a","master1b","master2a","master2b"]) {
+        if (t[k].picked) n++;
+      }
+      return n;
+    }, 0);
+    ctx.combatTreesPicksMax = charLevel;
+    ctx.combatTreesPicksRemaining = Math.max(0, charLevel - ctx.combatTreesPicksUsed);
+    // Flat list of picked talents (for the Abilities-tab quick panel).
+    ctx.pickedCombatTalents = [];
+    for (const tree of ctx.combatTrees) {
+      for (const k of ["basic","expert1","expert2","master1a","master1b","master2a","master2b"]) {
+        const slot = tree[k];
+        if (slot.picked) {
+          ctx.pickedCombatTalents.push({ label: slot.name, tier: slot.tier, uuid: slot.uuid });
+        }
+      }
     }
-    ctx.combatTalents = Array.from({ length: 5 }, (_, i) => {
-      const level = i + 1;
-      const beyondCurrentLevel = level > charLevel;
-      const item = talentsBySlot.get(i) ?? null;
-      const currentDisplay = item ? {
-        itemId: item.id,
-        label: item.name,
-        tree: item.system?.treeLabel ?? item.system?.tree ?? "",
-        tier: item.system?.tier ?? "basic",
-        desc: item.system?.description ?? ""
-      } : null;
-      return {
-        level,
-        current: item?.id ?? "",
-        currentDisplay,
-        beyondCurrentLevel
-      };
-    });
 
     // Wizard spellbook — 15 numbered entries.
     ctx.spellbookEntries = (sys.spellbook ?? Array(15).fill("")).map((text, i) => ({
@@ -1166,36 +1191,6 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       el.addEventListener("drop", this.#onDrop.bind(this));
     });
 
-    // Combat Talent slot drop zones (Warrior). Slots on the Class
-    // tab accept drops from the Combat Talent Picker window. The
-    // payload is a JSON object with type "flail-combat-talent" — we
-    // filter for that and ignore anything else. Locked slots (level
-    // > current) still receive events but the drop handler rejects
-    // them with a toast so a stray drag doesn't accidentally unlock.
-    root.querySelectorAll("[data-flail-drop-target='talentSlot']").forEach(el => {
-      el.addEventListener("dragover", this.#onTalentSlotDragOver.bind(this));
-      el.addEventListener("dragleave", this.#onTalentSlotDragLeave.bind(this));
-      el.addEventListener("drop",     this.#onTalentSlotDrop.bind(this));
-    });
-
-    // Backup direct-click wiring for the per-slot "inspect" button
-    // (opens the embedded combatTalent item's sheet). ApplicationV2's
-    // action dispatcher should route data-action="openCombatTalentItem"
-    // via the class DEFAULT_OPTIONS.actions, but explicit wiring here
-    // guards against any dispatch failure when the button is inside a
-    // drop-target parent. stopPropagation prevents the click bubbling
-    // to the containing slot which would confuse the picker.
-    root.querySelectorAll(".talent-slot-inspect-btn").forEach(btn => {
-      btn.addEventListener("click", ev => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        const id = btn.dataset.itemId;
-        if (!id) return;
-        const item = this.actor.items.get(id);
-        if (item) item.sheet?.render(true);
-      });
-    });
-
     // Background slot drop zone (banner). Accepts drops from the
     // Background Picker window. Payload type "flail-background";
     // any other drag is ignored.
@@ -1259,6 +1254,13 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     root.querySelectorAll("[data-drop-target='thievingTalents']").forEach(el => {
       el.addEventListener("dragover", this.#onSpellListDragOver.bind(this));
       el.addEventListener("drop", this.#onThievingTalentDrop.bind(this));
+    });
+
+    // v0.4.99 (Ship 2) — Warrior combat trees drop zone. Accepts
+    // combatTree items dropped from the Combat Trees compendium.
+    root.querySelectorAll("[data-drop-target='combatTrees']").forEach(el => {
+      el.addEventListener("dragover", this.#onSpellListDragOver.bind(this));
+      el.addEventListener("drop", this.#onCombatTreeDrop.bind(this));
     });
 
     // Guild drop zone (Cutthroat). Accepts a single guild Item; if one
@@ -1479,70 +1481,6 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
   #onSpellListDragOver(event) {
     event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
-  }
-
-  /**
-   * Combat Talent slot — accept only "flail-combat-talent" payloads
-   * from the picker window. Adds a visual highlight while the drag
-   * hovers over an unlocked slot; rejects the drop on locked slots.
-   */
-  async #onTalentSlotDragOver(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    // Reject if this slot is locked (level > character level).
-    const slot = event.currentTarget;
-    if (slot.classList.contains("talent-slot-locked")) {
-      if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
-      return;
-    }
-    slot.classList.add("talent-slot-drag-hover");
-    if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
-  }
-
-  async #onTalentSlotDragLeave(event) {
-    event.currentTarget.classList.remove("talent-slot-drag-hover");
-  }
-
-  async #onTalentSlotDrop(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const slot = event.currentTarget;
-    slot.classList.remove("talent-slot-drag-hover");
-
-    if (slot.classList.contains("talent-slot-locked")) return;
-
-    let payload;
-    try { payload = JSON.parse(event.dataTransfer.getData("text/plain")); }
-    catch { return; }
-
-    // Accept standard Foundry item drops. Payload from the CT Picker
-    // additionally carries `flailTalentSlotIndex` — but the slot's
-    // own data-slot-index is authoritative here (drop location wins).
-    if (payload?.type !== "Item") return;
-
-    const source = await Item.implementation.fromDropData(payload);
-    if (!source) return;
-    if (source.type !== "combatTalent") {
-      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.TalentWrongType"));
-      return;
-    }
-
-    const slotIndex = Number(slot.dataset.slotIndex);
-    if (!Number.isFinite(slotIndex)) return;
-
-    // Delete any existing combatTalent(s) in this slot, then embed a
-    // fresh copy with slotIndex set.
-    const existing = this.actor.items
-      .filter(i => i.type === "combatTalent" && (i.system?.slotIndex ?? -1) === slotIndex)
-      .map(i => i.id);
-    if (existing.length) {
-      await this.actor.deleteEmbeddedDocuments("Item", existing);
-    }
-
-    const data = source.toObject();
-    delete data._id;
-    data.system = { ...(data.system ?? {}), slotIndex };
-    await this.actor.createEmbeddedDocuments("Item", [data]);
   }
 
   /**
@@ -1899,6 +1837,130 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
 
     const data = item.toObject();
     await this.actor.createEmbeddedDocuments("Item", [data]);
+  }
+
+  /* ------------------------------------------------------------ */
+  /*  Combat Tree (Ship 2, v0.4.99) — drop + pick/unpick handlers */
+  /* ------------------------------------------------------------ */
+
+  async #onCombatTreeDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    let payload;
+    try { payload = JSON.parse(event.dataTransfer.getData("text/plain")); }
+    catch { return; }
+    if (payload.flailDrag?.itemId) return;
+
+    if (this.actor.system?.class !== "warrior") {
+      ui.notifications?.warn("Only Warriors can equip Combat Trees.");
+      return;
+    }
+
+    const item = await Item.implementation.fromDropData(payload);
+    if (!item || item.type !== "combatTree") {
+      ui.notifications?.warn("Only Combat Tree items can be dropped here.");
+      return;
+    }
+
+    const sourceUuid = item.uuid || payload.uuid || "";
+    const alreadyOwned = this.actor.items.find(i =>
+      i.type === "combatTree"
+      && (i.getFlag("flail", "sourceUuid") === sourceUuid
+          || i.name === item.name)
+    );
+    if (alreadyOwned) {
+      ui.notifications?.info(`${item.name} already on this Warrior.`);
+      return;
+    }
+
+    const data = item.toObject();
+    for (const s of ["basic","expert1","master1a","master1b","expert2","master2a","master2b"]) {
+      if (data.system) data.system[`${s}Picked`] = false;
+    }
+    data.flags = data.flags ?? {};
+    data.flags.flail = { ...(data.flags.flail ?? {}), sourceUuid };
+    await this.actor.createEmbeddedDocuments("Item", [data]);
+  }
+
+  static async #onPickTreeSlot(event, target) {
+    const treeId = target.dataset.treeId;
+    const slot   = target.dataset.slot;
+    if (!treeId || !slot) return;
+    const tree = this.actor.items.get(treeId);
+    if (!tree || tree.type !== "combatTree") return;
+
+    const { slotEligible, countPickedSlots } = await import("../helpers/combat-trees.mjs");
+
+    if (!slotEligible(tree.system, slot)) {
+      ui.notifications?.warn("Prerequisite not met for this slot.");
+      return;
+    }
+    const level = this.actor.system?.level ?? 1;
+    if (countPickedSlots(this.actor) >= level) {
+      ui.notifications?.warn(`You've used all ${level} of your available combat talent picks.`);
+      return;
+    }
+    if (!tree.system?.[`${slot}Uuid`]) {
+      ui.notifications?.warn("This slot has no talent assigned.");
+      return;
+    }
+    await tree.update({ [`system.${slot}Picked`]: true });
+  }
+
+  static async #onUnpickTreeSlot(event, target) {
+    const treeId = target.dataset.treeId;
+    const slot   = target.dataset.slot;
+    if (!treeId || !slot) return;
+    const tree = this.actor.items.get(treeId);
+    if (!tree || tree.type !== "combatTree") return;
+
+    const { dependentSlots } = await import("../helpers/combat-trees.mjs");
+
+    const confirm = await foundry.applications.api.DialogV2.wait({
+      window: { title: "Unpick talent", icon: "fas fa-trash" },
+      content: `<p>Unpick this talent slot? Any dependent picks will also be cleared.</p>`,
+      buttons: [
+        { action: "cancel",  label: "Cancel",  icon: "fas fa-times" },
+        { action: "confirm", label: "Unpick",  icon: "fas fa-check", default: true }
+      ],
+      rejectClose: false,
+      submit: v => v
+    });
+    if (confirm !== "confirm") return;
+
+    const patch = { [`system.${slot}Picked`]: false };
+    for (const dep of dependentSlots(slot)) {
+      if (tree.system?.[`${dep}Picked`]) patch[`system.${dep}Picked`] = false;
+    }
+    await tree.update(patch);
+  }
+
+  static async #onRemoveCombatTree(event, target) {
+    const treeId = target.dataset.treeId;
+    if (!treeId) return;
+    const tree = this.actor.items.get(treeId);
+    if (!tree) return;
+
+    const confirm = await foundry.applications.api.DialogV2.wait({
+      window: { title: "Remove combat tree", icon: "fas fa-trash" },
+      content: `<p>Remove <strong>${tree.name}</strong> from this Warrior? All picks on this tree will be lost.</p>`,
+      buttons: [
+        { action: "cancel",  label: "Cancel",  icon: "fas fa-times" },
+        { action: "confirm", label: "Remove",  icon: "fas fa-check", default: true }
+      ],
+      rejectClose: false,
+      submit: v => v
+    });
+    if (confirm !== "confirm") return;
+    await tree.delete();
+  }
+
+  static async #onOpenCombatTreeSlotItem(event, target) {
+    const uuid = target.dataset.uuid;
+    if (!uuid) return;
+    const talent = await fromUuid(uuid);
+    if (talent?.sheet) talent.sheet.render(true);
   }
 
   /**
@@ -2440,22 +2502,6 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
   }
 
   /**
-   * Warrior — open the Combat Talent Picker for the clicked slot.
-   * The picker is a separate floating window (ApplicationV2) that
-   * renders every talent from every tree with prerequisite gating
-   * applied for THIS specific slot. Player can click a card in the
-   * picker to commit it, or drag a card onto the slot on the sheet.
-   * Locked slots (beyondCurrentLevel) block the click before we get
-   * here — the template omits the data-action on those elements.
-   */
-  static async #onOpenTalentPicker(event, target) {
-    const slotIndex = Number(target.dataset.slotIndex);
-    if (!Number.isFinite(slotIndex)) return;
-    const picker = new CombatTalentPicker(this.actor, slotIndex);
-    picker.render(true);
-  }
-
-  /**
    * Open the Background Picker window. Shows every Instant Backstory
    * entry for the character's current class, plus a Custom Background
    * card at the top. Player picks by click or drag; the sheet writes
@@ -2759,18 +2805,6 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     }
     await this.actor.unsetFlag("flail", "startingGearImportedV1");
     ui.notifications?.info(`FLAIL: starting gear reset for ${this.actor.name}.`);
-  }
-
-  /**
-   * Open the sheet of an embedded combatTalent item — used from the
-   * per-slot "inspect" button.
-   */
-  static async #onOpenCombatTalentItem(event, target) {
-    const id = target.dataset.itemId;
-    if (!id) return;
-    const item = this.actor.items.get(id);
-    if (!item) return;
-    item.sheet?.render(true);
   }
 
   /**

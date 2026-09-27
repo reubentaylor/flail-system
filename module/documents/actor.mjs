@@ -1,6 +1,7 @@
 import { rollSave } from "../dice/save.mjs";
 import { rollToHit } from "../dice/to-hit.mjs";
 import { rollInstrumentPlay } from "../dice/instrument-play.mjs";
+import { collectPickedSourceKeys } from "../helpers/combat-trees.mjs";
 
 /**
  * The FlailActor extends the base Actor with system-aware methods —
@@ -341,13 +342,13 @@ export class FlailActor extends Actor {
    */
   getIronFistStats() {
     if (this.type !== "character" || this.system.class !== "warrior") return null;
-    const talents = this.system.combatTalents ?? [];
+    const talents = collectPickedSourceKeys(this);
     if (!talents.includes("martialArtist.basic")) return null;
     const hasExpert = talents.some(k => k === "martialArtist.exp1" || k === "martialArtist.exp2");
     const hasMaster = talents.some(k => k?.startsWith("martialArtist.mas"));
     return {
       th:  hasMaster ? 6 : 5,
-      dmg: hasExpert ? 3 : 2,
+      dmg: hasExpert ? 4 : 3,
       hasExpertBonus: hasExpert,
       hasMasterBonus: hasMaster
     };

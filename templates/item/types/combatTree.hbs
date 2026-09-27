@@ -1,0 +1,86 @@
+<section class="card">
+  <label class="fx-field-row">Weapon restriction hint
+    <input type="text" name="system.weaponRestrictionHint" value="{{system.weaponRestrictionHint}}" {{#unless editable}}disabled{{/unless}} placeholder="e.g. Only applies to two-handed weapons" />
+  </label>
+  <div class="row">
+    <label class="checkbox">
+      <input type="checkbox" name="system.isCustomTemplate" {{checked system.isCustomTemplate}} {{#unless editable}}disabled{{/unless}} />
+      Custom template
+    </label>
+  </div>
+</section>
+
+<section class="card combat-tree-editor">
+  <h3><i class="fas fa-sitemap"></i> Tree Structure</h3>
+  <p class="fx-hint-line">Drag combat talents from the compendium onto each slot below.</p>
+
+  <div class="tree-row tree-row-basic">
+    <div class="ct-slot ct-slot-basic" data-ct-drop data-slot-key="basic">
+      <div class="ct-slot-label">Basic</div>
+      {{#if system.basicName}}
+        <div class="ct-slot-chip"><span>{{system.basicName}}</span>
+          <button type="button" data-action="combatTreeClearSlot" data-slot-key="basic" title="Clear" {{#unless editable}}disabled{{/unless}}><i class="fas fa-times"></i></button>
+        </div>
+      {{else}}<div class="ct-slot-empty">Drop a Basic-tier talent here</div>{{/if}}
+    </div>
+  </div>
+
+  <div class="tree-row tree-row-experts">
+    <div class="tree-branch">
+      <div class="ct-slot ct-slot-expert" data-ct-drop data-slot-key="expert1">
+        <div class="ct-slot-label">Expert 1</div>
+        {{#if system.expert1Name}}
+          <div class="ct-slot-chip"><span>{{system.expert1Name}}</span>
+            <button type="button" data-action="combatTreeClearSlot" data-slot-key="expert1" title="Clear" {{#unless editable}}disabled{{/unless}}><i class="fas fa-times"></i></button>
+          </div>
+        {{else}}<div class="ct-slot-empty">Drop an Expert-tier talent here</div>{{/if}}
+      </div>
+      <div class="tree-row tree-row-masters">
+        <div class="ct-slot ct-slot-master" data-ct-drop data-slot-key="master1a">
+          <div class="ct-slot-label">Master 1a</div>
+          {{#if system.master1aName}}
+            <div class="ct-slot-chip"><span>{{system.master1aName}}</span>
+              <button type="button" data-action="combatTreeClearSlot" data-slot-key="master1a" title="Clear" {{#unless editable}}disabled{{/unless}}><i class="fas fa-times"></i></button>
+            </div>
+          {{else}}<div class="ct-slot-empty">Drop a Master-tier talent</div>{{/if}}
+        </div>
+        <div class="ct-slot ct-slot-master" data-ct-drop data-slot-key="master1b">
+          <div class="ct-slot-label">Master 1b</div>
+          {{#if system.master1bName}}
+            <div class="ct-slot-chip"><span>{{system.master1bName}}</span>
+              <button type="button" data-action="combatTreeClearSlot" data-slot-key="master1b" title="Clear" {{#unless editable}}disabled{{/unless}}><i class="fas fa-times"></i></button>
+            </div>
+          {{else}}<div class="ct-slot-empty">Drop a Master-tier talent</div>{{/if}}
+        </div>
+      </div>
+    </div>
+    <div class="tree-branch">
+      <div class="ct-slot ct-slot-expert" data-ct-drop data-slot-key="expert2">
+        <div class="ct-slot-label">Expert 2</div>
+        {{#if system.expert2Name}}
+          <div class="ct-slot-chip"><span>{{system.expert2Name}}</span>
+            <button type="button" data-action="combatTreeClearSlot" data-slot-key="expert2" title="Clear" {{#unless editable}}disabled{{/unless}}><i class="fas fa-times"></i></button>
+          </div>
+        {{else}}<div class="ct-slot-empty">Drop an Expert-tier talent here</div>{{/if}}
+      </div>
+      <div class="tree-row tree-row-masters">
+        <div class="ct-slot ct-slot-master" data-ct-drop data-slot-key="master2a">
+          <div class="ct-slot-label">Master 2a</div>
+          {{#if system.master2aName}}
+            <div class="ct-slot-chip"><span>{{system.master2aName}}</span>
+              <button type="button" data-action="combatTreeClearSlot" data-slot-key="master2a" title="Clear" {{#unless editable}}disabled{{/unless}}><i class="fas fa-times"></i></button>
+            </div>
+          {{else}}<div class="ct-slot-empty">Drop a Master-tier talent</div>{{/if}}
+        </div>
+        <div class="ct-slot ct-slot-master" data-ct-drop data-slot-key="master2b">
+          <div class="ct-slot-label">Master 2b</div>
+          {{#if system.master2bName}}
+            <div class="ct-slot-chip"><span>{{system.master2bName}}</span>
+              <button type="button" data-action="combatTreeClearSlot" data-slot-key="master2b" title="Clear" {{#unless editable}}disabled{{/unless}}><i class="fas fa-times"></i></button>
+            </div>
+          {{else}}<div class="ct-slot-empty">Drop a Master-tier talent</div>{{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

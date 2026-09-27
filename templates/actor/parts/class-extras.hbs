@@ -35,63 +35,129 @@
       </button>
     </div>
   </section>
-  <section class="tabbed-card combat-talents-card">
-    <header class="tab-label">{{localize "FLAIL.Section.CombatTalents"}}</header>
-    <p class="hint">{{localize "FLAIL.Hint.CombatTalents"}}</p>
-    <div class="talent-slot-list">
-      {{#each combatTalents as |slot|}}
-      <div class="talent-slot
-                  {{#if slot.currentDisplay}}talent-slot-filled{{else}}talent-slot-empty{{/if}}
-                  {{#if slot.currentDisplay.invalid}}talent-slot-invalid{{/if}}
-                  {{#if slot.beyondCurrentLevel}}talent-slot-locked{{/if}}"
-           data-flail-drop-target="talentSlot"
-           data-slot-index="{{@index}}">
-        <div class="talent-slot-header">
-          <span class="talent-slot-level">
-            Level {{slot.level}}
-            {{#if slot.beyondCurrentLevel}}<i class="fas fa-lock talent-slot-lock-icon" title="Reach character level {{slot.level}} to unlock this slot."></i>{{/if}}
-          </span>
-          {{#unless slot.beyondCurrentLevel}}
-          <button type="button"
-                  class="talent-slot-open-btn"
-                  data-action="openTalentPicker"
-                  data-slot-index="{{@index}}"
-                  title="{{localize 'FLAIL.CombatTalentPicker.OpenPickerHint'}}"
-                  {{#unless ../editable}}disabled{{/unless}}>
-            {{#if slot.currentDisplay}}
-              <i class="fas fa-pen"></i>
-              <span>{{localize "FLAIL.CombatTalentPicker.Change"}}</span>
-            {{else}}
-              <i class="fas fa-plus"></i>
-              <span>{{localize "FLAIL.CombatTalentPicker.Choose"}}</span>
-            {{/if}}
-          </button>
-          {{/unless}}
-        </div>
-        {{#if slot.currentDisplay}}
-        <div class="talent-slot-body">
-          <div class="talent-slot-body-head">
-            <span class="talent-tier-badge talent-tier-{{slot.currentDisplay.tier}}">{{slot.currentDisplay.tier}}</span>
-            <span class="talent-name">{{slot.currentDisplay.label}}</span>
-            {{#if slot.currentDisplay.tree}}<span class="talent-tree-name">({{slot.currentDisplay.tree}})</span>{{/if}}
-            <button type="button"
-                    class="talent-slot-inspect-btn"
-                    data-action="openCombatTalentItem"
-                    data-item-id="{{slot.currentDisplay.itemId}}"
-                    title="{{localize 'FLAIL.CombatTalentPicker.OpenSheetHint'}}">
-              <i class="fas fa-external-link-alt"></i>
-            </button>
+
+  {{!-- v0.4.99 (Ship 2) — Combat Trees embedded on this Warrior --}}
+  <section class="tabbed-card combat-trees-card" data-drop-target="combatTrees">
+    <header class="tab-label">
+      Combat Trees
+      <span class="ct-picks-counter">
+        Picks used: <strong>{{combatTreesPicksUsed}}</strong> / {{combatTreesPicksMax}}
+      </span>
+    </header>
+    <p class="hint">Drag a Combat Tree from the compendium onto this card. Then click "Pick" on any eligible slot to acquire that talent (prereqs enforced; basic must be picked before its experts, experts before their masters).</p>
+
+    {{#if combatTrees.length}}
+    <div class="combat-trees-list">
+      {{#each combatTrees as |tree|}}
+      <article class="ct-card" data-tree-id="{{tree.id}}">
+        <header class="ct-card-header">
+          <img src="{{tree.img}}" class="ct-card-img" alt="{{tree.name}}" />
+          <div class="ct-card-title">
+            <h4>{{tree.name}}</h4>
+            {{#if tree.weaponRestrictionHint}}<span class="ct-restriction">{{tree.weaponRestrictionHint}}</span>{{/if}}
           </div>
-          <div class="talent-desc">{{{slot.currentDisplay.desc}}}</div>
+          <button type="button" class="ct-card-remove" data-action="removeCombatTree" data-tree-id="{{tree.id}}" title="Remove this tree" {{#unless ../editable}}disabled{{/unless}}>
+            <i class="fas fa-trash"></i>
+          </button>
+        </header>
+        <div class="ct-card-body">
+          {{!-- Basic --}}
+          <div class="ct-tree-row ct-tree-row-basic">
+            <div class="ct-slot ct-slot-basic {{#if tree.basic.picked}}ct-picked{{/if}}">
+              <div class="ct-slot-label">Basic</div>
+              {{#if tree.basic.hasTalent}}
+                <div class="ct-slot-name" data-action="openCombatTreeSlotItem" data-uuid="{{tree.basic.uuid}}" title="Open talent sheet">{{tree.basic.name}}</div>
+                {{#if tree.basic.picked}}
+                  <button type="button" class="ct-btn ct-btn-picked" data-action="unpickTreeSlot" data-tree-id="{{tree.id}}" data-slot="basic" {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-check-circle"></i> Picked</button>
+                {{else}}
+                  <button type="button" class="ct-btn ct-btn-pick" data-action="pickTreeSlot" data-tree-id="{{tree.id}}" data-slot="basic" {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-plus"></i> Pick</button>
+                {{/if}}
+              {{else}}<div class="ct-slot-empty">(no talent)</div>{{/if}}
+            </div>
+          </div>
+          <div class="ct-tree-row ct-tree-row-experts">
+            <div class="ct-branch">
+              <div class="ct-slot ct-slot-expert {{#unless tree.expert1.eligible}}ct-locked{{/unless}} {{#if tree.expert1.picked}}ct-picked{{/if}}">
+                <div class="ct-slot-label">Expert 1</div>
+                {{#if tree.expert1.hasTalent}}
+                  <div class="ct-slot-name" data-action="openCombatTreeSlotItem" data-uuid="{{tree.expert1.uuid}}">{{tree.expert1.name}}</div>
+                  {{#if tree.expert1.picked}}
+                    <button type="button" class="ct-btn ct-btn-picked" data-action="unpickTreeSlot" data-tree-id="{{tree.id}}" data-slot="expert1" {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-check-circle"></i> Picked</button>
+                  {{else}}
+                    <button type="button" class="ct-btn ct-btn-pick" data-action="pickTreeSlot" data-tree-id="{{tree.id}}" data-slot="expert1" {{#unless tree.expert1.eligible}}disabled title="Prereq: pick Basic first"{{/unless}} {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-plus"></i> Pick</button>
+                  {{/if}}
+                {{else}}<div class="ct-slot-empty">(no talent)</div>{{/if}}
+              </div>
+              <div class="ct-tree-row ct-tree-row-masters">
+                <div class="ct-slot ct-slot-master {{#unless tree.master1a.eligible}}ct-locked{{/unless}} {{#if tree.master1a.picked}}ct-picked{{/if}}">
+                  <div class="ct-slot-label">Master 1a</div>
+                  {{#if tree.master1a.hasTalent}}
+                    <div class="ct-slot-name" data-action="openCombatTreeSlotItem" data-uuid="{{tree.master1a.uuid}}">{{tree.master1a.name}}</div>
+                    {{#if tree.master1a.picked}}
+                      <button type="button" class="ct-btn ct-btn-picked" data-action="unpickTreeSlot" data-tree-id="{{tree.id}}" data-slot="master1a" {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-check-circle"></i> Picked</button>
+                    {{else}}
+                      <button type="button" class="ct-btn ct-btn-pick" data-action="pickTreeSlot" data-tree-id="{{tree.id}}" data-slot="master1a" {{#unless tree.master1a.eligible}}disabled title="Prereq: pick Expert 1 first"{{/unless}} {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-plus"></i> Pick</button>
+                    {{/if}}
+                  {{else}}<div class="ct-slot-empty">(no talent)</div>{{/if}}
+                </div>
+                <div class="ct-slot ct-slot-master {{#unless tree.master1b.eligible}}ct-locked{{/unless}} {{#if tree.master1b.picked}}ct-picked{{/if}}">
+                  <div class="ct-slot-label">Master 1b</div>
+                  {{#if tree.master1b.hasTalent}}
+                    <div class="ct-slot-name" data-action="openCombatTreeSlotItem" data-uuid="{{tree.master1b.uuid}}">{{tree.master1b.name}}</div>
+                    {{#if tree.master1b.picked}}
+                      <button type="button" class="ct-btn ct-btn-picked" data-action="unpickTreeSlot" data-tree-id="{{tree.id}}" data-slot="master1b" {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-check-circle"></i> Picked</button>
+                    {{else}}
+                      <button type="button" class="ct-btn ct-btn-pick" data-action="pickTreeSlot" data-tree-id="{{tree.id}}" data-slot="master1b" {{#unless tree.master1b.eligible}}disabled title="Prereq: pick Expert 1 first"{{/unless}} {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-plus"></i> Pick</button>
+                    {{/if}}
+                  {{else}}<div class="ct-slot-empty">(no talent)</div>{{/if}}
+                </div>
+              </div>
+            </div>
+            <div class="ct-branch">
+              <div class="ct-slot ct-slot-expert {{#unless tree.expert2.eligible}}ct-locked{{/unless}} {{#if tree.expert2.picked}}ct-picked{{/if}}">
+                <div class="ct-slot-label">Expert 2</div>
+                {{#if tree.expert2.hasTalent}}
+                  <div class="ct-slot-name" data-action="openCombatTreeSlotItem" data-uuid="{{tree.expert2.uuid}}">{{tree.expert2.name}}</div>
+                  {{#if tree.expert2.picked}}
+                    <button type="button" class="ct-btn ct-btn-picked" data-action="unpickTreeSlot" data-tree-id="{{tree.id}}" data-slot="expert2" {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-check-circle"></i> Picked</button>
+                  {{else}}
+                    <button type="button" class="ct-btn ct-btn-pick" data-action="pickTreeSlot" data-tree-id="{{tree.id}}" data-slot="expert2" {{#unless tree.expert2.eligible}}disabled title="Prereq: pick Basic first"{{/unless}} {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-plus"></i> Pick</button>
+                  {{/if}}
+                {{else}}<div class="ct-slot-empty">(no talent)</div>{{/if}}
+              </div>
+              <div class="ct-tree-row ct-tree-row-masters">
+                <div class="ct-slot ct-slot-master {{#unless tree.master2a.eligible}}ct-locked{{/unless}} {{#if tree.master2a.picked}}ct-picked{{/if}}">
+                  <div class="ct-slot-label">Master 2a</div>
+                  {{#if tree.master2a.hasTalent}}
+                    <div class="ct-slot-name" data-action="openCombatTreeSlotItem" data-uuid="{{tree.master2a.uuid}}">{{tree.master2a.name}}</div>
+                    {{#if tree.master2a.picked}}
+                      <button type="button" class="ct-btn ct-btn-picked" data-action="unpickTreeSlot" data-tree-id="{{tree.id}}" data-slot="master2a" {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-check-circle"></i> Picked</button>
+                    {{else}}
+                      <button type="button" class="ct-btn ct-btn-pick" data-action="pickTreeSlot" data-tree-id="{{tree.id}}" data-slot="master2a" {{#unless tree.master2a.eligible}}disabled title="Prereq: pick Expert 2 first"{{/unless}} {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-plus"></i> Pick</button>
+                    {{/if}}
+                  {{else}}<div class="ct-slot-empty">(no talent)</div>{{/if}}
+                </div>
+                <div class="ct-slot ct-slot-master {{#unless tree.master2b.eligible}}ct-locked{{/unless}} {{#if tree.master2b.picked}}ct-picked{{/if}}">
+                  <div class="ct-slot-label">Master 2b</div>
+                  {{#if tree.master2b.hasTalent}}
+                    <div class="ct-slot-name" data-action="openCombatTreeSlotItem" data-uuid="{{tree.master2b.uuid}}">{{tree.master2b.name}}</div>
+                    {{#if tree.master2b.picked}}
+                      <button type="button" class="ct-btn ct-btn-picked" data-action="unpickTreeSlot" data-tree-id="{{tree.id}}" data-slot="master2b" {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-check-circle"></i> Picked</button>
+                    {{else}}
+                      <button type="button" class="ct-btn ct-btn-pick" data-action="pickTreeSlot" data-tree-id="{{tree.id}}" data-slot="master2b" {{#unless tree.master2b.eligible}}disabled title="Prereq: pick Expert 2 first"{{/unless}} {{#unless ../editable}}disabled{{/unless}}><i class="fas fa-plus"></i> Pick</button>
+                    {{/if}}
+                  {{else}}<div class="ct-slot-empty">(no talent)</div>{{/if}}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        {{else}}
-          {{#unless slot.beyondCurrentLevel}}
-          <p class="talent-slot-hint-empty">{{localize "FLAIL.CombatTalentPicker.EmptyHint"}}</p>
-          {{/unless}}
-        {{/if}}
-      </div>
+      </article>
       {{/each}}
     </div>
+    {{else}}
+    <p class="ct-empty"><em>No Combat Trees yet. Drag one from the <strong>Combat Trees</strong> compendium here.</em></p>
+    {{/if}}
   </section>
 </div>
 

@@ -13,6 +13,11 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   static DEFAULT_OPTIONS = {
     classes: ["flail", "sheet", "item"],
     position: { width: 480, height: 540 },
+    // v0.4.103 — item sheets were never marked resizable, so
+    // ApplicationV2's default (resizable: false) applied. The combat
+    // tree editor in particular needs room to show its 2D diagram.
+    // Enable resizing for all item sheets.
+    window: { resizable: true },
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
       removeGuildEntry: FlailItemSheet.#onRemoveGuildEntry,
@@ -31,7 +36,8 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       gadgetEffectRemove:   FlailItemSheet.#onGadgetEffectRemove,
       gadgetEffectMoveUp:   FlailItemSheet.#onGadgetEffectMoveUp,
       gadgetEffectMoveDown: FlailItemSheet.#onGadgetEffectMoveDown,
-      gadgetEffectClearRef: FlailItemSheet.#onGadgetEffectClearRef
+      gadgetEffectClearRef: FlailItemSheet.#onGadgetEffectClearRef,
+      combatTreeClearSlot:  FlailItemSheet.#onCombatTreeClearSlot
     }
   };
 
@@ -516,6 +522,10 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if (this.item.type === "gadget") {
       this.#attachGadgetEffectDropZones(root);
     }
+    // v0.4.95 — combat tree slot drop zones.
+    if (this.item.type === "combatTree") {
+      this.#attachCombatTreeDropZones(root);
+    }
   }
 
   /**
@@ -737,6 +747,87 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
           [`${group}Name`]: dropped.name
         };
         await this.item.update({ "system.effects": current });
+        this.render();
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------ */
+  /*  Combat Tree slot management (v0.4.95, Ship 1)               */
+  /* ------------------------------------------------------------ */
+
+  static async #onCombatTreeClearSlot(event, target) {
+    if (this.item.type !== "combatTree") return;
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    const key = target.dataset.slotKey;
+    if (!key) return;
+    await this.item.update({
+      [`system.${key}Uuid`]: "",
+      [`system.${key}Name`]: "",
+      [`system.${key}SourceKey`]: ""
+    });
+    this.render();
+  }
+
+  #attachCombatTreeDropZones(root) {
+    root.querySelectorAll('[data-ct-drop]').forEach(zone => {
+      const key = zone.dataset.slotKey;
+      if (!key) return;
+      zone.addEventListener("dragover", ev => {
+        ev.preventDefault();
+        if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
+        zone.classList.add("drop-active");
+      });
+      zone.addEventListener("dragleave", () => zone.classList.remove("drop-active"));
+      zone.addEventListener("drop", async ev => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        zone.classList.remove("drop-active");
+        let payload;
+        try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); }
+        catch { return; }
+        const dropped = await Item.implementation.fromDropData(payload);
+        if (!dropped) return;
+        if (dropped.type !== "combatTalent") {
+          ui.notifications?.warn("Combat tree slots only accept Combat Talent items.");
+          return;
+        }
+        // v0.4.98 — soft tier check. Warn but allow if the talent's
+        // tier doesn't match the slot's tier. GM can confirm to bypass
+        // (useful for homebrew talents authored at the wrong tier, or
+        // for intentional cross-tier placement).
+        const slotTier =
+            key === "basic" ? "basic"
+          : key.startsWith("expert") ? "expert"
+          : key.startsWith("master") ? "master"
+          : null;
+        const talentTier = dropped.system?.tier ?? "";
+        if (slotTier && talentTier && talentTier !== slotTier) {
+          const proceed = await foundry.applications.api.DialogV2.wait({
+            window: {
+              title: "Tier mismatch",
+              icon: "fas fa-triangle-exclamation"
+            },
+            content: `<p>You are placing a <strong>${talentTier}</strong>-tier talent
+                       (<em>${dropped.name}</em>) into a <strong>${slotTier}</strong>
+                       slot.</p><p>Continue anyway?</p>`,
+            buttons: [
+              { action: "cancel",   label: "Cancel",   icon: "fas fa-times" },
+              { action: "continue", label: "Continue", icon: "fas fa-check", default: true }
+            ],
+            rejectClose: false,
+            submit: v => v
+          });
+          if (proceed !== "continue") return;
+        }
+        const uuid = dropped.uuid || payload.uuid || "";
+        if (!uuid) return;
+        await this.item.update({
+          [`system.${key}Uuid`]: uuid,
+          [`system.${key}Name`]: dropped.name,
+          [`system.${key}SourceKey`]: dropped.system?.sourceKey ?? ""
+        });
         this.render();
       });
     });

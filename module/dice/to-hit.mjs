@@ -1,6 +1,7 @@
 import { analyzePool } from "./poker.mjs";
 import { detectBeastSpecial } from "./beast-specials.mjs";
 import { FLAIL } from "../helpers/config.mjs";
+import { collectPickedSourceKeys, loadPickedTalents } from "../helpers/combat-trees.mjs";
 
 /**
  * Execute a FLAIL "To Hit" roll.
@@ -129,7 +130,7 @@ export async function rollToHit({
    */
   let fineCuts = null, rawForce = null, precisionMark = null;
   const isWarriorActor = actor?.type === "character" && actor.system?.class === "warrior";
-  const warriorTalents = isWarriorActor ? (actor.system.combatTalents ?? []) : [];
+  const warriorTalents = isWarriorActor ? collectPickedSourceKeys(actor) : [];
 
   if (isHit && isWarriorActor) {
     // Fine Cuts — pick the longest sequence available (sequence5
@@ -147,14 +148,16 @@ export async function rollToHit({
     }
 
     // Raw Force — the triplet combo's dice array is [face, face, face],
-    // so the face value is dice[0]. That value is both the count of
-    // matching dice AND the bonus per the rulebook example.
+    // so the face value is dice[0]. v0.4.94 (rulebook fix): the bonus
+    // is TWICE the face value per rulebook example ("triplet of 4
+    // causes 8 extra damage"), not the face value itself.
     if (warriorTalents.includes("brawlerMauler.basic")) {
       const triplet = analysis.combinations.find(c => c.key === "triplet");
       if (triplet) {
-        const bonus = triplet.dice[0];
+        const face = triplet.dice[0];
+        const bonus = face * 2;
         damageDealt += bonus;
-        rawForce = { bonus, face: triplet.dice[0] };
+        rawForce = { bonus, face };
       }
     }
 
@@ -443,6 +446,23 @@ export async function rollToHit({
     priority: c.priority
   }));
 
+  /* v0.4.99 (Ship 2) — Combat Talent reminder callouts.
+     Walk the actor's picked talents; for each with an onRoll or
+     onFailedRoll trigger that matches this roll's poker combos +
+     hit tier + weapon restriction, emit a reminder callout.
+     `weaponId` is actor-local (weapon.id), not a UUID — resolve
+     via actor.items.get. May be undefined (Iron Fist / inherent). */
+  const triggerWeapon = weaponId ? actor?.items?.get(weaponId) ?? null : null;
+  let talentReminders = [];
+  if (isWarriorActor) {
+    try {
+      const picked = await loadPickedTalents(actor);
+      talentReminders = evaluateTalentTriggers(picked, analysis, triggerWeapon);
+    } catch (err) {
+      console.error("FLAIL | talent trigger evaluation failed:", err);
+    }
+  }
+
   const templateData = {
     label: label ?? game.i18n.localize("FLAIL.Roll.ToHit"),
     flavor,
@@ -466,6 +486,7 @@ export async function rollToHit({
     slimySkinTarget,
     gadgetBeltRecovery: null,  // superseded by freeGadgetRelease (v0.4.86)
     freeGadgetRelease,
+    talentReminders,
     fineCuts,
     rawForce,
     precisionMark,
@@ -623,4 +644,65 @@ async function applyWitnessMeBuff({ source }) {
 export async function applyWitnessMeBuffFromSocket(source) {
   if (!game.user.isGM) return;
   await applyWitnessMeBuff({ source });
+}
+
+/* ============================================================
+ *  Combat Talent trigger evaluator (v0.4.99, Ship 2)
+ * ============================================================ */
+
+const HIT_TIERS = new Set(["minor", "major", "deathBlow"]);
+const FAIL_TIERS = new Set(["fail", "fumble"]);
+
+/**
+ * Given a picked talent and the current roll analysis + weapon,
+ * decide whether the talent's reminder callout should fire.
+ * Returns null if no callout; otherwise a lightweight object
+ * suitable for rendering into the attack chat card.
+ */
+function evaluateTalentTriggers(pickedTalents, analysis, weapon) {
+  const out = [];
+  for (const talent of pickedTalents ?? []) {
+    const t = talent.system ?? {};
+    if (t.triggerKind !== "onRoll" && t.triggerKind !== "onFailedRoll") continue;
+    // Weapon restriction gate — freetext "custom" is informational
+    // only (GM adjudicates), all other restrictions are enforced.
+    if (!weaponMatchesRestriction(weapon, t.weaponRestriction)) continue;
+    // Hit tier gate.
+    const tier = analysis.tier;
+    if (t.triggerHitTier) {
+      if (t.triggerHitTier === "anyHit" && !HIT_TIERS.has(tier)) continue;
+      if (t.triggerHitTier === "fail" && !FAIL_TIERS.has(tier)) continue;
+      if (["minor", "major", "deathBlow", "fumble"].includes(t.triggerHitTier)
+          && tier !== t.triggerHitTier) continue;
+    }
+    // Poker combo gate.
+    if (t.triggerPokerCombo && t.triggerPokerCombo !== "any") {
+      const combo = analysis.combinations.find(c => c.key === t.triggerPokerCombo);
+      if (!combo) continue;
+      const face = Number(t.triggerPokerFace) || 0;
+      if (face > 0 && combo.dice[0] !== face) continue;
+    }
+    out.push({
+      title: t.reminderTitle || talent.name,
+      text: t.reminderText || `<p>${talent.name}</p>`,
+      icon: t.reminderIcon || "fa-bolt",
+      talentName: talent.name
+    });
+  }
+  return out;
+}
+
+function weaponMatchesRestriction(weapon, restriction) {
+  if (!restriction || restriction === "any" || restriction === "custom") return true;
+  if (!weapon) return restriction === "barehanded"; // no weapon => barehanded ok
+  const isTwoHanded = !!weapon.system?.twoHanded;
+  const type = (weapon.system?.type ?? "").toLowerCase();
+  const name = (weapon.name ?? "").toLowerCase();
+  switch (restriction) {
+    case "twoHanded":  return isTwoHanded;
+    case "oneHanded":  return !isTwoHanded;
+    case "bow":        return type.includes("bow") || name.includes("bow");
+    case "barehanded": return false; // if wielding a weapon, not barehanded
+    default:           return true;
+  }
 }

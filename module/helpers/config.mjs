@@ -902,7 +902,7 @@ FLAIL.combatTalents = {
       basic: {
         key: "brawlerMauler.basic",
         label: "Raw Force",
-        desc: "When rolling triplets in a successful To Hit roll, deal extra damage equal to the number of the triplets (e.g. triplet of 4s causes 4 extra damage)."
+        desc: "When rolling triplets in a successful To Hit roll, deal extra damage equal to twice the number of the triplets (e.g. triplet of 4s causes 8 extra damage)."
       },
       experts: [
         {
@@ -920,7 +920,7 @@ FLAIL.combatTalents = {
           desc: "Once per combat, add +2 To Hit on a single attack.",
           masters: [
             { key: "brawlerMauler.mas2a", label: "Titan's Grip", desc: "Can wield two-handed weapons with one hand." },
-            { key: "brawlerMauler.mas2b", label: "Bone Breaker", desc: "On Major Hits, target must save or takes an additional d6 damage." }
+            { key: "brawlerMauler.mas2b", label: "Bone Breaker", desc: "On Major Hits, target must save or takes an additional d10 damage." }
           ]
         }
       ]
@@ -962,7 +962,7 @@ FLAIL.combatTalents = {
       basic: {
         key: "martialArtist.basic",
         label: "Iron Fist",
-        desc: "TH 5, DMG 2 when attacking bare-handed. Gain +1 DMG when advancing to an Expert talent below, and +1 TH upon taking a Master talent."
+        desc: "TH 5, DMG 3 when attacking bare-handed. Gain +1 DMG when advancing to an Expert talent below, and +1 TH upon taking a Master talent."
       },
       experts: [
         {
@@ -970,7 +970,7 @@ FLAIL.combatTalents = {
           label: "Flurry of Blows",
           desc: "Make two bare-handed attacks per combat round.",
           masters: [
-            { key: "martialArtist.mas1a", label: "Focused Force",   desc: "Deal an extra +d3 damage per each pair rolled on any attack." },
+            { key: "martialArtist.mas1a", label: "Focused Force",   desc: "Deal an extra +d6 damage per each pair rolled on any attack." },
             { key: "martialArtist.mas1b", label: "Stunning Strike", desc: "On a hit, target must save or becomes stunned." }
           ]
         },

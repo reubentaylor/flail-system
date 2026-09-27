@@ -1,8 +1,11 @@
 {{!--
-  Combat Talent item sheet body. Beyond name + description (rich),
-  this exposes tree/tier/prerequisite so GMs building custom trees
-  can wire relationships between talents.
+  Combat Talent item sheet body.
+  v0.4.97: added Mechanics + Trigger + Reminder sections on top of
+  the legacy identity fields. Everything additive — legacy talents
+  keep working; new fields default to sensible blanks.
 --}}
+
+{{!-- ─── Identity (legacy) ────────────────────────── --}}
 <section class="card">
   <div class="row">
     <label>{{localize "FLAIL.Field.Tree"}}
@@ -37,4 +40,131 @@
     </label>
   </div>
   {{/if}}
+</section>
+
+{{!-- ─── Mechanics ────────────────────────── --}}
+<section class="card">
+  <h3><i class="fas fa-cogs"></i> Mechanics</h3>
+  <div class="row">
+    <label>Weapon restriction
+      <select name="system.weaponRestriction" {{#unless editable}}disabled{{/unless}}>
+        <option value="any"        {{#if (flail-eq system.weaponRestriction 'any')}}selected{{/if}}>Any</option>
+        <option value="oneHanded"  {{#if (flail-eq system.weaponRestriction 'oneHanded')}}selected{{/if}}>One-handed</option>
+        <option value="twoHanded"  {{#if (flail-eq system.weaponRestriction 'twoHanded')}}selected{{/if}}>Two-handed</option>
+        <option value="bow"        {{#if (flail-eq system.weaponRestriction 'bow')}}selected{{/if}}>Bow</option>
+        <option value="barehanded" {{#if (flail-eq system.weaponRestriction 'barehanded')}}selected{{/if}}>Bare-handed</option>
+        <option value="custom"     {{#if (flail-eq system.weaponRestriction 'custom')}}selected{{/if}}>Custom (freetext)</option>
+      </select>
+    </label>
+    <label>Activation
+      <select name="system.activation" {{#unless editable}}disabled{{/unless}}>
+        <option value="passive"  {{#if (flail-eq system.activation 'passive')}}selected{{/if}}>Passive</option>
+        <option value="reactive" {{#if (flail-eq system.activation 'reactive')}}selected{{/if}}>Reactive</option>
+        <option value="active"   {{#if (flail-eq system.activation 'active')}}selected{{/if}}>Active</option>
+      </select>
+    </label>
+  </div>
+  {{#if (flail-eq system.weaponRestriction 'custom')}}
+  <label>Custom restriction
+    <input type="text" name="system.weaponRestrictionCustom" value="{{system.weaponRestrictionCustom}}" {{#unless editable}}disabled{{/unless}} placeholder="e.g. shields only" />
+  </label>
+  {{/if}}
+  <div class="row">
+    <label>Usage limit (max)
+      <input type="number" name="system.usageLimitMax" value="{{system.usageLimitMax}}" min="0" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>Reset window
+      <select name="system.usageLimitWindow" {{#unless editable}}disabled{{/unless}}>
+        <option value="none"    {{#if (flail-eq system.usageLimitWindow 'none')}}selected{{/if}}>None</option>
+        <option value="combat"  {{#if (flail-eq system.usageLimitWindow 'combat')}}selected{{/if}}>Per combat</option>
+        <option value="session" {{#if (flail-eq system.usageLimitWindow 'session')}}selected{{/if}}>Per session</option>
+        <option value="day"     {{#if (flail-eq system.usageLimitWindow 'day')}}selected{{/if}}>Per day</option>
+      </select>
+    </label>
+  </div>
+</section>
+
+{{!-- ─── Trigger ────────────────────────── --}}
+<section class="card">
+  <h3><i class="fas fa-bolt"></i> Trigger</h3>
+  <p class="fx-hint-line">Determines when the talent's chat-card reminder callout fires. Purely informational for Ship 1 — no damage automation.</p>
+
+  <label>When does this fire?
+    <select name="system.triggerKind" {{#unless editable}}disabled{{/unless}}>
+      <option value="none"         {{#if (flail-eq system.triggerKind 'none')}}selected{{/if}}>None — no callout</option>
+      <option value="onRoll"       {{#if (flail-eq system.triggerKind 'onRoll')}}selected{{/if}}>On To-Hit roll (with poker combo / tier gate)</option>
+      <option value="onFailedRoll" {{#if (flail-eq system.triggerKind 'onFailedRoll')}}selected{{/if}}>On failed To-Hit roll</option>
+      <option value="reactive"     {{#if (flail-eq system.triggerKind 'reactive')}}selected{{/if}}>Reactive — fires when something happens to you</option>
+      <option value="active"       {{#if (flail-eq system.triggerKind 'active')}}selected{{/if}}>Active — player-initiated</option>
+      <option value="passive"      {{#if (flail-eq system.triggerKind 'passive')}}selected{{/if}}>Passive — always-on, no callout</option>
+    </select>
+  </label>
+
+  {{#if (flail-or (flail-eq system.triggerKind 'onRoll') (flail-eq system.triggerKind 'onFailedRoll'))}}
+  <div class="row">
+    <label>Poker combination
+      <select name="system.triggerPokerCombo" {{#unless editable}}disabled{{/unless}}>
+        <option value=""           {{#if (flail-eq system.triggerPokerCombo '')}}selected{{/if}}>— (no combo gate)</option>
+        <option value="any"        {{#if (flail-eq system.triggerPokerCombo 'any')}}selected{{/if}}>Any combo</option>
+        <option value="pair"       {{#if (flail-eq system.triggerPokerCombo 'pair')}}selected{{/if}}>Pair</option>
+        <option value="twoPair"    {{#if (flail-eq system.triggerPokerCombo 'twoPair')}}selected{{/if}}>Two Pair</option>
+        <option value="sequence3"  {{#if (flail-eq system.triggerPokerCombo 'sequence3')}}selected{{/if}}>Sequence 3</option>
+        <option value="sequence4"  {{#if (flail-eq system.triggerPokerCombo 'sequence4')}}selected{{/if}}>Sequence 4</option>
+        <option value="sequence5"  {{#if (flail-eq system.triggerPokerCombo 'sequence5')}}selected{{/if}}>Sequence 5</option>
+        <option value="triplet"    {{#if (flail-eq system.triggerPokerCombo 'triplet')}}selected{{/if}}>Triplet</option>
+        <option value="fourKind"   {{#if (flail-eq system.triggerPokerCombo 'fourKind')}}selected{{/if}}>Four of a Kind</option>
+        <option value="fullHouse"  {{#if (flail-eq system.triggerPokerCombo 'fullHouse')}}selected{{/if}}>Full House</option>
+      </select>
+    </label>
+    <label>Poker face (0 = any)
+      <input type="number" name="system.triggerPokerFace" value="{{system.triggerPokerFace}}" min="0" max="6" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+  <label>Hit tier
+    <select name="system.triggerHitTier" {{#unless editable}}disabled{{/unless}}>
+      <option value=""          {{#if (flail-eq system.triggerHitTier '')}}selected{{/if}}>— (no tier gate)</option>
+      <option value="anyHit"    {{#if (flail-eq system.triggerHitTier 'anyHit')}}selected{{/if}}>Any hit (minor/major/death blow)</option>
+      <option value="minor"     {{#if (flail-eq system.triggerHitTier 'minor')}}selected{{/if}}>Minor hit only</option>
+      <option value="major"     {{#if (flail-eq system.triggerHitTier 'major')}}selected{{/if}}>Major hit only</option>
+      <option value="deathBlow" {{#if (flail-eq system.triggerHitTier 'deathBlow')}}selected{{/if}}>Death blow only</option>
+      <option value="fail"      {{#if (flail-eq system.triggerHitTier 'fail')}}selected{{/if}}>Failed roll (any)</option>
+      <option value="fumble"    {{#if (flail-eq system.triggerHitTier 'fumble')}}selected{{/if}}>Fumble only</option>
+    </select>
+  </label>
+  {{/if}}
+
+  {{#if (flail-eq system.triggerKind 'reactive')}}
+  <label>Reactive event
+    <select name="system.triggerReactiveEvent" {{#unless editable}}disabled{{/unless}}>
+      <option value=""                 {{#if (flail-eq system.triggerReactiveEvent '')}}selected{{/if}}>— (choose an event)</option>
+      <option value="hitInMelee"       {{#if (flail-eq system.triggerReactiveEvent 'hitInMelee')}}selected{{/if}}>Hit in melee</option>
+      <option value="hitByRanged"      {{#if (flail-eq system.triggerReactiveEvent 'hitByRanged')}}selected{{/if}}>Hit by ranged attack</option>
+      <option value="hitAny"           {{#if (flail-eq system.triggerReactiveEvent 'hitAny')}}selected{{/if}}>Hit by anything</option>
+      <option value="adversaryFumbles" {{#if (flail-eq system.triggerReactiveEvent 'adversaryFumbles')}}selected{{/if}}>Adversary fumbles vs you</option>
+      <option value="isMajorHitTarget" {{#if (flail-eq system.triggerReactiveEvent 'isMajorHitTarget')}}selected{{/if}}>Target of a major hit</option>
+    </select>
+  </label>
+  {{/if}}
+</section>
+
+{{!-- ─── Reminder ────────────────────────── --}}
+<section class="card">
+  <h3><i class="fas fa-comment-dots"></i> Reminder</h3>
+  <p class="fx-hint-line">Short callout shown inside the attack chat card when the trigger fires. Keep it concise.</p>
+  <label>Reminder title
+    <input type="text" name="system.reminderTitle" value="{{system.reminderTitle}}" {{#unless editable}}disabled{{/unless}} placeholder="e.g. Fine Cuts!" />
+  </label>
+  <label>Reminder icon
+    <input type="text" name="system.reminderIcon" value="{{system.reminderIcon}}" {{#unless editable}}disabled{{/unless}} placeholder="Font Awesome class, e.g. fa-bolt" />
+  </label>
+  <label>Reminder text
+    <textarea name="system.reminderText" rows="3" {{#unless editable}}disabled{{/unless}} placeholder="Short rules text shown in the callout">{{system.reminderText}}</textarea>
+  </label>
+</section>
+
+{{!-- ─── GM notes ────────────────────────── --}}
+<section class="card">
+  <label>GM notes
+    <textarea name="system.notes" rows="2" {{#unless editable}}disabled{{/unless}} placeholder="Freeform GM notes">{{system.notes}}</textarea>
+  </label>
 </section>

@@ -638,3 +638,72 @@ export class FlailReligionModel extends foundry.abstract.TypeDataModel {
     };
   }
 }
+
+/* ============================================================
+ *  v0.4.95 — Combat Tree Foundation (Ship 1)
+ * ============================================================ */
+
+// Extend talent schema with trigger + reminder fields (additive).
+const __originalTalentSchema = FlailCombatTalentModel.defineSchema;
+FlailCombatTalentModel.defineSchema = function () {
+  const schema = __originalTalentSchema();
+  return {
+    ...schema,
+    weaponRestriction:        new fields.StringField({ blank: true, initial: "any" }),
+    weaponRestrictionCustom:  new fields.StringField({ blank: true, initial: "" }),
+    activation:               new fields.StringField({ blank: true, initial: "passive" }),
+    usageLimitMax:            new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+    usageLimitWindow:         new fields.StringField({ blank: true, initial: "none" }),
+    triggerKind:              new fields.StringField({ blank: true, initial: "none" }),
+    triggerPokerCombo:        new fields.StringField({ blank: true, initial: "" }),
+    triggerPokerFace:         new fields.NumberField({ integer: true, min: 0, max: 6, initial: 0 }),
+    triggerHitTier:           new fields.StringField({ blank: true, initial: "" }),
+    triggerReactiveEvent:     new fields.StringField({ blank: true, initial: "" }),
+    reminderTitle:            new fields.StringField({ blank: true, initial: "" }),
+    reminderText:             new fields.HTMLField({ required: false, blank: true, initial: "" }),
+    reminderIcon:             new fields.StringField({ blank: true, initial: "" }),
+    notes:                    new fields.StringField({ blank: true, initial: "" })
+  };
+};
+
+/**
+ * Combat Tree Item — fixed 1+2+4 slot shape.
+ * Flat schema, no nested SchemaFields.
+ */
+export class FlailCombatTreeModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      description:              new fields.HTMLField({ required: false, blank: true, initial: "" }),
+      weaponRestrictionHint:    new fields.StringField({ blank: true, initial: "" }),
+      isCustomTemplate:         new fields.BooleanField({ initial: false }),
+      basicUuid:                new fields.StringField({ blank: true, initial: "" }),
+      basicName:                new fields.StringField({ blank: true, initial: "" }),
+      basicSourceKey:           new fields.StringField({ blank: true, initial: "" }),
+      expert1Uuid:              new fields.StringField({ blank: true, initial: "" }),
+      expert1Name:              new fields.StringField({ blank: true, initial: "" }),
+      expert1SourceKey:         new fields.StringField({ blank: true, initial: "" }),
+      master1aUuid:             new fields.StringField({ blank: true, initial: "" }),
+      master1aName:             new fields.StringField({ blank: true, initial: "" }),
+      master1aSourceKey:        new fields.StringField({ blank: true, initial: "" }),
+      master1bUuid:             new fields.StringField({ blank: true, initial: "" }),
+      master1bName:             new fields.StringField({ blank: true, initial: "" }),
+      master1bSourceKey:        new fields.StringField({ blank: true, initial: "" }),
+      expert2Uuid:              new fields.StringField({ blank: true, initial: "" }),
+      expert2Name:              new fields.StringField({ blank: true, initial: "" }),
+      expert2SourceKey:         new fields.StringField({ blank: true, initial: "" }),
+      master2aUuid:             new fields.StringField({ blank: true, initial: "" }),
+      master2aName:             new fields.StringField({ blank: true, initial: "" }),
+      master2aSourceKey:        new fields.StringField({ blank: true, initial: "" }),
+      master2bUuid:             new fields.StringField({ blank: true, initial: "" }),
+      master2bName:             new fields.StringField({ blank: true, initial: "" }),
+      master2bSourceKey:        new fields.StringField({ blank: true, initial: "" }),
+      basicPicked:              new fields.BooleanField({ initial: false }),
+      expert1Picked:            new fields.BooleanField({ initial: false }),
+      master1aPicked:           new fields.BooleanField({ initial: false }),
+      master1bPicked:           new fields.BooleanField({ initial: false }),
+      expert2Picked:            new fields.BooleanField({ initial: false }),
+      master2aPicked:           new fields.BooleanField({ initial: false }),
+      master2bPicked:           new fields.BooleanField({ initial: false })
+    };
+  }
+}

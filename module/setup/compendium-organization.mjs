@@ -20,7 +20,7 @@
  *     never blocks world load
  */
 
-export const ORGANIZATION_VERSION = 4;
+export const ORGANIZATION_VERSION = 5;
 
 const VERSION_SETTING = "compendiumOrgVersion";
 
@@ -67,6 +67,7 @@ const PACK_FOLDER_ASSIGNMENTS = {
   "flail-primal-gifts":     "FLAIL Class Features/Druid",
   "flail-tinkerer-gadgets": "FLAIL Class Features/Tinkerer",
   "flail-combat-talents":   "FLAIL Class Features/Warrior",
+  "flail-combat-trees":     "FLAIL Class Features/Warrior",
   "flail-wizard-spells":    "FLAIL Class Features/Wizard",
   "flail-bestiary":         "FLAIL Bestiary",
   "flail-hexcrawl-tables":  "FLAIL GM Tools",
