@@ -22,8 +22,12 @@ import { WIZARD_SPELLS } from "./wizard-spells-data.mjs";
  *       `icons/creatures/slimes/slime-face-eyes-purple.webp` doesn't
  *       exist in Foundry v14's core icon pack — swapped for
  *       `icons/svg/acid.svg` (guaranteed present SVG placeholder).
+ *   5 — Ship B: authored `system.effects` (+ activation) on the
+ *       automatable subset — Magic Missile, Energy Barrier, Shield,
+ *       Fireball, Rain of Fire — so casting resolves damage/temp-hp
+ *       automatically, scaling via @DICE / @SUM.
  */
-export const WIZARD_SPELLS_VERSION = 4;
+export const WIZARD_SPELLS_VERSION = 5;
 
 /**
  * IDs of spells that used to exist in the bundle and have since been

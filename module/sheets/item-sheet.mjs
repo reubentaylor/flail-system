@@ -31,6 +31,9 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       weaponSpecRemove:   FlailItemSheet.#onReligionWeaponSpecRemove,
       armourSpecRemove:   FlailItemSheet.#onReligionArmourSpecRemove,
       guildSigilRemove:   FlailItemSheet.#onGuildSigilRemove,
+      // Ship A — Wizard Master (patron)
+      masterSpellRemove:     FlailItemSheet.#onMasterSpellRemove,
+      masterSignatureRemove: FlailItemSheet.#onMasterSignatureRemove,
       // v0.4.80 — gadget effects framework
       gadgetEffectAdd:      FlailItemSheet.#onGadgetEffectAdd,
       gadgetEffectRemove:   FlailItemSheet.#onGadgetEffectRemove,
@@ -92,6 +95,23 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if (idx < 0 || idx >= current.length) return;
     current.splice(idx, 1);
     await this.item.update({ "system.armourSpecialty": current });
+  }
+
+  /** Remove a spell entry from a Master's repertoire (spells[]). */
+  static async #onMasterSpellRemove(event, target) {
+    if (this.item.type !== "master") return;
+    const idx = Number(target.dataset.index);
+    if (!Number.isInteger(idx)) return;
+    const current = [...(this.item.system.spells ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current.splice(idx, 1);
+    await this.item.update({ "system.spells": current });
+  }
+
+  /** Clear the Master's signature item reference (single item). */
+  static async #onMasterSignatureRemove(event, target) {
+    if (this.item.type !== "master") return;
+    await this.item.update({ "system.signatureItem": { uuid: "", name: "" } });
   }
 
   /** Clear the guild's sigil reference (single item, v0.4.68). */
@@ -271,6 +291,16 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       ctx.descriptionHTML       = await enrich(this.item.system.description ?? "", { relativeTo: this.item, secrets: this.item.isOwner });
       ctx.layOnHandsFumbleHTML  = await enrich(this.item.system.layOnHandsFumble ?? "", { relativeTo: this.item, secrets: this.item.isOwner });
     }
+
+    // Master Item — enrich the description. Tradition is a free-text
+    // input (with a datalist of suggestions) so homebrew patrons can
+    // name their own school; no radio/select options to build.
+    if (this.item.type === "master") {
+      const enrich = foundry.applications.ux.TextEditor.implementation.enrichHTML.bind(
+        foundry.applications.ux.TextEditor.implementation
+      );
+      ctx.descriptionHTML = await enrich(this.item.system.description ?? "", { relativeTo: this.item, secrets: this.item.isOwner });
+    }
     return ctx;
   }
 
@@ -436,6 +466,64 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       });
     }
 
+    // Master Item — two drop zones:
+    //   spells        (list, spell items only — the repertoire)
+    //   signatureItem (single, any Item type — display only)
+    if (this.item.type === "master") {
+      const attachMasterZone = (selector, opts) => {
+        const zone = root.querySelector(selector);
+        if (!zone) return;
+        zone.addEventListener("dragover", ev => {
+          ev.preventDefault();
+          if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
+          zone.classList.add("drop-active");
+        });
+        zone.addEventListener("dragleave", () => zone.classList.remove("drop-active"));
+        zone.addEventListener("drop", async ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          zone.classList.remove("drop-active");
+          let payload;
+          try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); }
+          catch { return; }
+          const dropped = await Item.implementation.fromDropData(payload);
+          if (!dropped) return;
+          if (opts.acceptedTypes && !opts.acceptedTypes.includes(dropped.type)) {
+            ui.notifications?.warn(opts.rejectMessage
+              ?? `This drop zone doesn't accept ${dropped.type} items.`);
+            return;
+          }
+          const uuid = dropped.uuid || payload.uuid || "";
+          if (!uuid) {
+            ui.notifications?.warn("Dropped item has no resolvable UUID.");
+            return;
+          }
+          if (opts.isSingle) {
+            await this.item.update({ [`system.${opts.field}`]: { uuid, name: dropped.name } });
+            return;
+          }
+          const current = [...(this.item.system[opts.field] ?? [])];
+          if (current.some(entry => entry.uuid === uuid)) {
+            ui.notifications?.info(`"${dropped.name}" is already in this list.`);
+            return;
+          }
+          current.push({ uuid, name: dropped.name });
+          await this.item.update({ [`system.${opts.field}`]: current });
+        });
+      };
+
+      attachMasterZone(".master-spells-dropzone", {
+        field: "spells",
+        acceptedTypes: ["spell"],
+        rejectMessage: "A Master's repertoire only accepts spell items."
+      });
+      attachMasterZone(".master-sig-drop", {
+        field: "signatureItem",
+        isSingle: true,
+        acceptedTypes: null // any Item type
+      });
+    }
+
     // Guild drop zones — one for talent items, one for feature items.
     // On drop, snapshot the dropped item's data and append to the
     // matching schema array. The character-sheet guild-drop handler
@@ -519,7 +607,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     });
 
     // v0.4.80 — condition drop zones on gadget effects (mechanics tab).
-    if (this.item.type === "gadget") {
+    if (["gadget", "spell"].includes(this.item.type)) {
       this.#attachGadgetEffectDropZones(root);
     }
     // v0.4.95 — combat tree slot drop zones.
@@ -596,7 +684,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
    * select. Selected type governs which fields the sheet renders.
    */
   static async #onGadgetEffectAdd(event, target) {
-    if (this.item.type !== "gadget") return;
+    if (!["gadget", "spell"].includes(this.item.type)) return;
     // Prevent the form's submit-on-change from processing this click
     // (it doesn't need to, and interference caused pre-v0.4.83 bugs).
     event?.preventDefault?.();
@@ -645,7 +733,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async #onGadgetEffectRemove(event, target) {
-    if (this.item.type !== "gadget") return;
+    if (!["gadget", "spell"].includes(this.item.type)) return;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     const idx = Number(target.dataset.index);
@@ -658,7 +746,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async #onGadgetEffectMoveUp(event, target) {
-    if (this.item.type !== "gadget") return;
+    if (!["gadget", "spell"].includes(this.item.type)) return;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     const idx = Number(target.dataset.index);
@@ -671,7 +759,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async #onGadgetEffectMoveDown(event, target) {
-    if (this.item.type !== "gadget") return;
+    if (!["gadget", "spell"].includes(this.item.type)) return;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     const idx = Number(target.dataset.index);
@@ -689,7 +777,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
    * or "condition" — and the handler clears its Uuid + Name pair.
    */
   static async #onGadgetEffectClearRef(event, target) {
-    if (this.item.type !== "gadget") return;
+    if (!["gadget", "spell"].includes(this.item.type)) return;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     const idx = Number(target.dataset.index);

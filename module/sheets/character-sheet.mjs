@@ -11,6 +11,8 @@ import { BackgroundGrantsDialog } from "../apps/background-grants-dialog.mjs";
 import { StartingGearWizard } from "../apps/starting-gear-wizard.mjs";
 import { summonUndeadPuppetToken, deleteUndeadPuppetTokens } from "../documents/undead-puppet.mjs";
 import { WIZARD_SPELLS } from "../setup/wizard-spells-data.mjs";
+import { loadPickedTalents } from "../helpers/combat-trees.mjs";
+import { executeReaction } from "../dice/reactive-prompt.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -50,6 +52,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       unpickTreeSlot:   FlailCharacterSheet.#onUnpickTreeSlot,
       removeCombatTree: FlailCharacterSheet.#onRemoveCombatTree,
       openCombatTreeSlotItem: FlailCharacterSheet.#onOpenCombatTreeSlotItem,
+      useReaction:      FlailCharacterSheet.#onUseReaction,
       openBackgroundPicker: FlailCharacterSheet.#onOpenBackgroundPicker,
       openBackgroundItem: FlailCharacterSheet.#onOpenBackgroundItem,
       openBackgroundGrants: FlailCharacterSheet.#onOpenBackgroundGrants,
@@ -192,6 +195,25 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         // Nothing to migrate (either already has an item, or no legacy
         // key set) — mark done so we skip this actor next time.
         actor.setFlag("flail", "religionMigrationV1", true).catch(() => {});
+      }
+    }
+
+    // Wizard Master (patron) legacy-string → Item migration (Ship A).
+    // Pre-Master-Item Wizards store their patron as a string on
+    // system.classOptions.wizardMaster. Embed the matching canonical
+    // Master Item. GM-only, one-shot via flags.flail.masterMigrationV1.
+    if (game.user?.isGM
+        && actor.type === "character"
+        && actor.system?.class === "wizard"
+        && !actor.getFlag("flail", "masterMigrationV1")) {
+      const hasMasterItem = actor.items.some(i => i.type === "master");
+      const legacyKey = actor.system.classOptions?.wizardMaster;
+      if (!hasMasterItem && legacyKey) {
+        this.constructor.#migrateMasterToItem(actor, legacyKey).catch(err => {
+          console.error("FLAIL | Master migration failed", actor.name, err);
+        });
+      } else {
+        actor.setFlag("flail", "masterMigrationV1", true).catch(() => {});
       }
     }
 
@@ -522,6 +544,30 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       }
     }
 
+    // Reactive talents (Ship 3) — manual-fallback "Reactions" panel.
+    // Auto-prompts fire when the attacker targets this Warrior; this
+    // panel lets the player fire a reaction by hand when targeting wasn't
+    // used. Reactive metadata lives on the talent docs, so load them
+    // async (a handful of picked slots) and keep only the reactive ones.
+    ctx.reactiveTalents = [];
+    if (sys.class === "warrior" && ctx.combatTrees.length > 0) {
+      try {
+        const pickedDocs = await loadPickedTalents(actor);
+        for (const t of pickedDocs) {
+          const ts = t.system ?? {};
+          if (ts.triggerKind !== "reactive" || !ts.triggerReactiveEvent) continue;
+          ctx.reactiveTalents.push({
+            event: ts.triggerReactiveEvent,
+            name: t.name,
+            icon: ts.reminderIcon || "fa-bolt",
+            hint: ts.reminderTitle || t.name
+          });
+        }
+      } catch (err) {
+        console.error("FLAIL | reactive talent context failed:", err);
+      }
+    }
+
     // Wizard spellbook — 15 numbered entries.
     ctx.spellbookEntries = (sys.spellbook ?? Array(15).fill("")).map((text, i) => ({
       n: i + 1, text
@@ -608,6 +654,23 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
         .sort((a, b) => a.name.localeCompare(b.name));
     } else {
       ctx.wizardMasterSpells = [];
+    }
+
+    // Ship A — Master (patron) as a first-class Item. When embedded it
+    // is the source of truth (the legacy wizardMaster string card is
+    // superseded). Repertoire is read from the item's spells[] refs.
+    const masterItem = actor.items.find(i => i.type === "master") ?? null;
+    ctx.masterItem = masterItem;
+    if (masterItem) {
+      ctx.masterItemHtml = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+        masterItem.system?.description ?? "",
+        { relativeTo: masterItem, secrets: masterItem.isOwner }
+      );
+      ctx.masterRepertoire = (masterItem.system?.spells ?? [])
+        .map(s => ({ name: s.name, uuid: s.uuid, resolved: !!s.uuid }));
+    } else {
+      ctx.masterItemHtml = "";
+      ctx.masterRepertoire = [];
     }
     ctx.knownWizardSpells = actor.items
       .filter(i => i.type === "spell" && WIZARD_TRADITIONS.has(i.system?.tradition))
@@ -1241,6 +1304,19 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       el.addEventListener("drop", this.#onGadgetDrop.bind(this));
     });
 
+    // Master repertoire → spellbook (Ship A). Make each resolved
+    // repertoire entry on the Master card draggable, emitting a standard
+    // Item drop payload ({type:"Item", uuid}) so it resolves the
+    // compendium spell and lands in the spellbook via #onWizardSpellDrop.
+    root.querySelectorAll(".wizard-master-spell[data-spell-uuid]").forEach(el => {
+      el.addEventListener("dragstart", ev => {
+        const uuid = el.dataset.spellUuid;
+        if (!uuid) return;
+        ev.dataTransfer?.setData("text/plain", JSON.stringify({ type: "Item", uuid }));
+        if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "copy";
+      });
+    });
+
     // Bard Jack of All Trades — accepts talent, gadget, and wizard
     // spell items from their respective compendia.
     root.querySelectorAll("[data-drop-target='jackOfAllTrades']").forEach(el => {
@@ -1593,43 +1669,69 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     const item = await Item.implementation.fromDropData(payload);
     if (!item) return;
 
-    const WIZARD_TRADITIONS = new Set(["arcane", "flame", "shadow", "ooze", "illusion"]);
-    if (item.type !== "spell" || !WIZARD_TRADITIONS.has(item.system?.tradition)) {
-      ui.notifications?.warn(
-        game.i18n.localize("FLAIL.Notify.NotAWizardSpell")
-      );
+    if (item.type !== "spell") {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.NotAWizardSpell"));
+      return;
+    }
+    const tradition = item.system?.tradition ?? "";
+    // Dark-tradition spells belong to the Bone Whisperer, never a Wizard.
+    if (tradition === "dark") {
+      ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.NotAWizardSpell"));
       return;
     }
 
-    // Master gating — arcane spells (common repertoire) are always
-    // fair game. Master-specific traditions (flame / shadow / ooze /
-    // illusion) are only accepted when the wizard is apprenticed to
-    // the corresponding Master. If no Master has been chosen yet,
-    // only arcane spells are accepted.
-    const tradition = item.system?.tradition;
-    const masterKey = this.actor.system.classOptions?.wizardMaster ?? "";
-    if (tradition !== "arcane") {
-      const requiredMaster = FLAIL.getMasterForTradition(tradition);
-      if (!masterKey) {
-        ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.WizardMasterUnset"));
-        return;
-      }
-      if (masterKey !== requiredMaster) {
-        const currentMaster = FLAIL.wizardMasters[masterKey];
+    const droppedUuid = item.uuid || payload.uuid || "";
+    const masterItem = this.actor.items.find(i => i.type === "master") ?? null;
+
+    if (masterItem) {
+      // Item-based gating (Ship A): arcane spells (the common repertoire)
+      // are always fair game; anything else — including custom
+      // traditions (wind, earth, …) — must be in the embedded Master's
+      // repertoire, matched by uuid or name.
+      const inRepertoire = (masterItem.system?.spells ?? []).some(s =>
+        (s.uuid && droppedUuid && s.uuid === droppedUuid)
+        || (s.name && s.name.toLowerCase() === (item.name ?? "").toLowerCase())
+      );
+      if (tradition !== "arcane" && !inRepertoire) {
         ui.notifications?.warn(
-          game.i18n.format("FLAIL.Notify.WizardMasterMismatch", {
-            spell:   item.name,
-            master:  currentMaster?.shortLabel ?? "?"
+          game.i18n.format("FLAIL.Notify.WizardSpellNotInRepertoire", {
+            spell: item.name, master: masterItem.name
           })
         );
         return;
       }
+    } else {
+      // Legacy fallback for un-migrated Wizards (no Master Item yet):
+      // gate on the classOptions.wizardMaster string + fixed traditions.
+      const WIZARD_TRADITIONS = new Set(["arcane", "flame", "shadow", "ooze", "illusion"]);
+      if (!WIZARD_TRADITIONS.has(tradition)) {
+        ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.NotAWizardSpell"));
+        return;
+      }
+      const masterKey = this.actor.system.classOptions?.wizardMaster ?? "";
+      if (tradition !== "arcane") {
+        const requiredMaster = FLAIL.getMasterForTradition(tradition);
+        if (!masterKey) {
+          ui.notifications?.warn(game.i18n.localize("FLAIL.Notify.WizardMasterUnset"));
+          return;
+        }
+        if (masterKey !== requiredMaster) {
+          const currentMaster = FLAIL.wizardMasters[masterKey];
+          ui.notifications?.warn(
+            game.i18n.format("FLAIL.Notify.WizardMasterMismatch", {
+              spell:   item.name,
+              master:  currentMaster?.shortLabel ?? "?"
+            })
+          );
+          return;
+        }
+      }
     }
 
-    // Duplicate check — same name + wizard-tradition already present.
+    // Duplicate check — same name already present as a non-dark spell.
     const dup2 = this.actor.items.find(i =>
       i.type === "spell"
-      && WIZARD_TRADITIONS.has(i.system?.tradition)
+      && i.system?.tradition !== "dark"
       && i.name === item.name
     );
     if (dup2) {
@@ -1961,6 +2063,18 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     if (!uuid) return;
     const talent = await fromUuid(uuid);
     if (talent?.sheet) talent.sheet.render(true);
+  }
+
+  /**
+   * Manual-fallback reactive talent (Ship 3). Fires the same resolution
+   * as the whispered auto-prompt: DEX save (Deflect), Iron Fist free
+   * attack (Reflexes), or one-handed free attack (Opportunist), keyed by
+   * the button's data-event.
+   */
+  static async #onUseReaction(event, target) {
+    const reactiveEvent = target.dataset.event;
+    if (!reactiveEvent) return;
+    await executeReaction(this.actor, reactiveEvent);
   }
 
   /**
@@ -2653,6 +2767,52 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       console.error("FLAIL | Religion migration create failed:", err);
     }
     await actor.setFlag("flail", "religionMigrationV1", true);
+  }
+
+  /**
+   * Migrate a Wizard's legacy classOptions.wizardMaster string to a
+   * first-class Master Item. Mirrors #migrateReligionToItem. The
+   * createItem hook seeds starting spells, but only if the spellbook
+   * wasn't already seeded — so an existing Wizard's spellbook is left
+   * intact. Legacy string is preserved (Item wins at read sites).
+   */
+  static async #migrateMasterToItem(actor, legacyKey) {
+    if (actor.getFlag("flail", "masterMigrationV1")) return;
+
+    // Legacy wizardMaster keys already match the seed suffixes.
+    const KNOWN = ["flakumeg", "ukraal", "oozzeborne", "chooChoo"];
+    if (!KNOWN.includes(legacyKey)) {
+      console.warn(`FLAIL | Master migration: unknown legacy key "${legacyKey}" for ${actor.name}`);
+      await actor.setFlag("flail", "masterMigrationV1", true);
+      return;
+    }
+
+    const { stableMasterId } = await import("../setup/masters-data.mjs");
+    const seedId = stableMasterId(`master:${legacyKey}`);
+
+    const pack = game.packs.get("world.flail-masters");
+    if (!pack) {
+      console.warn("FLAIL | Master migration: masters compendium not found");
+      return; // don't set flag — retry next open in case pack loads later
+    }
+    const source = await pack.getDocument(seedId);
+    if (!source) {
+      console.warn(`FLAIL | Master migration: master seed ${seedId} (${legacyKey}) not found in pack`);
+      await actor.setFlag("flail", "masterMigrationV1", true);
+      return;
+    }
+
+    const data = source.toObject();
+    delete data._id;
+    try {
+      await actor.createEmbeddedDocuments("Item", [data]);
+      ui.notifications?.info(
+        `FLAIL: migrated ${actor.name} — Master "${source.name}" embedded as an Item.`
+      );
+    } catch (err) {
+      console.error("FLAIL | Master migration create failed:", err);
+    }
+    await actor.setFlag("flail", "masterMigrationV1", true);
   }
 
   /**

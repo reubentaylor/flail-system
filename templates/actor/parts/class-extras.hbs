@@ -166,45 +166,37 @@
   {{> "systems/flail/templates/actor/parts/class-details.hbs"}}
   <section class="tabbed-card wizard-master-card">
     <header class="tab-label">{{localize "FLAIL.Wizard.MasterLabel"}}</header>
-    <div class="wizard-master-row">
-      <label class="wizard-master-label" for="wizard-master-picker">{{localize "FLAIL.Wizard.MasterPickLabel"}}:</label>
-      <select id="wizard-master-picker" name="system.classOptions.wizardMaster" class="wizard-master-select" {{#unless wizardMasterEditable}}disabled{{/unless}}>
-        {{#each wizardMasterOptions as |opt|}}
-        <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{opt.label}}</option>
-        {{/each}}
-      </select>
-      {{#if wizardMasterShowLockBtn}}
-      <button type="button"
-              class="wizard-master-lock-btn wizard-master-{{#if wizardMasterLocked}}locked{{else}}unlocked{{/if}}"
-              data-action="toggleWizardMasterLock"
-              {{#if wizardMasterLocked}}{{#unless wizardMasterCanUnlock}}disabled title="{{localize 'FLAIL.Wizard.MasterLockedGmOnly'}}"{{/unless}}{{/if}}
-              {{#unless wizardMasterLocked}}title="{{localize 'FLAIL.Wizard.MasterLockHint'}}"{{/unless}}>
-        {{#if wizardMasterLocked}}
-        <i class="fas fa-lock"></i>
-        <span>{{localize "FLAIL.Wizard.MasterUnlock"}}</span>
-        {{else}}
-        <i class="fas fa-lock-open"></i>
-        <span>{{localize "FLAIL.Wizard.MasterLock"}}</span>
-        {{/if}}
-      </button>
+    {{#if masterItem}}
+    {{!-- Master is a first-class Item (Ship A). Drag one from the
+         Wizard Masters compendium onto the sheet to apprentice; the
+         embed grants the starting spells. --}}
+    <div class="wizard-master-details wizard-master-tradition-{{masterItem.system.tradition}}">
+      <div class="wizard-master-head">
+        <img class="wizard-master-img" src="{{masterItem.img}}" alt="" />
+        <div class="wizard-master-headtext">
+          <p class="wizard-master-name"><strong>{{masterItem.name}}</strong></p>
+          {{#if masterItem.system.tagline}}<p class="wizard-master-tagline"><em>{{masterItem.system.tagline}}</em></p>{{/if}}
+          {{#if masterItem.system.stats}}<p class="wizard-master-stats">{{masterItem.system.stats}}</p>{{/if}}
+        </div>
+        <div class="wizard-master-controls">
+          <button type="button" data-action="itemEdit" data-item-id="{{masterItem.id}}" title="{{localize 'FLAIL.Wizard.MasterOpen'}}"><i class="fas fa-edit"></i></button>
+          {{#if editable}}
+          <button type="button" data-action="itemDelete" data-item-id="{{masterItem.id}}" class="wizard-master-remove" title="{{localize 'FLAIL.Wizard.MasterRemove'}}"><i class="fas fa-trash"></i></button>
+          {{/if}}
+        </div>
+      </div>
+      {{#if masterItem.system.signatureItemNote}}
+      <p class="wizard-master-signature"><i class="fas fa-wand-magic-sparkles"></i> {{masterItem.system.signatureItemNote}}</p>
       {{/if}}
-    </div>
-    {{#if wizardMaster}}
-    <div class="wizard-master-details wizard-master-tradition-{{wizardMaster.tradition}}">
-      <p class="wizard-master-tagline"><em>{{wizardMaster.tagline}}</em></p>
-      {{#unless wizardMasterLocked}}
-      {{!-- Repertoire is shown only while the apprenticeship is
-           still being chosen. Once the Wizard commits to a master
-           (locked), the repertoire block hides — the useful spells
-           have presumably been dragged into the personal spellbook,
-           and hiding it declutters the sheet. --}}
+      {{#if masterRepertoire.length}}
       <div class="wizard-master-spells-block">
-        <p class="wizard-master-spells-label"><strong>{{wizardMaster.shortLabel}}</strong> — {{localize "FLAIL.Wizard.MasterRepertoire"}}</p>
+        <p class="wizard-master-spells-label">{{localize "FLAIL.Wizard.MasterRepertoire"}}</p>
         <ul class="wizard-master-spells-list">
-          {{#each wizardMasterSpells as |s|}}
-          <li class="wizard-master-spell">
-            <img class="wms-img" src="{{s.img}}" alt="" />
+          {{#each masterRepertoire as |s|}}
+          <li class="wizard-master-spell{{#if s.resolved}} wms-draggable{{/if}}"
+              {{#if s.resolved}}draggable="true" data-spell-uuid="{{s.uuid}}" data-spell-name="{{s.name}}" title="{{localize 'FLAIL.Wizard.MasterSpellDragTitle'}}"{{/if}}>
             <span class="wms-name">{{s.name}}</span>
+            {{#if s.resolved}}<i class="fas fa-grip-lines wms-grip"></i>{{else}}<i class="fas fa-triangle-exclamation" title="Unresolved reference"></i>{{/if}}
           </li>
           {{/each}}
         </ul>
@@ -213,10 +205,13 @@
         <i class="fas fa-hand-pointer"></i>
         {{localize "FLAIL.Wizard.MasterDragHint"}}
       </p>
-      {{/unless}}
+      {{/if}}
     </div>
     {{else}}
-    <p class="wizard-master-empty"><em>{{localize "FLAIL.Wizard.MasterEmptyHint"}}</em></p>
+    <div class="wizard-master-drop-zone">
+      <i class="fas fa-hat-wizard"></i>
+      <p>{{localize "FLAIL.Wizard.MasterDropPrompt"}}</p>
+    </div>
     {{/if}}
   </section>
   <section class="tabbed-card wizard-skills-card">

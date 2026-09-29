@@ -1,7 +1,8 @@
 import { analyzePool } from "./poker.mjs";
 import { detectBeastSpecial } from "./beast-specials.mjs";
 import { FLAIL } from "../helpers/config.mjs";
-import { collectPickedSourceKeys, loadPickedTalents } from "../helpers/combat-trees.mjs";
+import { collectPickedSourceKeys, loadPickedTalents, evaluateReactiveTriggers } from "../helpers/combat-trees.mjs";
+import { postReactionPrompts } from "./reactive-prompt.mjs";
 
 /**
  * Execute a FLAIL "To Hit" roll.
@@ -559,6 +560,37 @@ export async function rollToHit({
   // socket-defer to the GM.
   if (witnessMe) {
     await applyWitnessMeBuff({ source: actor });
+  }
+
+  /* ----- Reactive combat-talent prompts (Ship 3) -----
+   * If the attacker has targeted any token(s), check each targeted actor
+   * for a Warrior holding a reactive talent (Reflexes / Deflect /
+   * Opportunist) whose trigger this attack satisfies, and whisper that
+   * Warrior's owner a reaction prompt. Runs once, here on the roller's
+   * client — game.user.targets is the attacker's own targeting. Wrapped
+   * so a failure never disrupts the attack itself. */
+  try {
+    const targets = Array.from(game.user?.targets ?? []);
+    if (targets.length > 0) {
+      const attackWeaponType = triggerWeapon?.system?.weaponType ?? "melee";
+      const attackCtx = { weaponType: attackWeaponType, tier: analysis.tier };
+      // Unique targeted actors, excluding the attacker targeting itself.
+      const seen = new Set();
+      for (const token of targets) {
+        const defender = token?.actor;
+        if (!defender || seen.has(defender.id)) continue;
+        seen.add(defender.id);
+        if (defender.id === actor?.id) continue;
+        if (defender.type !== "character" || defender.system?.class !== "warrior") continue;
+        const picked = await loadPickedTalents(defender);
+        const reactions = evaluateReactiveTriggers(picked, attackCtx);
+        if (reactions.length > 0) {
+          await postReactionPrompts({ defender, attacker: actor, reactions });
+        }
+      }
+    }
+  } catch (err) {
+    console.error("FLAIL | reactive trigger evaluation failed:", err);
   }
 
   return message;

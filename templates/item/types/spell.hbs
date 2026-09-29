@@ -18,3 +18,9 @@
     <textarea name="system.effectFormula" rows="3" placeholder="[DICE] x [SUM] damage to all Near…" {{#unless editable}}disabled{{/unless}}>{{system.effectFormula}}</textarea>
   </label>
 </section>
+
+{{!-- ─── Mechanics (shared effects editor, Ship B.2) ─────
+     Author automatable effects on a custom spell. Formulas may use
+     @DICE (mana spent) and @SUM (rolled total). Empty = a text-only
+     spell; casting posts just the [DICE]/[SUM]-substituted card. --}}
+{{> "systems/flail/templates/item/parts/effects-editor.hbs"}}

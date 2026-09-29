@@ -20,7 +20,8 @@ import {
   FlailBackgroundModel,
   FlailCombatTalentModel,
   FlailCombatTreeModel,
-  FlailReligionModel
+  FlailReligionModel,
+  FlailMasterModel
 } from "./data/items.mjs";
 
 import { FlailActor } from "./documents/actor.mjs";
@@ -48,10 +49,12 @@ import { ensurePrimalGiftsCompendium } from "./setup/import-primal-gifts.mjs";
 import { ensureTinkererGadgetsCompendium } from "./setup/import-tinkerer-gadgets.mjs";
 import { ensureThievingTalentsCompendium } from "./setup/import-thieving-talents.mjs";
 import { ensureReligionsCompendium } from "./setup/import-religions.mjs";
+import { ensureMastersCompendium } from "./setup/import-masters.mjs";
 import { ensureCompendiumOrganization } from "./setup/compendium-organization.mjs";
 import { registerEffectsChatListeners } from "./dice/effects-runner.mjs";
 import { ensureUndeadPuppetActor, deleteUndeadPuppetTokens } from "./documents/undead-puppet.mjs";
 import { importReligionPrayers, handleReligionSwap, handleReligionDelete } from "./documents/religion-embed.mjs";
+import { importMasterStartingSpells, handleMasterSwap, handleMasterDelete } from "./documents/master-embed.mjs";
 import { ensureFlailRollTables, ensureFlailMacros } from "./setup/import-rolltables.mjs";
 import { ensureFlailBestiary } from "./setup/import-bestiary.mjs";
 import { ensureFlailUniqueItems } from "./setup/import-unique-items.mjs";
@@ -135,6 +138,14 @@ Hooks.once("init", () => {
     game.settings.register("flail", "religionsVersion", {
       name: "FLAIL Religions version",
       hint: "Internal — last bundled-religions version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "mastersVersion", {
+      name: "FLAIL Masters version",
+      hint: "Internal — last bundled-masters version this world synced from. Do not edit.",
       scope: "world",
       config: false,
       type: Number,
@@ -318,7 +329,8 @@ Hooks.once("init", () => {
       background:   FlailBackgroundModel,
       combatTalent: FlailCombatTalentModel,
       combatTree:   FlailCombatTreeModel,
-      religion:     FlailReligionModel
+      religion:     FlailReligionModel,
+      master:       FlailMasterModel
     };
     console.log(`${TAG} init — data models registered`);
 
@@ -392,6 +404,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/item/types/gift.hbs",
         "systems/flail/templates/item/types/talent.hbs",
         "systems/flail/templates/item/types/gadget.hbs",
+        "systems/flail/templates/item/parts/effects-editor.hbs",
         "systems/flail/templates/item/types/feature.hbs",
         "systems/flail/templates/item/types/condition.hbs",
         "systems/flail/templates/item/types/instrument.hbs",
@@ -400,6 +413,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/item/types/combatTalent.hbs",
         "systems/flail/templates/item/types/combatTree.hbs",
         "systems/flail/templates/item/types/religion.hbs",
+        "systems/flail/templates/item/types/master.hbs",
         "systems/flail/templates/chat/attack-roll.hbs",
         "systems/flail/templates/chat/save-roll.hbs",
         "systems/flail/templates/chat/cast-prayer.hbs",
@@ -487,6 +501,9 @@ Hooks.once("ready", async () => {
   await ensureFlailPotions();
   await ensureDivinePrayersCompendium();
   await ensureReligionsCompendium();
+  // Masters resolve their repertoire against the wizard-spells pack, so
+  // this must run after ensureWizardSpellsCompendium() (above).
+  await ensureMastersCompendium();
   // Ensure sidebar folders + in-pack folders LAST — after all packs
   // exist. GM-only, version-gated, "don't clobber" for user changes.
   await ensureCompendiumOrganization();
@@ -885,6 +902,80 @@ Hooks.on("preDeleteItem", async (item, options, userId) => {
     if (!proceed) return false;
   } catch (err) {
     console.error("FLAIL | preDeleteItem religion hook failed:", err);
+  }
+});
+
+/* -------------------------------------------- */
+/*  Master (Wizard patron) embed lifecycle       */
+/*  Mirrors the religion hooks above.            */
+/* -------------------------------------------- */
+
+Hooks.on("preCreateItem", (item, data, options, userId) => {
+  try {
+    if (item.type !== "master") return;
+    const actor = item.parent;
+    if (!actor || actor.documentName !== "Actor") return;
+    if (actor.type !== "character") return;
+
+    if (actor.system?.class !== "wizard") {
+      ui.notifications?.warn(
+        `FLAIL: Master embedded on ${actor.name} (class=${actor.system?.class}) — no mechanical effect unless the character is a Wizard.`
+      );
+      return; // allow embed anyway
+    }
+
+    const existing = actor.items.find(i => i.type === "master" && i.id !== item.id);
+    if (existing) {
+      handleMasterSwap(actor, existing, item.toObject()).catch(err => {
+        console.error("FLAIL | Master swap failed:", err);
+      });
+      return false;
+    }
+  } catch (err) {
+    console.error("FLAIL | preCreateItem master hook failed:", err);
+  }
+});
+
+/**
+ * After a Master Item is embedded on a Wizard, seed the apprentice's
+ * starting spells (3 random arcane + 2 from the Master's repertoire),
+ * unless the Wizard's spellbook was already seeded.
+ */
+Hooks.on("createItem", async (item, options, userId) => {
+  try {
+    if (item.type !== "master") return;
+    if (userId !== game.user.id) return; // only the creating client
+    const actor = item.parent;
+    if (!actor || actor.documentName !== "Actor") return;
+    if (actor.type !== "character") return;
+    if (actor.system?.class !== "wizard") return;
+    const result = await importMasterStartingSpells(actor, item);
+    if (result?.imported > 0) {
+      ui.notifications?.info(
+        `FLAIL: ${item.name} on ${actor.name} — granted ${result.imported} starting spell(s).`
+      );
+    }
+  } catch (err) {
+    console.error("FLAIL | createItem master hook failed:", err);
+  }
+});
+
+/**
+ * Before a Master Item is deleted from a Wizard, prompt with the
+ * cleanup dialog (keep / delete master-granted spells / cancel).
+ * Skipped when options.flailSwap is set.
+ */
+Hooks.on("preDeleteItem", async (item, options, userId) => {
+  try {
+    if (item.type !== "master") return;
+    if (userId !== game.user.id) return;
+    const actor = item.parent;
+    if (!actor || actor.documentName !== "Actor") return;
+    if (actor.type !== "character") return;
+    const proceed = await handleMasterDelete(item, options);
+    if (!proceed) return false;
+  } catch (err) {
+    console.error("FLAIL | preDeleteItem master hook failed:", err);
   }
 });
 

@@ -12,7 +12,38 @@
  *
  * Sourced from FLAIL v0.2 pages 40, 42–43. Do not edit by hand — regenerate
  * from the source-of-truth extractor if the rulebook is updated.
+ *
+ * Ship B: automatable spells carry `system.effects` (+ `system.activation`)
+ * for the shared effects-runner. Formulas use @DICE / @SUM, bound to the
+ * cast at runtime. Use fxEffect() so every effect entry is fully
+ * defaulted — Foundry's ArrayField/SchemaField pipeline silently drops
+ * partial entries.
  */
+
+/** A fully-defaulted effect entry with the given overrides applied. */
+export function fxEffect(overrides = {}) {
+  return {
+    type: "damage",
+    formula: "", damageType: "", triggerOnResult: "", triggerEffect: "",
+    triggerConditionUuid: "", triggerConditionName: "",
+    saveAttribute: "", saveOnFailConditionUuid: "", saveOnFailConditionName: "",
+    saveDurationRounds: 0, savePushFrom: "", savePushTo: "",
+    healFormula: "", healAllowsSelf: false, healAllowsAlly: false, healAllowsConstruct: false,
+    conditionUuid: "", conditionName: "", conditionDurationRounds: 0, conditionDurationTurns: 0,
+    passiveValue: 0, passiveAttribute: "", passiveSkill: "", passiveCondition: "",
+    customHtml: "",
+    ...overrides
+  };
+}
+
+/** A fully-defaulted activation block with the given overrides applied. */
+export function fxActivation(overrides = {}) {
+  return {
+    type: "activated", range: "near", delayRounds: 0,
+    targetScope: "single", cost: "action", daily: false,
+    ...overrides
+  };
+}
 
 export const WIZARD_SPELLS = [
   {
@@ -81,7 +112,9 @@ export const WIZARD_SPELLS = [
       "description": "<p>creates aura around caster (and those Near) for [DICE] rounds with [SUM] hit points.</p>",
       "tradition": "arcane",
       "effectFormula": "",
-      "suggestedDice": 2
+      "suggestedDice": 2,
+      "activation": fxActivation({ targetScope: "allNearby", range: "near" }),
+      "effects": [ fxEffect({ type: "heal", healFormula: "@SUM", healAllowsSelf: true, healAllowsAlly: true }) ]
     },
     "effects": [],
     "folder": null,
@@ -195,7 +228,9 @@ export const WIZARD_SPELLS = [
       "description": "<p>deals [SUM] damage to one single target within Distant range.</p>",
       "tradition": "arcane",
       "effectFormula": "",
-      "suggestedDice": 2
+      "suggestedDice": 2,
+      "activation": fxActivation({ targetScope: "single", range: "distant" }),
+      "effects": [ fxEffect({ type: "damage", formula: "@SUM", damageType: "force" }) ]
     },
     "effects": [],
     "folder": null,
@@ -309,7 +344,9 @@ export const WIZARD_SPELLS = [
       "description": "<p>invokes an energy shield on self or ally with half [SUM] hit points.</p>",
       "tradition": "arcane",
       "effectFormula": "",
-      "suggestedDice": 2
+      "suggestedDice": 2,
+      "activation": fxActivation({ targetScope: "ally", range: "near" }),
+      "effects": [ fxEffect({ type: "heal", healFormula: "floor(@SUM / 2)", healAllowsSelf: true, healAllowsAlly: true }) ]
     },
     "effects": [],
     "folder": null,
@@ -404,7 +441,9 @@ export const WIZARD_SPELLS = [
       "description": "<p>causes [SUM] damage to all Near impact zone; can be cast from [SUM] x 10'.</p>",
       "tradition": "flame",
       "effectFormula": "",
-      "suggestedDice": 3
+      "suggestedDice": 3,
+      "activation": fxActivation({ targetScope: "allNearby", range: "distant" }),
+      "effects": [ fxEffect({ type: "damage", formula: "@SUM", damageType: "fire" }) ]
     },
     "effects": [],
     "folder": null,
@@ -461,7 +500,9 @@ export const WIZARD_SPELLS = [
       "description": "<p>causes [SUM] damage to all Near targeted area for [DICE] rounds; can be cast from [SUM] x 10'; spell ends if caster is hit or takes other actions.</p>",
       "tradition": "flame",
       "effectFormula": "",
-      "suggestedDice": 3
+      "suggestedDice": 3,
+      "activation": fxActivation({ targetScope: "allNearby", range: "distant" }),
+      "effects": [ fxEffect({ type: "damage", formula: "@SUM", damageType: "fire" }) ]
     },
     "effects": [],
     "folder": null,

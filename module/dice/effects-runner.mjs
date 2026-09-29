@@ -36,7 +36,8 @@ export async function runEffects({
   source,
   effects = [],
   activation = {},
-  chatContext = {}
+  chatContext = {},
+  rollData = {}
 } = {}) {
   if (!actor || !source) return null;
   if (!Array.isArray(effects) || effects.length === 0) return null;
@@ -60,7 +61,8 @@ export async function runEffects({
         effect: eff,
         effectIndex: i,
         activation,
-        targetUuids
+        targetUuids,
+        rollData
       });
       if (block?.html) blocks.push(block);
       if (Array.isArray(block?.rolls)) allRolls.push(...block.rolls);
@@ -129,12 +131,14 @@ const HANDLERS = {
 
 /* ---------- damage ---------- */
 
-async function handleDamage({ actor, source, effect, effectIndex, activation, targetUuids }) {
+async function handleDamage({ actor, source, effect, effectIndex, activation, targetUuids, rollData = {} }) {
   const formula = (effect.formula ?? "").trim();
   if (!formula) return null;
   let roll;
   try {
-    roll = new Roll(formula);
+    // rollData supplies @DICE / @SUM for spell effects that scale with
+    // the cast (Magic Missile = @SUM, etc.); empty for fixed gadget dmg.
+    roll = new Roll(formula, rollData);
     await roll.evaluate();
   } catch (err) {
     console.error(`FLAIL | damage roll "${formula}" failed:`, err);
@@ -239,13 +243,13 @@ async function handleSave({ actor, source, effect, targetUuids }) {
 
 /* ---------- heal ---------- */
 
-async function handleHeal({ actor, source, effect, activation, targetUuids }) {
+async function handleHeal({ actor, source, effect, activation, targetUuids, rollData = {} }) {
   const formula = (effect.healFormula ?? "").trim();
   if (!formula) return null;
 
   let roll;
   try {
-    roll = new Roll(formula);
+    roll = new Roll(formula, rollData);
     await roll.evaluate();
   } catch (err) {
     console.error(`FLAIL | heal roll "${formula}" failed:`, err);

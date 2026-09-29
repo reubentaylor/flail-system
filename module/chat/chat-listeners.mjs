@@ -3,6 +3,7 @@
  * Called from the renderChatMessageHTML hook.
  */
 import { FLAIL } from "../helpers/config.mjs";
+import { executeReaction } from "../dice/reactive-prompt.mjs";
 
 export function registerChatListeners(message, html) {
   // html is a Node in v14 (DOM element, not jQuery).
@@ -58,7 +59,39 @@ async function onChatAction(event, message) {
     case "summonUndeadPuppet":    return summonUndeadPuppet(btn, flags, message);
     case "vipersAgility":         return vipersAgility(btn, flags, message);
     case "negateWithArmour":      return negateWithArmour(btn, flags, message);
+    case "resolveReaction":       return resolveReaction(btn, flags, message);
   }
+}
+
+/**
+ * Resolve a reactive combat-talent prompt (Ship 3). The prompt card is
+ * whispered by reactive-prompt.mjs and carries `flags.flail.reaction`
+ * with the reacting Warrior's id and the reactive event. Dispatches the
+ * mechanic on the reacting actor:
+ *
+ *   hitByRanged      (Deflect)     → DEX save to dodge entirely
+ *   hitInMelee       (Reflexes)    → free Iron Fist attack
+ *   adversaryFumbles (Opportunist) → free one-handed melee attack
+ *
+ * Only the reacting actor's owner (or a GM) can drive it. The button is
+ * disabled in the DOM after firing (matching the shift-roll pattern);
+ * the resolved state is not persisted to the message.
+ */
+async function resolveReaction(btn, flags, _message) {
+  const reaction = flags?.reaction;
+  if (!reaction) return;
+  const actor = game.actors.get(reaction.actorId)
+    ?? (reaction.actorUuid ? await fromUuid(reaction.actorUuid) : null);
+  if (!actor) {
+    ui.notifications?.warn("FLAIL: the reacting character could not be found.");
+    return;
+  }
+  if (!actor.isOwner) {
+    ui.notifications?.warn("FLAIL: only the character's owner can use this reaction.");
+    return;
+  }
+  const fired = await executeReaction(actor, reaction.event);
+  if (fired) { btn.disabled = true; btn.style.opacity = "0.5"; }
 }
 
 /**

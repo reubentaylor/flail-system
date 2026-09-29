@@ -1027,6 +1027,20 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* Ship 3 — Reactions sub-heading in the Warrior class-actions panel. */
+.flail.sheet .class-actions-body .ca-reaction-label {
+  margin: 0.35rem 0 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--flail-ink-soft, #6a4d0e);
+  border-top: 1px solid var(--flail-rule, #b58b3e);
+  padding-top: 0.3rem;
+}
+.flail.sheet .class-actions-body .ca-btn.ca-reaction {
+  border-style: dashed;
+}
 /* Used-out instrument in the Class Actions panel — button becomes
    a reactivate control. Dimmed image + green rotate icon signals
    "used but click to bring back". Distinct from disabled so the
@@ -8140,6 +8154,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1 1 auto;
+}
+/* Ship A — draggable repertoire entries (drag into the spellbook). */
+.flail.sheet .wizard-master-spell.wms-draggable {
+  cursor: grab;
+}
+.flail.sheet .wizard-master-spell.wms-draggable:hover {
+  background: rgba(181, 139, 62, 0.28);
+}
+.flail.sheet .wizard-master-spell .wms-grip {
+  margin-left: auto;
+  opacity: 0.45;
+  font-size: 0.7rem;
 }
 .flail.sheet .wizard-master-drag-hint {
   margin: 0.5rem 0 0;

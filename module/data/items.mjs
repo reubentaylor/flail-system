@@ -4,6 +4,80 @@ import { FLAIL } from "../helpers/config.mjs";
 const { fields } = foundry.data;
 
 /* -------------------------------------------- */
+/*  Shared effects framework schema (v0.4.80+)  */
+/* -------------------------------------------- */
+
+/**
+ * Returns the { activation, effects } schema fields for the shared
+ * effects framework (dice/effects-runner.mjs). Factored out so item
+ * types beyond gadgets can adopt it — the Wizard spell model uses it
+ * (Ship B) so spells can carry automatable effects whose magnitudes
+ * scale via @DICE / @SUM at cast time.
+ *
+ * The field shape is identical to FlailGadgetModel's inline definition
+ * (kept inline there to avoid disturbing a shipped, tested model).
+ */
+export function sharedEffectsSchema() {
+  return {
+    activation: new fields.SchemaField({
+      type:        new fields.StringField({
+        choices: ["passive", "activated", "reactive", "transformation"],
+        initial: "activated"
+      }),
+      range:       new fields.StringField({
+        choices: ["self", "near", "distant"],
+        initial: "near"
+      }),
+      delayRounds: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+      targetScope: new fields.StringField({
+        choices: ["none", "self", "single", "ally", "anyConstruct",
+                  "allNearby", "coneUpTo2"],
+        initial: "single"
+      }),
+      cost:        new fields.StringField({
+        choices: ["none", "round", "turn", "action"],
+        initial: "action"
+      }),
+      daily:       new fields.BooleanField({ initial: false })
+    }),
+    effects: new fields.ArrayField(
+      new fields.SchemaField({
+        type: new fields.StringField({ blank: false, initial: "damage" }),
+        formula:              new fields.StringField({ blank: true, initial: "" }),
+        damageType:           new fields.StringField({ blank: true, initial: "" }),
+        triggerOnResult:      new fields.StringField({ blank: true, initial: "" }),
+        triggerEffect:        new fields.StringField({ blank: true, initial: "" }),
+        triggerConditionUuid: new fields.StringField({ blank: true, initial: "" }),
+        triggerConditionName: new fields.StringField({ blank: true, initial: "" }),
+        saveAttribute:        new fields.StringField({ blank: true, initial: "" }),
+        saveOnFailConditionUuid: new fields.StringField({ blank: true, initial: "" }),
+        saveOnFailConditionName: new fields.StringField({ blank: true, initial: "" }),
+        saveDurationRounds:   new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+        savePushFrom:         new fields.StringField({ blank: true, initial: "" }),
+        savePushTo:           new fields.StringField({ blank: true, initial: "" }),
+        healFormula:          new fields.StringField({ blank: true, initial: "" }),
+        healAllowsSelf:       new fields.BooleanField({ initial: false }),
+        healAllowsAlly:       new fields.BooleanField({ initial: false }),
+        healAllowsConstruct:  new fields.BooleanField({ initial: false }),
+        conditionUuid:        new fields.StringField({ blank: true, initial: "" }),
+        conditionName:        new fields.StringField({ blank: true, initial: "" }),
+        conditionDurationRounds: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+        conditionDurationTurns:  new fields.NumberField({ integer: true, min: 0, initial: 0 }),
+        passiveValue:         new fields.NumberField({ integer: true, initial: 0 }),
+        passiveAttribute:     new fields.StringField({ blank: true, initial: "" }),
+        passiveSkill:         new fields.StringField({ blank: true, initial: "" }),
+        passiveCondition:     new fields.StringField({ blank: true, initial: "" }),
+        customHtml:           new fields.HTMLField({ required: false, blank: true, initial: "" })
+      }),
+      { initial: () => [] }
+    ),
+    chatBlurb:  new fields.StringField({ blank: true, initial: "" }),
+    targetHint: new fields.StringField({ blank: true, initial: "" }),
+    isCustomTemplate: new fields.BooleanField({ initial: false })
+  };
+}
+
+/* -------------------------------------------- */
 /*  Weapon                                      */
 /* -------------------------------------------- */
 
@@ -103,7 +177,12 @@ export class FlailSpellModel extends foundry.abstract.TypeDataModel {
       // We store the raw text and let the chat card substitute at cast time.
       effectFormula: new fields.StringField({ blank: true, initial: "" }),
       // Default suggested dice for the cast UI.
-      suggestedDice: new fields.NumberField({ integer: true, min: 1, max: 6, initial: 1 })
+      suggestedDice: new fields.NumberField({ integer: true, min: 1, max: 6, initial: 1 }),
+      // Ship B — shared effects framework. Automatable spells author
+      // effects whose formulas scale via @DICE / @SUM at cast time
+      // (e.g. Magic Missile damage = @SUM). Empty = text-only spell,
+      // cast posts just the [DICE]/[SUM]-substituted description card.
+      ...sharedEffectsSchema()
     };
   }
 }
@@ -623,6 +702,84 @@ export class FlailReligionModel extends foundry.abstract.TypeDataModel {
 
       // Optional homebrew attribute bonuses. Empty for the four
       // canonicals per rulebook.
+      attributeBonuses: new fields.ArrayField(
+        new fields.SchemaField({
+          attrKey:  new fields.StringField({
+            choices: ["str", "dex", "cha", "int", "luck"],
+            initial: "str"
+          }),
+          delta:    new fields.NumberField({ integer: true, initial: 0 })
+        }),
+        { initial: [] }
+      ),
+
+      isCustomTemplate: new fields.BooleanField({ initial: false })
+    };
+  }
+}
+
+/* -------------------------------------------- */
+/*  Master — Wizard patron Item                 */
+/* -------------------------------------------- */
+
+/**
+ * Master Item — a Wizard's chosen patron ("Master Spellbook", rulebook
+ * pp. 38, 42-43). First-class Foundry Item mirroring the Cleric's
+ * Religion Item: dropped onto a Wizard, it seeds the apprentice's
+ * starting spells and defines the repertoire the Wizard may draw from
+ * on level-up.
+ *
+ * The rulebook's four canonical Masters (Flakumeg / Û-Kraal /
+ * Oozzeborne / Choo-Choo) ship as seeded items; a "Custom Master"
+ * template lets GMs build their own by dragging spells into `spells[]`.
+ *
+ * Schema parallels FlailReligionModel:
+ *   - tagline, description, stats  — flavour + the Master's stat line
+ *   - tradition                    — flame/shadow/ooze/illusion/custom
+ *   - signatureItem / Note         — the Master's signature staff/weapon (display)
+ *   - spells[]                     — drag-drop spell references (the repertoire)
+ *   - attributeBonuses             — homebrew flexibility, empty for canonicals
+ *   - isCustomTemplate             — the "Custom Master" seed
+ *
+ * When embedded on a Wizard, master-embed.mjs imports the starting
+ * spells (3 random arcane + 2 from this repertoire) onto the actor.
+ */
+export class FlailMasterModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      tagline:     new fields.StringField({ blank: true, initial: "" }),
+      description: new fields.HTMLField({ required: false, blank: true, initial: "" }),
+      // The Master's printed stat line (e.g. "Level 6 · 10 hp · …").
+      stats:       new fields.StringField({ blank: true, initial: "" }),
+      // Spell tradition this Master teaches. Free text so homebrew
+      // patrons can name their own (wind, earth, cold, …); the four
+      // canonicals use flame/shadow/ooze/illusion. Display + flavour
+      // only now that repertoire membership (not tradition) gates the
+      // spellbook.
+      tradition: new fields.StringField({ blank: true, initial: "custom" }),
+
+      // Signature item — a single { uuid, name } reference to the
+      // Master's staff/weapon. Display-only (like the religion holy
+      // symbol); NOT imported onto the Wizard.
+      signatureItem: new fields.SchemaField({
+        uuid: new fields.StringField({ blank: true, initial: "" }),
+        name: new fields.StringField({ blank: true, initial: "" })
+      }),
+      signatureItemNote: new fields.StringField({ blank: true, initial: "" }),
+
+      // Repertoire — populated by drag-dropping spell Items onto the
+      // Master sheet. Stored as { uuid, name } pairs; UUID is the
+      // source of truth for import onto the Wizard, name cached for
+      // display. This is the master analogue of religion.prayers[].
+      spells: new fields.ArrayField(
+        new fields.SchemaField({
+          uuid: new fields.StringField({ blank: false }),
+          name: new fields.StringField({ blank: true, initial: "" })
+        }),
+        { initial: [] }
+      ),
+
+      // Optional homebrew attribute bonuses. Empty for the canonicals.
       attributeBonuses: new fields.ArrayField(
         new fields.SchemaField({
           attrKey:  new fields.StringField({

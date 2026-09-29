@@ -1,0 +1,107 @@
+{{!--
+  Master Item sheet — editor for a Wizard's patron ("Master Spellbook").
+  Mirrors the religion sheet (reuses rel-* styling). Fields: name /
+  tagline / description / stats / tradition / signature item / repertoire
+  spells drop-zone / custom-template flag.
+
+  NOTE: tradition uses radio inputs, NOT a <select> — a named <select> in
+  an ApplicationV2 submitOnChange form corrupts updates in Foundry v13/v14.
+--}}
+<form class="flail sheet flail-religion-sheet flail-master-sheet" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" />
+    <div class="header-fields">
+      <input type="text" name="name" value="{{item.name}}" placeholder="Master name" {{#unless editable}}disabled{{/unless}} />
+      <input type="text" name="system.tagline" value="{{system.tagline}}" placeholder="Evocative subtitle" {{#unless editable}}disabled{{/unless}} />
+    </div>
+  </header>
+
+  <section class="rel-section">
+    <header class="tab-label">Description</header>
+    {{editor descriptionHTML target="system.description" button=true editable=editable engine="prosemirror"}}
+  </section>
+
+  <section class="rel-section">
+    <header class="tab-label">Master's Stats</header>
+    <label class="rel-full">Stat line
+      <input type="text" name="system.stats" value="{{system.stats}}" placeholder="e.g. Level 6 · 10 hp · Saves 16 · Mana 20 · Human" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </section>
+
+  <section class="rel-section">
+    <header class="tab-label">Tradition</header>
+    <p class="rel-hint">The school this Master teaches. Type any name — the four canonicals use flame / shadow / ooze / illusion, but homebrew patrons can invent their own (wind, earth, cold, …).</p>
+    <label class="rel-full">Tradition
+      <input type="text" name="system.tradition" value="{{system.tradition}}" list="master-tradition-suggestions" placeholder="e.g. flame, wind, earth, cold" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <datalist id="master-tradition-suggestions">
+      <option value="flame"></option>
+      <option value="shadow"></option>
+      <option value="ooze"></option>
+      <option value="illusion"></option>
+      <option value="wind"></option>
+      <option value="earth"></option>
+      <option value="air"></option>
+      <option value="cold"></option>
+      <option value="custom"></option>
+    </datalist>
+  </section>
+
+  <section class="rel-section rel-symbol">
+    <header class="tab-label">Signature Item</header>
+    <p class="rel-hint">Optional — drag the Master's staff/weapon here (display only; not granted to apprentices).</p>
+    <div class="master-sig-drop rel-single-dropzone" data-drop-target="masterSignature">
+      {{#if system.signatureItem.name}}
+      <div class="rel-symbol-row">
+        <span class="rel-symbol-name">{{system.signatureItem.name}}</span>
+        {{#if system.signatureItem.uuid}}
+        <span class="rel-prayer-uuid" title="{{system.signatureItem.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="No UUID resolved — display only"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if editable}}
+        <button type="button" data-action="masterSignatureRemove" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </div>
+      {{else}}
+      <div class="rel-single-empty">Drop the signature item here (optional).</div>
+      {{/if}}
+    </div>
+    <label class="rel-full">Display note
+      <input type="text" name="system.signatureItemNote" value="{{system.signatureItemNote}}" placeholder="Optional flavour describing the Master's signature item" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </section>
+
+  <section class="rel-section rel-prayers">
+    <header class="tab-label">Repertoire</header>
+    <p class="rel-hint">Drag Wizard spell items into the box below. Apprentices start with three random arcane spells plus two of their choice from this repertoire, and may draw one from it each level.</p>
+    <ul class="rel-prayers-list master-spells-dropzone" data-drop-target="masterSpells">
+      {{#each system.spells as |s i|}}
+      <li class="rel-prayer-row" data-index="{{i}}">
+        <span class="rel-prayer-num">{{add i 1}}.</span>
+        <span class="rel-prayer-name">{{s.name}}</span>
+        {{#if s.uuid}}
+        <span class="rel-prayer-uuid" title="{{s.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="No UUID resolved — spell will be skipped at grant"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if ../editable}}
+        <button type="button" data-action="masterSpellRemove" data-index="{{i}}" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </li>
+      {{/each}}
+      {{#unless system.spells.length}}
+      <li class="rel-prayers-empty">Drop spell items here to build this Master's repertoire.</li>
+      {{/unless}}
+    </ul>
+  </section>
+
+  {{#if editable}}
+  <section class="rel-section rel-flags">
+    <label class="rel-checkbox">
+      <input type="checkbox" name="system.isCustomTemplate" {{#if system.isCustomTemplate}}checked{{/if}} />
+      Custom Template (marks this as an editable homebrew starter)
+    </label>
+  </section>
+  {{/if}}
+</form>

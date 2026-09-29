@@ -21,7 +21,8 @@
       "background":   "Background",
       "combatTalent": "Combat Talent",
       "combatTree":   "Combat Tree",
-      "religion":     "Religion"
+      "religion":     "Religion",
+      "master":       "Master"
     }
   },
   "FLAIL": {
@@ -466,7 +467,8 @@
       "instrument":   "Instrument",
       "background":   "Background",
       "combatTalent": "Combat Talent",
-      "religion":     "Religion"
+      "religion":     "Religion",
+      "master":       "Master"
     },
     "Item": {
       "New": "New {type}",
@@ -711,6 +713,7 @@
       "WeatheredButton":      "Weathered:",
       "WeatheredAvailable":   "Available",
       "WeatheredUnavailable": "Unavailable",
+      "ReactionsLabel":       "Reactions",
       "FeatCheckboxLabel":    "Extraordinary Feat",
       "FeatCheckboxHint":     "Tick to route this attack through the Extraordinary Feat mechanic — attack + STR/DEX save (auto-detected from weapon type), with the outcome verdict posted to chat.",
       "FeatButtonHint":       "Extraordinary Feat — declare a narrative consequence, then roll attack + STR/DEX save. Shift = save advantage, Ctrl = save disadvantage.",
@@ -744,6 +747,10 @@
     "Wizard": {
       "SpellbookEmptyHint": "Drag spells from the Wizard Spells compendium here to build your Master Spellbook.",
       "MasterLabel":        "Master Apprenticeship",
+      "MasterOpen":         "Open Master sheet",
+      "MasterRemove":       "Remove Master",
+      "MasterDropPrompt":   "Drag a Master from the Wizard Masters compendium here to apprentice under them.",
+      "MasterSpellDragTitle": "Drag into your spellbook to learn this spell.",
       "MasterPickLabel":    "Apprenticed under",
       "MasterChoose":       "— choose a Master —",
       "MasterEmptyHint":    "Pick a Master to unlock their spell repertoire. Common (arcane) spells work regardless.",
@@ -906,6 +913,7 @@
       "IronFistRequiresTalent":    "Iron Fist requires the Martial Artist Basic combat talent.",
       "WizardMasterUnset":         "Choose a Master Apprenticeship before adding master-specific spells. Common (arcane) spells are always accepted.",
       "WizardMasterMismatch":      "{spell} is from another Master's repertoire — this wizard is apprenticed under {master}.",
+      "WizardSpellNotInRepertoire": "{spell} isn't a common (arcane) spell and isn't in {master}'s repertoire.",
       "WizardMasterUnlockGmOnly":  "Only the GM can unlock the Master Apprenticeship.",
       "InvalidManaSpend":          "Invalid mana amount.",
       "NoManaAvailable":           "No mana left — take a long rest to refill.",

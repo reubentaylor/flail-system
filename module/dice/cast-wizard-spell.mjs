@@ -1,5 +1,6 @@
 import { FLAIL } from "../helpers/config.mjs";
 import { analyzePool } from "./poker.mjs";
+import { runEffects } from "./effects-runner.mjs";
 
 /**
  * Cast a wizard spell (FLAIL v0.2 Master Spellbook).
@@ -151,7 +152,7 @@ export async function rollWizardSpell({ actor, spell, mana, skipManaPool = false
   // message for DSN animation and rolls-drawer visibility.
   const rolls = sideEffectRoll ? [castRoll, sideEffectRoll] : [castRoll];
 
-  return ChatMessage.create({
+  const message = await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     rolls,
     content,
@@ -170,4 +171,146 @@ export async function rollWizardSpell({ actor, spell, mana, skipManaPool = false
       }
     }
   });
+
+  /* ---------- 6. Auto-apply Drained on exactly one six (RAW) ---------- */
+  if (sideEffect?.kind === "drained") {
+    await applyDrainedCondition(actor);
+  }
+
+  /* ---------- 7. Run automatable effects (Ship B) ----------
+   * Spells that carry effects (Magic Missile damage, Shield temp-hp, …)
+   * resolve through the shared effects-runner, with @DICE / @SUM bound
+   * to this cast so magnitudes scale correctly. Text-only spells (no
+   * effects authored) skip this — the substituted description card
+   * above is the whole result. */
+  const effects = spell.system?.effects ?? [];
+  if (Array.isArray(effects) && effects.length > 0) {
+    try {
+      await runEffects({
+        actor,
+        source: spell,
+        effects,
+        activation: spell.system?.activation ?? {},
+        rollData: { DICE: mana, SUM: sumValue },
+        chatContext: {
+          headerIcon: "fa-wand-magic-sparkles",
+          headerLabel: spell.name,
+          flavor: spell.system?.chatBlurb ?? ""
+        }
+      });
+    } catch (err) {
+      console.error("FLAIL | wizard spell effects failed:", err);
+    }
+  }
+
+  return message;
+}
+
+/**
+ * Apply the Drained condition to the caster (RAW: one 6 in the cast pool
+ * → gain Drained). No-op if the caster already carries Drained (we don't
+ * stack). Resolves the condition from the world conditions compendium.
+ */
+async function applyDrainedCondition(actor) {
+  try {
+    // Don't stack — if the caster already carries Drained, leave it.
+    const already = actor.items?.some(i =>
+      i.type === "condition" && (i.name ?? "").toLowerCase() === "drained"
+    );
+    if (already) {
+      ui.notifications?.info(`FLAIL: ${actor.name} rolled a 6 — already Drained, not stacking.`);
+      return;
+    }
+    const pack = game.packs.get("world.flail-conditions");
+    if (!pack) {
+      ui.notifications?.warn("FLAIL: conditions compendium missing — add Drained manually (one 6 rolled).");
+      return;
+    }
+    const idx = await pack.getIndex();
+    const entry = [...idx].find(e => (e.name ?? "").toLowerCase() === "drained");
+    if (!entry) {
+      ui.notifications?.warn("FLAIL: 'Drained' not found in the conditions compendium — add it manually.");
+      return;
+    }
+    const source = await pack.getDocument(entry._id);
+    if (!source) {
+      ui.notifications?.warn("FLAIL: could not load the Drained condition — add it manually.");
+      return;
+    }
+    const data = source.toObject();
+    delete data._id;
+    data.system = data.system ?? {};
+    data.system.slotsRequired = 1;
+
+    // Place the Drained condition into an inventory slot. Preference order
+    // (RAW: conditions occupy slots): stashed (satchel) → worn (body) →
+    // carried (hands). Only zones whose config allows conditions are
+    // considered, so with the stock config this is satchel → body; hands
+    // is skipped unless its `allowConditions` flag is turned on.
+    const slot = findFreeConditionSlot(actor);
+    if (slot) {
+      data.system.location  = slot.zone;
+      data.system.slotIndex = slot.index;
+      await actor.createEmbeddedDocuments("Item", [data]);
+      ui.notifications?.info(
+        `FLAIL: ${actor.name} gains Drained — placed in the ${slot.zoneLabel} (slot ${slot.index + 1}).`
+      );
+    } else {
+      // No free slot anywhere conditions are allowed. Apply it unplaced
+      // and signal (persistently) that the player must discard an item
+      // to make room, then move Drained into the freed slot.
+      data.system.location = "unequipped";
+      await actor.createEmbeddedDocuments("Item", [data]);
+      ui.notifications?.warn(
+        `FLAIL: ${actor.name} gains Drained but every eligible inventory slot is full — ` +
+        `discard an item, then drag Drained into the freed slot.`,
+        { permanent: true }
+      );
+    }
+    // Defensive re-render so the inventory grid + conditions strip refresh.
+    actor.sheet?.render(false);
+  } catch (err) {
+    console.error("FLAIL | failed to auto-apply Drained:", err);
+    ui.notifications?.error("FLAIL: failed to auto-apply Drained — see console.");
+  }
+}
+
+/**
+ * Find the first free inventory slot for a condition, honouring the
+ * preference order stashed (satchel) → worn (body) → carried (hands).
+ * Only zones whose config sets `allowConditions` are eligible (adornment
+ * and, by default, hands are excluded), and locked / occupied slots are
+ * skipped. Multi-slot items are accounted for via their column spans.
+ *
+ * @param {Actor} actor
+ * @returns {{zone:string, index:number, zoneLabel:string}|null}
+ */
+function findFreeConditionSlot(actor) {
+  const ORDER = ["satchel", "body", "hands"]; // stashed → worn → carried
+  const zonesCfg = FLAIL.inventory?.zones ?? {};
+  const avail = actor.system?.slotAvailability ?? {};
+
+  for (const zone of ORDER) {
+    const zdef = zonesCfg[zone];
+    if (!zdef || zdef.allowConditions === false) continue; // conditions not permitted here
+    const slots = avail[zone] ?? [];
+    const cols = zdef.columns ?? 1;
+
+    // Build the set of occupied slot indices in this zone, including the
+    // extension slots taken by any multi-slot items (idx + i*cols).
+    const occupied = new Set();
+    for (const it of actor.items) {
+      if (it.system?.location !== zone) continue;
+      const start = it.system?.slotIndex ?? 0;
+      const span  = it.system?.slotsRequired ?? 1;
+      for (let i = 0; i < span; i++) occupied.add(start + i * cols);
+    }
+
+    for (const s of slots) {
+      if (s.locked) continue;
+      if (occupied.has(s.index)) continue;
+      return { zone, index: s.index, zoneLabel: game.i18n.localize(zdef.label) };
+    }
+  }
+  return null;
 }

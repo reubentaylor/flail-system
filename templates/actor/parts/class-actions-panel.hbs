@@ -33,6 +33,20 @@
           <span class="ca-name">{{talent.label}}</span>
         </div>
       {{/each}}
+      {{#if reactiveTalents.length}}
+        <div class="ca-reaction-label">{{localize "FLAIL.Warrior.ReactionsLabel"}}</div>
+        {{#each reactiveTalents as |r|}}
+          <button type="button"
+                  class="ca-btn ca-reaction"
+                  data-action="useReaction"
+                  data-event="{{r.event}}"
+                  title="{{r.hint}}"
+                  {{#unless ../editable}}disabled{{/unless}}>
+            <i class="fas {{r.icon}} ca-icon"></i>
+            <span class="ca-name">{{r.name}}</span>
+          </button>
+        {{/each}}
+      {{/if}}
     {{/if}}
 
     {{!-- WIZARD — Read Magic + cast each known spell -------------------- --}}

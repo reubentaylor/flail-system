@@ -116,3 +116,61 @@ export function countPickedSlots(actor) {
 }
 
 export { SLOT_KEYS };
+
+/* ============================================================
+ *  Reactive trigger evaluator (Ship 3)
+ * ============================================================ */
+
+const REACTIVE_HIT_TIERS = new Set(["minor", "major", "deathBlow"]);
+
+/**
+ * Given a DEFENDING Warrior's picked talent documents and the incoming
+ * attack's context, return the reactive talents that should offer a
+ * reaction prompt to that Warrior.
+ *
+ * The FLAIL attack pipeline resolves no defender Defence, so "hit" means
+ * the attacker simply rolled a hit tier (minor / major / deathBlow).
+ * Melee vs ranged comes from the ATTACKER's weapon (`weaponType`:
+ * "melee" | "missile").
+ *
+ * Reactive events (authored on the talent as `triggerReactiveEvent`):
+ *   - hitInMelee       → Reflexes   (hit by a melee attack)
+ *   - hitByRanged      → Deflect    (hit by a missile attack)
+ *   - adversaryFumbles → Opportunist (attacker fumbles a melee attack)
+ *
+ * @param {Array<Item>} defenderTalents  loadPickedTalents(defender) result
+ * @param {object} attackCtx
+ * @param {"melee"|"missile"} attackCtx.weaponType  attacker's weapon type
+ * @param {string} attackCtx.tier                   analysis.tier
+ * @returns {Array<{event,talentName,title,text,icon}>}
+ */
+export function evaluateReactiveTriggers(defenderTalents, attackCtx = {}) {
+  const out = [];
+  const isRanged = attackCtx.weaponType === "missile";
+  const isMelee = !isRanged; // anything not explicitly missile is melee
+  const tier = attackCtx.tier;
+  const isHit = REACTIVE_HIT_TIERS.has(tier);
+  const isFumble = tier === "fumble";
+
+  for (const talent of defenderTalents ?? []) {
+    const t = talent.system ?? {};
+    if (t.triggerKind !== "reactive") continue;
+    const event = t.triggerReactiveEvent;
+    let fires = false;
+    switch (event) {
+      case "hitInMelee":       fires = isMelee && isHit; break;
+      case "hitByRanged":      fires = isRanged && isHit; break;
+      case "adversaryFumbles": fires = isMelee && isFumble; break;
+      default:                 fires = false;
+    }
+    if (!fires) continue;
+    out.push({
+      event,
+      talentName: talent.name,
+      title: t.reminderTitle || talent.name,
+      text: t.reminderText || `<p>${talent.name}</p>`,
+      icon: t.reminderIcon || "fa-bolt"
+    });
+  }
+  return out;
+}
