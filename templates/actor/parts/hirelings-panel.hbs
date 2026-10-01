@@ -1,0 +1,74 @@
+{{!--
+  Hirelings tab (Ship H2) — the retainers this character has hired.
+  Drop a hireling actor onto the zone to hire them; each row carries the
+  campaign actions: pay allowance, morale save, level-up, repeatable
+  ability, open sheet, and release.
+--}}
+<section class="tab-panel hirelings-panel" data-tab="hirelings">
+
+  <div class="hirelings-card">
+    <header class="tab-label">
+      Hirelings
+      {{#if hasHirelings}}<span class="hirelings-count">{{hirelings.length}}</span>{{/if}}
+      {{#if hirelingDue}}<span class="hirelings-due" title="Allowances due this session">{{hirelingDue}} due</span>{{/if}}
+      {{#if editable}}
+      <span class="hirelings-head-btns">
+        <button type="button" data-action="hirelingNewSession" title="New session — mark every hireling's allowance due again"><i class="fas fa-calendar-day"></i> New session</button>
+      </span>
+      {{/if}}
+    </header>
+
+    {{#if editable}}
+    <div class="hireling-hire-drop" data-flail-drop-target="hireling">
+      <i class="fas fa-user-plus"></i> Drag a hireling here to hire them
+    </div>
+    {{/if}}
+
+    {{#if hasHirelings}}
+    <ul class="hirelings-list">
+      {{#each hirelings as |h|}}
+      <li class="hireling-row" data-hireling-id="{{h.id}}">
+        <img class="hireling-row-img" src="{{h.img}}" alt="" data-action="hirelingOpen" data-hireling-id="{{h.id}}" title="Open {{h.name}}" />
+        <div class="hireling-row-main">
+          <div class="hireling-row-head">
+            <span class="hireling-row-name">{{h.name}}</span>
+            <span class="hireling-row-type">{{h.typeLabel}}</span>
+            <span class="hireling-row-lvl">L{{h.level}}</span>
+            <span class="hireling-row-hp"><i class="fas fa-heart"></i> {{h.hp.value}}/{{h.hp.max}}</span>
+          </div>
+          <div class="hireling-row-sub">
+            <span class="hireling-row-allow">
+              <i class="fas fa-coins"></i> {{h.allowance}}
+              {{#if h.allowancePaid}}<span class="hireling-paid">paid</span>{{else}}<span class="hireling-unpaid">due</span>{{/if}}
+            </span>
+            {{#if h.hasRepeatableAbility}}
+            <span class="hireling-row-ability">
+              <i class="fas fa-wand-sparkles"></i>
+              {{#if h.isHealer}}{{h.abilityUsesLeft}} cure(s){{else}}{{#if h.abilityDailyUsed}}used{{else}}ready{{/if}}{{/if}}
+            </span>
+            {{/if}}
+          </div>
+        </div>
+        {{#if ../editable}}
+        <div class="hireling-row-actions">
+          <button type="button" data-action="hirelingPay" data-hireling-id="{{h.id}}" title="Pay allowance from your coins"><i class="fas fa-hand-holding-dollar"></i></button>
+          <button type="button" data-action="hirelingMorale" data-hireling-id="{{h.id}}" title="Morale: make a CHA save (Shift = advantage, Ctrl = disadvantage)"><i class="fas fa-flag"></i></button>
+          <button type="button" data-action="hirelingLevel" data-hireling-id="{{h.id}}" {{#unless h.canLevelUp}}disabled{{/unless}} title="Level up with you"><i class="fas fa-arrow-up"></i></button>
+          {{#if h.hasRepeatableAbility}}
+          <button type="button" data-action="hirelingAbility" data-hireling-id="{{h.id}}" title="Use ability"><i class="fas fa-play"></i></button>
+          <button type="button" data-action="hirelingNewDay" data-hireling-id="{{h.id}}" title="New day — refresh ability"><i class="fas fa-sun"></i></button>
+          {{/if}}
+          <button type="button" data-action="hirelingOpen" data-hireling-id="{{h.id}}" title="Open sheet"><i class="fas fa-up-right-from-square"></i></button>
+          <button type="button" data-action="hirelingUnlink" data-hireling-id="{{h.id}}" title="Release from service"><i class="fas fa-link-slash"></i></button>
+        </div>
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="hirelings-empty">No hirelings in your service. Create a hireling actor, then drag it here (or drop this character onto the hireling's Type tab).</p>
+    {{/if}}
+
+    <p class="hirelings-hint"><i class="fas fa-circle-info"></i> RAW: allowances are paid at hire and the start of each session; with no funds the hireling leaves. Ill-used hirelings test morale — on a failed CHA save they flee with their carried &amp; stashed gear.</p>
+  </div>
+</section>

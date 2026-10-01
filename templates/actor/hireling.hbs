@@ -1,0 +1,183 @@
+{{!-- Hireling sheet (tabbed). Header is pinned; Abilities / Inventory /
+      Type tabs below. Inventory reuses the character inventory-slot
+      partial for identical dimensions, two-slot spans, and usage pips. --}}
+<form class="flail hireling-sheet" autocomplete="off">
+
+  <header class="hireling-header">
+    <img class="hireling-portrait" src="{{actor.img}}" data-action="editImage" data-edit="img" title="{{actor.name}}" />
+    <div class="hireling-headfields">
+      <input class="hireling-name" type="text" name="name" value="{{actor.name}}" placeholder="Hireling name" {{#unless editable}}disabled{{/unless}} />
+      <div class="hireling-subrow">
+        <span class="hireling-badge">HIRELING</span>
+        {{#if currentType}}<span class="hireling-type-badge">{{currentType.label}}</span>{{/if}}
+        <label class="hireling-level">Level
+          <input type="number" name="system.level" value="{{system.level}}" min="1" max="6" {{#unless editable}}disabled{{/unless}} />
+        </label>
+      </div>
+    </div>
+  </header>
+
+  {{!-- Tab nav --}}
+  <nav class="tabs-nav" data-group="primary">
+    {{#each tabs as |tab|}}
+    <button type="button" class="tab-btn {{#if tab.active}}is-active{{/if}}" data-action="selectTab" data-tab="{{tab.id}}">{{tab.label}}</button>
+    {{/each}}
+  </nav>
+
+  {{!-- ABILITIES: attributes + vitals --}}
+  <section class="tab-panel" data-tab="abilities">
+    <div class="hireling-card hireling-attrs">
+      <header class="tab-label">Attributes</header>
+      <div class="hireling-attr-row">
+        {{#each attributes as |a|}}
+        <div class="hireling-attr">
+          <div class="hireling-attr-label">{{a.label}}</div>
+          <div class="hireling-attr-fields">
+            <input type="number" name="system.attributes.{{a.key}}.base" value="{{a.base}}" min="0" title="Base" {{#unless ../editable}}disabled{{/unless}} />
+            <span class="hireling-attr-current" title="Current (base + mods)">{{a.current}}</span>
+          </div>
+          <button type="button" class="hireling-save-btn" data-action="rollSave" data-attribute="{{a.key}}" title="Roll a {{a.label}} save (Shift = advantage, Ctrl = disadvantage)">Save</button>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="hireling-card hireling-vitals">
+      <header class="tab-label">Vitals</header>
+      <div class="hireling-hp-row">
+        <span class="hireling-hp-label">HP</span>
+        <button type="button" data-action="adjustHp" data-delta="-1" title="-1 HP" {{#unless editable}}disabled{{/unless}}><i class="fas fa-minus"></i></button>
+        <span class="hireling-hp-value">{{system.hp.value}} / {{system.hp.max}}</span>
+        <button type="button" data-action="adjustHp" data-delta="1" title="+1 HP" {{#unless editable}}disabled{{/unless}}><i class="fas fa-plus"></i></button>
+        <label class="hireling-hp-max">Max
+          <input type="number" name="system.hp.max" value="{{system.hp.max}}" min="0" {{#unless editable}}disabled{{/unless}} />
+        </label>
+      </div>
+    </div>
+  </section>
+
+  {{!-- INVENTORY: 8-slot grid (character slot partial) --}}
+  <section class="tab-panel" data-tab="inventory">
+    <div class="hireling-card hireling-inventory">
+      <header class="tab-label">Inventory
+        {{#if editable}}
+        <span class="hireling-create-btns">
+          <button type="button" data-action="itemCreate" data-type="weapon" title="New weapon"><i class="fas fa-khanda"></i></button>
+          <button type="button" data-action="itemCreate" data-type="armour" title="New armour"><i class="fas fa-shield-halved"></i></button>
+          <button type="button" data-action="itemCreate" data-type="gear" title="New gear"><i class="fas fa-box"></i></button>
+        </span>
+        {{/if}}
+      </header>
+      <div class="hireling-inv">
+        {{#each inventoryZones as |zone|}}
+        <div class="hireling-zone-wrap">
+          <div class="hireling-zone-title">{{zone.label}} <span class="hireling-zone-considered">({{zone.considered}})</span></div>
+          <div class="hireling-zone-grid zone-{{zone.key}} inventory-zone" data-zone="{{zone.key}}">
+            {{#each zone.slots as |slot|}}
+            {{> "systems/flail/templates/actor/parts/inventory-slot.hbs" slot=slot zone=zone.key }}
+            {{/each}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      <p class="hireling-inv-hint">Drag items between slots. Two-slot items span downward; click the usage dots to mark wear.</p>
+    </div>
+  </section>
+
+  {{!-- TYPE: type picker, ability, allowance, granted talents/spells, notes --}}
+  <section class="tab-panel" data-tab="type">
+    <div class="hireling-card hireling-type-card">
+      <header class="tab-label">Type &amp; Allowance</header>
+      <div class="hireling-type-row">
+        <select name="hireling-type-picker" class="hireling-type-select" {{#unless editable}}disabled{{/unless}}>
+          {{#each typeOptions as |opt|}}
+          <option value="{{opt.key}}" {{#if opt.selected}}selected{{/if}}>{{opt.label}}</option>
+          {{/each}}
+        </select>
+        <button type="button" data-action="applyHirelingType" {{#unless editable}}disabled{{/unless}}><i class="fas fa-user-check"></i> Apply Type</button>
+        {{#if currentType}}<span class="hireling-allowance">Allowance: {{currentType.allowance}} coins</span>{{/if}}
+      </div>
+      <label class="hireling-ability">Ability
+        <textarea name="system.ability" rows="3" placeholder="The hireling's special ability" {{#unless editable}}disabled{{/unless}}>{{system.ability}}</textarea>
+      </label>
+    </div>
+
+    {{!-- H2 — Service: patron, allowance, morale, level, ability --}}
+    <div class="hireling-card hireling-service">
+      <header class="tab-label">Service</header>
+
+      {{!-- Patron link --}}
+      <div class="hireling-patron-row">
+        {{#if patron}}
+        <div class="hireling-patron-linked">
+          <img class="hireling-patron-img" src="{{patron.img}}" alt="" />
+          <div class="hireling-patron-meta">
+            <span class="hireling-patron-name"><i class="fas fa-user-shield"></i> {{patron.name}}</span>
+            <span class="hireling-patron-sub">Level {{patron.level}} · {{patron.coins}} coins</span>
+          </div>
+          <button type="button" data-action="openPatron" title="Open patron sheet"><i class="fas fa-up-right-from-square"></i></button>
+          {{#if editable}}<button type="button" data-action="unlinkPatron" title="Release from service"><i class="fas fa-link-slash"></i></button>{{/if}}
+        </div>
+        {{else}}
+        <div class="hireling-patron-drop" data-flail-drop-target="patron">
+          <i class="fas fa-user-plus"></i> Drag the hiring character here to set a patron
+        </div>
+        {{/if}}
+      </div>
+
+      {{!-- Allowance --}}
+      <div class="hireling-service-row">
+        <span class="hireling-service-label"><i class="fas fa-coins"></i> Allowance</span>
+        <span class="hireling-service-value">{{allowance}} coins
+          {{#if allowancePaid}}<span class="hireling-paid">· paid</span>{{else}}<span class="hireling-unpaid">· due</span>{{/if}}
+        </span>
+        {{#if editable}}<button type="button" data-action="payAllowance" {{#unless patron}}disabled title="Link a patron first"{{/unless}}><i class="fas fa-hand-holding-dollar"></i> Pay</button>{{/if}}
+      </div>
+
+      {{!-- Morale + level-up --}}
+      {{#if editable}}
+      <div class="hireling-service-btns">
+        <button type="button" data-action="rollMorale" {{#unless patron}}disabled title="Link a patron first"{{/unless}} title="Patron rolls a CHA save (Shift = advantage, Ctrl = disadvantage)"><i class="fas fa-flag"></i> Morale save</button>
+        <button type="button" data-action="levelUp" {{#unless canLevelUp}}disabled{{/unless}} title="Level up alongside the patron (+1 to three attributes, +1 max HP)"><i class="fas fa-arrow-up"></i> Level up</button>
+        <button type="button" data-action="promoteToCharacter" title="On the patron's death: recast this hireling as a level-1 character, keeping attribute scores and max HP"><i class="fas fa-user-graduate"></i> Promote to character</button>
+      </div>
+      {{/if}}
+
+      {{!-- Repeatable ability (Healer / Armourer / Blacksmith) --}}
+      {{#if hasRepeatableAbility}}
+      <div class="hireling-service-row hireling-ability-row">
+        <span class="hireling-service-label"><i class="fas fa-wand-sparkles"></i> Daily ability</span>
+        <span class="hireling-service-value">
+          {{#if isHealer}}{{abilityUsesLeft}} cure(s) left today{{else}}{{#if abilityDailyUsed}}used today{{else}}ready{{/if}}{{/if}}
+        </span>
+        {{#if editable}}
+        <button type="button" data-action="useAbility" title="Use the hireling's repeatable ability"><i class="fas fa-play"></i> Use</button>
+        <button type="button" data-action="newDay" title="New day — refresh daily ability charges"><i class="fas fa-sun"></i> New day</button>
+        {{/if}}
+      </div>
+      {{/if}}
+    </div>
+
+    {{#if extraItems.length}}
+    <div class="hireling-card hireling-extras">
+      <header class="tab-label">Talents &amp; Spells</header>
+      <ul class="hireling-extra-list">
+        {{#each extraItems as |it|}}
+        <li class="hireling-extra">
+          <img class="slot-img" src="{{it.img}}" alt="" />
+          <span class="slot-name">{{it.name}}</span>
+          <span class="hireling-extra-type">{{it.type}}</span>
+          <button type="button" data-action="itemEdit" data-item-id="{{it.id}}" title="Edit"><i class="fas fa-pen"></i></button>
+          <button type="button" data-action="itemDelete" data-item-id="{{it.id}}" title="Remove"><i class="fas fa-trash"></i></button>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+    {{/if}}
+
+    <div class="hireling-card hireling-notes">
+      <header class="tab-label">Notes</header>
+      {{editor descriptionHTML target="system.description" button=true editable=editable engine="prosemirror"}}
+    </div>
+  </section>
+</form>

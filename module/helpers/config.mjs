@@ -249,6 +249,73 @@ FLAIL.inventory = {
 };
 
 /* -------------------------------------------- */
+/*  Hirelings (Ship H1)                         */
+/* -------------------------------------------- */
+
+// Hireling inventory — the compact 8-slot layout from the Hireling
+// Sheet: 2 carried (hands) + 2 worn (body) + 4 stashed (satchel). Reuses
+// the same `location` values as characters, so item drops need no schema
+// change. No STR/level locks — every slot is always available.
+FLAIL.hirelingInventory = {
+  zones: {
+    hands:   { label: "FLAIL.Inventory.Hands",   count: 2, columns: 1, considered: "carried" },
+    body:    { label: "FLAIL.Inventory.Body",    count: 2, columns: 1, considered: "worn" },
+    satchel: { label: "FLAIL.Inventory.Satchel", count: 4, columns: 2, considered: "stashed" }
+  }
+};
+
+// The 14 canonical hireling types (rulebook p.56). `grants` drives the
+// auto-applied starting package (H1): hpBonus (+max HP), attrSet (set an
+// attribute's base), itemsByName (embed weapons/armour/gear from any Item
+// pack), talentsByName (embed thieving talents), randomArcaneSpell (roll
+// one arcane Wizard spell). `patronClass` gates who may hire the type.
+FLAIL.hirelingTypes = {
+  acolyte:     { key: "acolyte",     label: "Acolyte",     allowance: 0,   patronClass: "cleric",
+                 ability: "Their master may perform an extra Miracle Call per session. Only follows a Cleric.",
+                 grants: {} },
+  armourer:    { key: "armourer",    label: "Armourer",    allowance: 100,
+                 ability: "May clear one usage dot on any armour item once per day.",
+                 grants: {} },
+  apprentice:  { key: "apprentice",  label: "Apprentice",  allowance: 200, patronClass: "wizard",
+                 ability: "Starts with a random Wizard spell, and gains a new one at each level. Their mana pool equals INT. Only hireable by Wizards.",
+                 grants: { randomArcaneSpell: true } },
+  blacksmith:  { key: "blacksmith",  label: "Blacksmith",  allowance: 100,
+                 ability: "May clear one usage dot on any weapon once per day.",
+                 grants: {} },
+  cook:        { key: "cook",        label: "Cook",        allowance: 50,
+                 ability: "Produces a grub inventory card if given appropriate ingredients.",
+                 grants: {} },
+  cutpurse:    { key: "cutpurse",    label: "Cutpurse",    allowance: 80,
+                 ability: "Starts with 8 DEX, plus Pick Lock and Pick Pocket talents.",
+                 grants: { attrSet: { dex: 8 }, talentsByName: ["Pick Lock", "Pick Pocket"] } },
+  flagbearer:  { key: "flagbearer",  label: "Flagbearer",  allowance: 50,
+                 ability: "While carrying the flag, rational adversaries of inferior level must roll Morale or flee the scene.",
+                 grants: {} },
+  guide:       { key: "guide",       label: "Guide",       allowance: 150,
+                 ability: "Characters cannot get lost when hexcrawling.",
+                 grants: {} },
+  healer:      { key: "healer",      label: "Healer",      allowance: 150,
+                 ability: "May cure d6 hit points a number of times equal to their level per day.",
+                 grants: {} },
+  knight:      { key: "knight",      label: "Knight",      allowance: 200,
+                 ability: "Starts with +2 HP, plus a sword and shield.",
+                 grants: { hpBonus: 2, itemsByName: ["Short Sword", "Shield"] } },
+  picker:      { key: "picker",      label: "Picker",      allowance: 80,
+                 ability: "Brings one grub inventory card per day when in the wilderness.",
+                 grants: {} },
+  porter:      { key: "porter",      label: "Porter",      allowance: 100,
+                 ability: "May stack item cards atop three previously occupied slots.",
+                 grants: {} },
+  torchbearer: { key: "torchbearer", label: "Torchbearer", allowance: 50,
+                 ability: "Never runs out of torches.",
+                 grants: {} },
+  scholar:     { key: "scholar",     label: "Scholar",     allowance: 250,
+                 ability: "Can read dead and exotic languages.",
+                 grants: {} }
+};
+FLAIL.hirelingTypeKeys = Object.keys(FLAIL.hirelingTypes);
+
+/* -------------------------------------------- */
 /*  Conditions                                  */
 /* -------------------------------------------- */
 

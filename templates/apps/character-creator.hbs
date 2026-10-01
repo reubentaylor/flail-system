@@ -1,0 +1,170 @@
+{{!-- Character Creator (Ship C1) — identity / class / attributes + create. --}}
+<div class="cc-root" data-step="{{step}}">
+
+  {{!-- Step rail --}}
+  <nav class="cc-rail">
+    {{#each steps as |s|}}
+    <div class="cc-rail-step {{#if s.active}}is-active{{/if}} {{#if s.done}}is-done{{/if}}">
+      <span class="cc-rail-num">{{s.num}}</span>
+      <span class="cc-rail-label">{{s.label}}</span>
+    </div>
+    {{/each}}
+  </nav>
+
+  <div class="cc-body">
+
+    {{!-- IDENTITY --}}
+    {{#if isIdentity}}
+    <section class="cc-step cc-identity">
+      <div class="cc-quickbuild-bar">
+        <button type="button" class="cc-quickbuild" data-action="ccQuickBuild"><i class="fas fa-bolt"></i> Quick build</button>
+        <span class="cc-quickbuild-note">roll a complete level-1 character in one step</span>
+      </div>
+      <h2 class="cc-h">Who are they?</h2>
+      <div class="cc-identity-row">
+        <img class="cc-portrait" src="{{data.img}}" data-action="ccEditImage" title="Choose a portrait" />
+        <label class="cc-field">Name
+          <span class="cc-name-row">
+            <input type="text" name="charname" value="{{data.name}}" placeholder="Character name" />
+            <button type="button" class="cc-name-rand" data-action="ccRandomName" title="Roll a random name"><i class="fas fa-dice"></i></button>
+          </span>
+        </label>
+      </div>
+      <p class="cc-hint">Pick a portrait and a name — or roll a random one. If the Tokenizer module is active, clicking the portrait opens Tokenizer (Shift-click for the plain file picker). You can change both later on the sheet.</p>
+    </section>
+    {{/if}}
+
+    {{!-- CLASS --}}
+    {{#if isClass}}
+    <section class="cc-step cc-class">
+      <h2 class="cc-h">Choose a class</h2>
+      <div class="cc-class-grid">
+        {{#each classes as |c|}}
+        <button type="button" class="cc-class-card {{#if c.selected}}is-selected{{/if}}" data-action="ccPickClass" data-class-key="{{c.key}}">
+          <span class="cc-class-name">{{c.label}}</span>
+          <span class="cc-class-hp"><i class="fas fa-heart"></i> {{c.maxHp}} HP</span>
+        </button>
+        {{/each}}
+      </div>
+
+      {{#if selectedClass}}
+      <div class="cc-class-detail">
+        <h3>{{selectedClass.label}}</h3>
+        <p class="cc-class-meta"><strong>Max HP:</strong> {{selectedClass.maxHp}} &nbsp;·&nbsp; <strong>Armour:</strong> {{selectedClass.armour}} &nbsp;·&nbsp; <strong>Weapons:</strong> {{selectedClass.weapons}}{{#if selectedClass.resource}} &nbsp;·&nbsp; <strong>Resource:</strong> {{selectedClass.resource}}{{/if}}</p>
+        {{#if selectedClass.skills.length}}
+        <ul class="cc-class-skills">
+          {{#each selectedClass.skills as |sk|}}
+          <li><strong>{{sk.name}}:</strong> {{sk.desc}}</li>
+          {{/each}}
+        </ul>
+        {{/if}}
+      </div>
+      {{else}}
+      <p class="cc-hint">Select a class to see its hit points, proficiencies and special skills.</p>
+      {{/if}}
+    </section>
+    {{/if}}
+
+    {{!-- ATTRIBUTES --}}
+    {{#if isAttributes}}
+    <section class="cc-step cc-attrs">
+      <h2 class="cc-h">Roll attributes</h2>
+      <p class="cc-hint">Roll 3d6 for each attribute in order, keeping the two highest (a value of 2–12). Then you may swap two scores.</p>
+
+      {{#unless rolled}}
+      <div class="cc-roll-cta">
+        <button type="button" class="cc-roll-btn" data-action="ccRoll"><i class="fas fa-dice-d6"></i> Roll attributes</button>
+      </div>
+      {{else}}
+      <div class="cc-attr-grid">
+        {{#each attrRows as |row|}}
+        <div class="cc-attr-cell">
+          <div class="cc-attr-label">{{row.label}}</div>
+          <div class="cc-attr-value">{{row.value}}</div>
+          <div class="cc-attr-dice">
+            {{#each row.dice as |d|}}<span class="cc-die {{#if d.dropped}}dropped{{/if}}">{{d.v}}</span>{{/each}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+
+      <div class="cc-swap">
+        {{#if hasSwapped}}
+        <span class="cc-swap-note">Scores swapped.</span>
+        <button type="button" class="cc-swap-undo" data-action="ccUndoSwap"><i class="fas fa-rotate-left"></i> Undo swap</button>
+        {{else}}
+        <span class="cc-swap-label">Swap two scores:</span>
+        <select name="swapA">{{#each attrOptions as |o|}}<option value="{{o.key}}">{{o.label}}</option>{{/each}}</select>
+        <i class="fas fa-right-left"></i>
+        <select name="swapB">{{#each attrOptions as |o|}}<option value="{{o.key}}">{{o.label}}</option>{{/each}}</select>
+        <button type="button" class="cc-swap-btn" data-action="ccSwap">Swap</button>
+        {{/if}}
+      </div>
+      {{/unless}}
+    </section>
+    {{/if}}
+
+    {{!-- BACKGROUND --}}
+    {{#if isBackground}}
+    <section class="cc-step cc-handoff">
+      <h2 class="cc-h">Background</h2>
+      <p class="cc-hint">Each class has a d6 background table. Open the picker to choose or roll one — it embeds the background and applies its grants to your character.</p>
+      <button type="button" class="cc-open-btn" data-action="ccOpenBackground"><i class="fas fa-scroll"></i> Open Background Picker</button>
+      {{#if backgroundName}}<p class="cc-current">Current: <strong>{{backgroundName}}</strong></p>{{else}}<p class="cc-current cc-muted">No background chosen yet (optional).</p>{{/if}}
+    </section>
+    {{/if}}
+
+    {{!-- CLASS BUILD --}}
+    {{#if isBuild}}
+    <section class="cc-step cc-handoff">
+      <h2 class="cc-h">Class options</h2>
+      {{#if buildHint}}<p class="cc-hint">{{buildHint}}</p>{{/if}}
+      <p class="cc-hint">These picks live on the character sheet's Class tab. Open it, make your choices, then come back and continue.</p>
+      <button type="button" class="cc-open-btn" data-action="ccOpenBuild"><i class="fas fa-book-open"></i> Open the Class tab</button>
+    </section>
+    {{/if}}
+
+    {{!-- STARTING GEAR --}}
+    {{#if isGear}}
+    <section class="cc-step cc-handoff">
+      <h2 class="cc-h">Starting gear</h2>
+      <p class="cc-hint">Open the Starting Gear Wizard to equip your character and set starting coins.</p>
+      <button type="button" class="cc-open-btn" data-action="ccOpenGear"><i class="fas fa-box-open"></i> Open Starting Gear Wizard</button>
+      {{#if gearCount}}<p class="cc-current">{{gearCount}} item(s) placed in slots.</p>{{/if}}
+    </section>
+    {{/if}}
+
+    {{!-- REVIEW --}}
+    {{#if isReview}}
+    <section class="cc-step cc-review">
+      <h2 class="cc-h">Review</h2>
+      {{#if review}}
+      <div class="cc-review-head">
+        <img class="cc-review-img" src="{{review.img}}" alt="" />
+        <div class="cc-review-meta">
+          <div class="cc-review-name">{{review.name}}</div>
+          <div class="cc-review-sub">Level {{review.level}} {{review.className}} · {{review.hp.max}} HP · {{review.coins}} coins</div>
+          <div class="cc-review-sub">Background: {{review.backgroundName}}</div>
+        </div>
+      </div>
+      <div class="cc-review-attrs">
+        {{#each review.attrs as |a|}}<span class="cc-review-attr"><strong>{{a.label}}</strong> {{a.value}}</span>{{/each}}
+      </div>
+      <p class="cc-hint">{{review.itemCount}} item(s) on the character. Finish to complete creation — the sheet opens and you can keep editing there.</p>
+      {{else}}
+      <p class="cc-hint">Nothing to review yet.</p>
+      {{/if}}
+    </section>
+    {{/if}}
+
+  </div>
+
+  {{!-- Footer --}}
+  <footer class="cc-footer">
+    <button type="button" class="cc-btn cc-cancel" data-action="ccCancel"><i class="fas fa-times"></i> Cancel</button>
+    <div class="cc-footer-right">
+      {{#unless isFirst}}<button type="button" class="cc-btn cc-back" data-action="ccBack"><i class="fas fa-chevron-left"></i> Back</button>{{/unless}}
+      <button type="button" class="cc-btn cc-next" data-action="{{nextAction}}" {{#if nextDisabled}}disabled{{/if}}>{{nextLabel}} <i class="fas fa-chevron-right"></i></button>
+    </div>
+  </footer>
+</div>

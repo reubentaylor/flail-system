@@ -50,7 +50,7 @@ import { FLAIL_MACROS } from "./macros-data.mjs";
  *   d20s, event d6, four tavern d10s, four suit d13s).
  */
 export const FLAIL_ROLLTABLES_VERSION = 8;
-export const FLAIL_MACROS_VERSION = 14;
+export const FLAIL_MACROS_VERSION = 16;
 
 const ROLLTABLES_SETTING = "rolltablesVersion";
 const MACROS_SETTING = "macrosVersion";

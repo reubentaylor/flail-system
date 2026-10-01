@@ -410,5 +410,35 @@ export const FLAIL_MACROS = [
     "sort": 1070,
     "folder": null,
     "author": null
+  },
+  {
+    "_id": "a1f3c7e90b2d4e81",
+    "name": "Hire Retainers",
+    "img": "icons/environment/people/group.webp",
+    "type": "script",
+    "scope": "global",
+    "command": "// FLAIL — Hire Retainers (Ship H3)\n// Opens the hiring-availability roller: Village (d20 twice; 15-20 none;\n// doubles halve the allowance) or City (all available). Records the roll\n// in a chat card and optionally creates a hireling of an available type.\nif (game.flail?.rollHiring) await game.flail.rollHiring();\nelse ui.notifications?.error(\"FLAIL: hiring roller unavailable — is the FLAIL system active?\");\n",
+    "flags": {},
+    "ownership": {
+      "default": 2
+    },
+    "sort": 1080,
+    "folder": null,
+    "author": null
+  },
+  {
+    "_id": "c4e8a2d19f6b70a3",
+    "name": "Create Character",
+    "img": "icons/environment/people/commoner.webp",
+    "type": "script",
+    "scope": "global",
+    "command": "// FLAIL — Create Character (Ship C3)\n// Opens the guided character creator: identity, class, 3d6kh2 attributes\n// (with one swap), background, class options, starting gear and review.\n// Has a Quick Build button for a one-step level-1 character. Players can\n// run it too — if they lack actor-creation rights it proxies through an\n// online GM.\nif (game.flail?.createCharacter) game.flail.createCharacter();\nelse ui.notifications?.error(\"FLAIL: character creator unavailable — is the FLAIL system active?\");\n",
+    "flags": {},
+    "ownership": {
+      "default": 2
+    },
+    "sort": 1090,
+    "folder": null,
+    "author": null
   }
 ];

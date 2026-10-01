@@ -3,6 +3,7 @@ import { FLAIL } from "./helpers/config.mjs";
 import { FlailCharacterModel } from "./data/actor-character.mjs";
 import { FlailNpcModel }       from "./data/actor-npc.mjs";
 import { FlailConstructModel } from "./data/actor-construct.mjs";
+import { FlailHirelingModel }  from "./data/actor-hireling.mjs";
 
 import {
   FlailWeaponModel,
@@ -31,6 +32,7 @@ import { FlailItem }  from "./documents/item.mjs";
 import { FlailCharacterSheet } from "./sheets/character-sheet.mjs";
 import { FlailNpcSheet }       from "./sheets/npc-sheet.mjs";
 import { FlailConstructSheet } from "./sheets/construct-sheet.mjs";
+import { FlailHirelingSheet }  from "./sheets/hireling-sheet.mjs";
 import { FlailItemSheet }      from "./sheets/item-sheet.mjs";
 
 import { rollSave }    from "./dice/save.mjs";
@@ -64,6 +66,8 @@ import { ensureDivinePrayersCompendium } from "./setup/import-prayers.mjs";
 import { ensureConditionsCompendium } from "./setup/import-conditions.mjs";
 import { ensureGuildsCompendium } from "./setup/import-guilds.mjs";
 import { ensureHexcrawlTablesCompendium } from "./setup/import-hexcrawl-tables.mjs";
+import { openHiringRoller } from "./apps/hiring-roller.mjs";
+import { FlailCharacterCreator, createDraftActorForUser } from "./apps/character-creator.mjs";
 
 const TAG = "FLAIL |";
 
@@ -311,7 +315,8 @@ Hooks.once("init", () => {
     CONFIG.Actor.dataModels = {
       character: FlailCharacterModel,
       npc:       FlailNpcModel,
-      construct: FlailConstructModel
+      construct: FlailConstructModel,
+      hireling:  FlailHirelingModel
     };
     CONFIG.Item.dataModels = {
       weapon:       FlailWeaponModel,
@@ -349,6 +354,9 @@ Hooks.once("init", () => {
         Actors.registerSheet("flail", FlailConstructSheet, {
           types: ["construct"], makeDefault: true, label: "FLAIL.Sheet.Construct"
         });
+        Actors.registerSheet("flail", FlailHirelingSheet, {
+          types: ["hireling"], makeDefault: true, label: "FLAIL.Sheet.Hireling"
+        });
         Items.registerSheet("flail", FlailItemSheet, {
           makeDefault: true, label: "FLAIL.Sheet.Item"
         });
@@ -375,6 +383,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/actor/parts/abilities-panel.hbs",
         "systems/flail/templates/actor/parts/inventory-panel.hbs",
         "systems/flail/templates/actor/parts/class-panel.hbs",
+        "systems/flail/templates/actor/parts/hirelings-panel.hbs",
         "systems/flail/templates/actor/parts/skills-row.hbs",
         "systems/flail/templates/actor/parts/attributes.hbs",
         "systems/flail/templates/actor/parts/vitals.hbs",
@@ -391,6 +400,7 @@ Hooks.once("init", () => {
         "systems/flail/templates/actor/parts/biography.hbs",
         "systems/flail/templates/actor/parts/notes-panel.hbs",
         "systems/flail/templates/apps/background-picker.hbs",
+        "systems/flail/templates/apps/character-creator.hbs",
         "systems/flail/templates/apps/background-grants-dialog.hbs",
         "systems/flail/templates/apps/background-validate-dialog.hbs",
         "systems/flail/templates/apps/starting-gear-wizard.hbs",
@@ -481,6 +491,22 @@ Hooks.once("ready", async () => {
       await game.settings.set("flail", "potionRecipes", recipes);
     } catch (err) {
       console.error(`${TAG} failed to save recipe from socket`, err);
+    }
+  });
+
+  // C3 — character-creation proxy: a player without actor-create rights emits
+  // a createDraftCharacter request; the lowest-id active GM mints the actor
+  // (owned by that player) and emits the new id back. Only one GM responds.
+  game.socket.on("system.flail", async (msg) => {
+    if (msg?.type !== "createDraftCharacter" || !game.user?.isGM) return;
+    const firstGm = (game.users.filter(u => u.isGM && u.active).map(u => u.id).sort())[0];
+    if (firstGm !== game.user.id) return;   // only the first GM acts
+    try {
+      const actor = await createDraftActorForUser(msg.data, msg.forUserId);
+      game.socket.emit("system.flail", { type: "flailDraftCreated", requestId: msg.requestId, actorId: actor?.id });
+    } catch (err) {
+      console.error(`${TAG} proxied character creation failed`, err);
+      game.socket.emit("system.flail", { type: "flailDraftCreated", requestId: msg.requestId, error: err?.message ?? "error" });
     }
   });
 
@@ -613,10 +639,79 @@ Hooks.once("ready", async () => {
       // would visibly pop the sheet open on TAH clicks — undesirable.
       // Any handler that DOES need the DOM should render itself.
       return handler.call(sheet, event, target);
-    }
+    },
+
+    /** H3 — open the GM hiring-availability roller (Village / City). */
+    rollHiring: () => openHiringRoller(),
+
+    /** C1 — open the guided character creator. */
+    createCharacter: () => new FlailCharacterCreator().render(true)
   });
 });
 Hooks.on  ("canvasReady", () => console.log(`${TAG} canvasReady`));
+
+/* -------------------------------------------- */
+/*  C3 — Create Character sidebar button         */
+/* -------------------------------------------- */
+
+/**
+ * Add a "Create Character" button to the Actors directory header so the
+ * guided creator is reachable without a macro. Available to everyone — the
+ * creator itself handles the actor-creation permission (proxying through a
+ * GM when the player can't create actors). Defensive across v13/v14 (html
+ * may arrive as a jQuery object or a bare HTMLElement).
+ */
+Hooks.on("renderActorDirectory", (app, html) => {
+  try {
+    const root = html instanceof HTMLElement ? html : (html?.[0] ?? null);
+    if (!root || root.querySelector?.(".flail-create-character")) return;
+    const header = root.querySelector(".directory-header .header-actions")
+                ?? root.querySelector(".header-actions")
+                ?? root.querySelector(".directory-header");
+    if (!header) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "flail-create-character";
+    btn.innerHTML = `<i class="fas fa-user-plus"></i> Create Character`;
+    btn.addEventListener("click", () => game.flail?.createCharacter?.());
+    header.appendChild(btn);
+  } catch (err) {
+    console.warn(`${TAG} failed to add Create Character sidebar button`, err);
+  }
+});
+
+/* -------------------------------------------- */
+/*  H3 — Hiring roller scene-control button      */
+/* -------------------------------------------- */
+
+/**
+ * Add a GM-only "Hire Retainers" tool to the Token scene controls so the
+ * availability roller is reachable without the console. Defensive across
+ * Foundry v13/v14 control shapes (tools is an object keyed by name in
+ * v13+). Any failure is swallowed — a missing button must never break
+ * the controls bar.
+ */
+Hooks.on("getSceneControlButtons", (controls) => {
+  try {
+    if (!game.user?.isGM) return;
+    const tokenControl = Array.isArray(controls)
+      ? controls.find(c => c.name === "token")
+      : controls?.token ?? controls?.tokens;
+    if (!tokenControl) return;
+    const tool = {
+      name: "flail-hire",
+      title: "Hire Retainers (FLAIL)",
+      icon: "fas fa-handshake",
+      button: true,
+      onChange: () => openHiringRoller(),   // v13+
+      onClick:  () => openHiringRoller()     // v12 fallback
+    };
+    if (Array.isArray(tokenControl.tools)) tokenControl.tools.push(tool);
+    else if (tokenControl.tools && typeof tokenControl.tools === "object") tokenControl.tools[tool.name] = tool;
+  } catch (err) {
+    console.warn(`${TAG} failed to add hiring-roller scene control:`, err);
+  }
+});
 
 /* -------------------------------------------- */
 /*  Wizard — auto-seed starter spellbook        */

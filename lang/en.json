@@ -3,7 +3,8 @@
     "Actor": {
       "character": "Character",
       "npc":       "NPC",
-      "construct": "Construct"
+      "construct": "Construct",
+      "hireling":  "Hireling"
     },
     "Item": {
       "weapon":       "Weapon",
@@ -30,7 +31,8 @@
       "Character": "Character",
       "NPC": "NPC",
       "Item": "Item",
-      "Construct": "Construct"
+      "Construct": "Construct",
+      "Hireling": "Hireling"
     },
     "Common": {
       "OK":     "OK",
@@ -47,6 +49,7 @@
       "Abilities": "Abilities",
       "Inventory": "Inventory",
       "Class":     "Class",
+      "Hirelings": "Hirelings",
       "Notes":     "Notes"
     },
     "Section": {

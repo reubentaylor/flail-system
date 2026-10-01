@@ -163,6 +163,8 @@
 .flail.sheet[data-active-tab="abilities"] .tab-panel[data-tab="abilities"],
 .flail.sheet[data-active-tab="inventory"] .tab-panel[data-tab="inventory"],
 .flail.sheet[data-active-tab="class"]     .tab-panel[data-tab="class"],
+.flail.sheet[data-active-tab="hirelings"] .tab-panel[data-tab="hirelings"],
+.flail.sheet[data-active-tab="type"]      .tab-panel[data-tab="type"],
 .flail.sheet[data-active-tab="notes"]     .tab-panel[data-tab="notes"] {
   display: flex;
   flex: 1 1 auto;
@@ -3404,6 +3406,24 @@
 .flail-card .card-header .header-title-col .weapon-name {
   margin: 0;
   line-height: 1.2;
+}
+
+/* Save card: left group (portrait + name) kept together so the title
+   column can occupy its own right-hand column. */
+.flail-card .card-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+/* When a save was rolled with advantage/disadvantage, the top row becomes
+   two columns: portrait+name on the left, the save name stacked above the
+   adv/disadv badge on the right. Scoped to the adv/disadv cards so an
+   ordinary save keeps its single-row header. */
+.flail-card.save-card.has-advantage .card-header .save-title-col,
+.flail-card.save-card.has-disadvantage .card-header .save-title-col {
+  align-items: flex-end;
+  text-align: right;
 }
 
 /* Full-card accent stripe on the left when advantage/disadvantage is
@@ -11496,3 +11516,380 @@
 .flail-card .talent-reminder-callout .tr-title { font-weight: 700; color: #1a3d43; display: flex; align-items: center; gap: 0.3rem; font-size: 0.83rem; margin-bottom: 0.15rem; }
 .flail-card .talent-reminder-callout .tr-body { font-size: 0.82rem; color: #2a1f0f; }
 .flail-card .talent-reminder-callout .tr-body p { margin: 0.2rem 0; }
+
+/* ============================================================
+ *  Hireling sheet (Ship H1)
+ * ============================================================ */
+.flail.hireling-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  font-family: "Signika", sans-serif;
+  color: #2b1e0a;
+}
+.flail.hireling-sheet .hireling-header {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.flail.hireling-sheet .hireling-portrait {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border: 1px solid #b58b3e;
+  border-radius: 4px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.flail.hireling-sheet .hireling-headfields { flex: 1 1 auto; display: flex; flex-direction: column; gap: 0.25rem; }
+.flail.hireling-sheet .hireling-name { font-size: 1.1rem; font-weight: 700; }
+.flail.hireling-sheet .hireling-subrow { display: flex; align-items: center; gap: 0.4rem; }
+.flail.hireling-sheet .hireling-badge {
+  background: #2b1e0a; color: #f4ebd4; font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.08em; padding: 0.1rem 0.4rem; border-radius: 2px;
+}
+.flail.hireling-sheet .hireling-type-badge {
+  background: #b58b3e; color: #2b1e0a; font-size: 0.7rem; font-weight: 700;
+  padding: 0.1rem 0.45rem; border-radius: 2px;
+}
+.flail.hireling-sheet .hireling-level { margin-left: auto; font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem; }
+.flail.hireling-sheet .hireling-level input { width: 3rem; }
+
+.flail.hireling-sheet .hireling-card {
+  border: 1px solid #b58b3e; border-radius: 4px; padding: 0.45rem 0.55rem; background: #f4ebd4;
+}
+.flail.hireling-sheet .tab-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  color: #6a4d0e; border-bottom: 1px solid #b58b3e; padding-bottom: 0.2rem; margin-bottom: 0.35rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.flail.hireling-sheet .hireling-type-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.flail.hireling-sheet .hireling-type-select { flex: 1 1 10rem; }
+.flail.hireling-sheet .hireling-allowance { font-size: 0.75rem; color: #6a4d0e; }
+.flail.hireling-sheet .hireling-ability { display: block; margin-top: 0.4rem; font-size: 0.75rem; }
+.flail.hireling-sheet .hireling-ability textarea { width: 100%; }
+.flail.hireling-sheet .hireling-patron { font-size: 0.75rem; margin: 0.3rem 0 0; color: #6a4d0e; }
+
+.flail.hireling-sheet .hireling-attr-row { display: flex; gap: 0.4rem; }
+.flail.hireling-sheet .hireling-attr {
+  flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  border: 1px solid #cdb27a; border-radius: 3px; padding: 0.3rem 0.2rem;
+}
+.flail.hireling-sheet .hireling-attr-label { font-weight: 700; font-size: 0.75rem; }
+.flail.hireling-sheet .hireling-attr-fields { display: flex; align-items: center; gap: 0.25rem; }
+.flail.hireling-sheet .hireling-attr-fields input { width: 2.4rem; text-align: center; }
+.flail.hireling-sheet .hireling-attr-current { font-size: 0.85rem; font-weight: 700; color: #6a4d0e; }
+.flail.hireling-sheet .hireling-save-btn { font-size: 0.65rem; padding: 0.1rem 0.4rem; cursor: pointer; }
+
+.flail.hireling-sheet .hireling-hp-row { display: flex; align-items: center; gap: 0.4rem; }
+.flail.hireling-sheet .hireling-hp-value { font-size: 1rem; font-weight: 700; min-width: 3.5rem; text-align: center; }
+.flail.hireling-sheet .hireling-hp-max { margin-left: auto; font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem; }
+.flail.hireling-sheet .hireling-hp-max input { width: 3rem; }
+
+.flail.hireling-sheet .hireling-zone { margin-bottom: 0.4rem; }
+.flail.hireling-sheet .hireling-zone-label { font-size: 0.7rem; font-weight: 700; color: #6a4d0e; margin-bottom: 0.2rem; }
+.flail.hireling-sheet .hireling-zone-considered { font-weight: 400; opacity: 0.7; }
+.flail.hireling-sheet .hireling-slots { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.flail.hireling-sheet .hireling-slot {
+  flex: 1 1 45%; min-height: 2.2rem; border: 1px dashed #b58b3e; border-radius: 3px;
+  display: flex; align-items: center; padding: 0.2rem; background: rgba(255,255,255,0.35);
+}
+.flail.hireling-sheet .hireling-slot.is-occupied { border-style: solid; }
+.flail.hireling-sheet .hireling-slot.drop-hover { background: rgba(181,139,62,0.3); }
+.flail.hireling-sheet .hireling-slot .slot-item { display: flex; align-items: center; gap: 0.3rem; width: 100%; cursor: grab; }
+.flail.hireling-sheet .hireling-slot .slot-img { width: 22px; height: 22px; object-fit: contain; flex: 0 0 auto; }
+.flail.hireling-sheet .hireling-slot .slot-name { flex: 1 1 auto; font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flail.hireling-sheet .hireling-slot .slot-usage { font-size: 0.65rem; color: #6a4d0e; }
+.flail.hireling-sheet .hireling-slot .slot-actions { display: flex; gap: 0.15rem; }
+.flail.hireling-sheet .hireling-slot .slot-actions button { font-size: 0.6rem; padding: 0.05rem 0.3rem; }
+.flail.hireling-sheet .hireling-slot .slot-empty { color: #b58b3e; font-size: 0.75rem; padding-left: 0.3rem; }
+.flail.hireling-sheet .hireling-create-btns button { font-size: 0.65rem; padding: 0.05rem 0.35rem; }
+
+.flail.hireling-sheet .hireling-extra-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.flail.hireling-sheet .hireling-extra { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; }
+.flail.hireling-sheet .hireling-extra .slot-img { width: 20px; height: 20px; object-fit: contain; }
+.flail.hireling-sheet .hireling-extra .slot-name { flex: 1 1 auto; }
+.flail.hireling-sheet .hireling-extra-type { font-size: 0.6rem; text-transform: uppercase; color: #6a4d0e; opacity: 0.7; }
+
+/* ============================================================
+ *  Hireling inventory grid (reuses .inventory-slot cells)
+ * ============================================================ */
+.flail .hireling-sheet .hireling-inv {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.flail .hireling-sheet .hireling-zone-wrap { display: flex; flex-direction: column; gap: 0.25rem; }
+.flail .hireling-sheet .hireling-zone-title {
+  font-size: 0.7rem; font-weight: 700; color: var(--flail-ink-soft, #6a4d0e);
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.flail .hireling-sheet .hireling-zone-considered { font-weight: 400; opacity: 0.7; text-transform: none; }
+/* Per-zone grids with the SAME ~96px square cells as the character sheet.
+   The container draws the outer right+bottom borders; .inventory-slot
+   draws top+left, giving a uniform 2px frame. */
+.flail .hireling-sheet .hireling-zone-grid {
+  display: grid;
+  gap: 0;
+  border-right: 2px solid var(--flail-rule);
+  border-bottom: 2px solid var(--flail-rule);
+  /* Belt-and-braces: the zones below declare exactly the right number of
+     explicit rows, so nothing legitimate ever lands in an implicit row.
+     If auto-placement ever tries to spawn one, collapse it to zero height
+     so it can never render as a stray partial cell. */
+  grid-auto-rows: 0;
+}
+.flail .hireling-sheet .hireling-zone-grid.zone-hands,
+.flail .hireling-sheet .hireling-zone-grid.zone-body {
+  grid-template-columns: 96px;
+  grid-template-rows: repeat(2, 96px);
+}
+.flail .hireling-sheet .hireling-zone-grid.zone-satchel {
+  grid-template-columns: repeat(2, 96px);
+  grid-template-rows: repeat(2, 96px);
+}
+/* Two-slot items on the hireling grids use CSS auto-placement (unlike the
+   character sheet, whose slots are explicitly positioned via nth-child).
+   The shared slot partial marks the extension cell `.is-secondary`, which
+   on the character sheet is merely `visibility: hidden` — still a grid item
+   occupying a track. Here the primary's `grid-row-end: span 2` already
+   reserves the extension cell's space, so the hidden secondary would be
+   shoved into an implicit extra row and render as a partial square below
+   the zone. Take it out of grid flow entirely so no implicit row forms. */
+.flail .hireling-sheet .hireling-zone-grid .inventory-slot.is-secondary {
+  display: none;
+}
+.flail .hireling-sheet .hireling-inv-hint {
+  font-size: 0.7rem; color: var(--flail-ink-soft, #6a4d0e); margin: 0.5rem 0 0; opacity: 0.85;
+}
+
+/* ============================================================
+   HIRELINGS (Ship H2) — patron panel + hireling Service card
+   ============================================================ */
+
+/* --- Character sheet: Hirelings tab --- */
+.flail.sheet .hirelings-panel { padding: 0.25rem; }
+.flail.sheet .hirelings-card {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  background: var(--flail-paper-2, #f4ead2);
+  border: 2px solid var(--flail-rule, #3a2c0a);
+  border-radius: 4px; padding: 0.6rem;
+}
+.flail.sheet .hirelings-card .tab-label {
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.flail.sheet .hirelings-count {
+  font-size: 0.75rem; background: var(--flail-rule, #3a2c0a); color: #f4ead2;
+  border-radius: 10px; padding: 0 0.45rem; line-height: 1.4;
+}
+.flail.sheet .hirelings-due {
+  font-size: 0.7rem; color: #8a1c1c; font-weight: 700; margin-left: auto;
+}
+.flail.sheet .hirelings-head-btns { margin-left: auto; }
+.flail.sheet .hirelings-head-btns button,
+.flail.sheet .hireling-service button,
+.flail.sheet .hireling-row-actions button {
+  font-size: 0.72rem; cursor: pointer;
+}
+
+/* Drop zones (both sheets) */
+.flail .hireling-hire-drop,
+.flail .hireling-patron-drop {
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  min-height: 46px; padding: 0.4rem; text-align: center;
+  border: 2px dashed var(--flail-rule, #3a2c0a); border-radius: 4px;
+  color: var(--flail-ink-soft, #6a4d0e); font-size: 0.8rem; font-style: italic;
+  background: rgba(0,0,0,0.02);
+}
+.flail .hireling-hire-drop.drag-over,
+.flail .hireling-patron-drop.drag-over {
+  background: rgba(58,44,10,0.12); color: var(--flail-rule, #3a2c0a);
+}
+
+/* Hireling rows */
+.flail.sheet .hirelings-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.flail.sheet .hireling-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.35rem; border: 1px solid var(--flail-rule, #3a2c0a);
+  border-radius: 4px; background: var(--flail-paper, #faf3e0);
+}
+.flail.sheet .hireling-row-img {
+  width: 40px; height: 40px; object-fit: cover; border-radius: 3px;
+  border: 1px solid var(--flail-rule, #3a2c0a); cursor: pointer; flex: 0 0 auto;
+}
+.flail.sheet .hireling-row-main { flex: 1 1 auto; min-width: 0; }
+.flail.sheet .hireling-row-head { display: flex; align-items: baseline; gap: 0.45rem; flex-wrap: wrap; }
+.flail.sheet .hireling-row-name { font-weight: 700; color: var(--flail-rule, #3a2c0a); }
+.flail.sheet .hireling-row-type { font-size: 0.72rem; color: var(--flail-ink-soft, #6a4d0e); }
+.flail.sheet .hireling-row-lvl,
+.flail.sheet .hireling-row-hp { font-size: 0.72rem; color: var(--flail-ink-soft, #6a4d0e); }
+.flail.sheet .hireling-row-sub { display: flex; gap: 0.8rem; font-size: 0.72rem; margin-top: 0.15rem; }
+.flail.sheet .hireling-row-actions { display: flex; gap: 0.2rem; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; max-width: 46%; }
+
+.flail .hireling-paid { color: #2a6a2a; font-weight: 700; }
+.flail .hireling-unpaid { color: #8a1c1c; font-weight: 700; }
+
+.flail.sheet .hirelings-empty { font-size: 0.8rem; color: var(--flail-ink-soft, #6a4d0e); font-style: italic; margin: 0.25rem 0; }
+.flail.sheet .hirelings-hint { font-size: 0.68rem; color: var(--flail-ink-soft, #6a4d0e); opacity: 0.85; margin: 0.25rem 0 0; line-height: 1.35; }
+
+/* --- Hireling sheet: Service card --- */
+.flail .hireling-sheet .hireling-service { display: flex; flex-direction: column; gap: 0.5rem; }
+.flail .hireling-sheet .hireling-patron-linked {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.35rem; border: 1px solid var(--flail-rule, #3a2c0a); border-radius: 4px;
+  background: var(--flail-paper, #faf3e0);
+}
+.flail .hireling-sheet .hireling-patron-img {
+  width: 36px; height: 36px; object-fit: cover; border-radius: 3px;
+  border: 1px solid var(--flail-rule, #3a2c0a); flex: 0 0 auto;
+}
+.flail .hireling-sheet .hireling-patron-meta { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.flail .hireling-sheet .hireling-patron-name { font-weight: 700; color: var(--flail-rule, #3a2c0a); }
+.flail .hireling-sheet .hireling-patron-sub { font-size: 0.72rem; color: var(--flail-ink-soft, #6a4d0e); }
+.flail .hireling-sheet .hireling-service-row {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.flail .hireling-sheet .hireling-service-label { font-weight: 600; color: var(--flail-rule, #3a2c0a); font-size: 0.82rem; }
+.flail .hireling-sheet .hireling-service-value { font-size: 0.8rem; color: var(--flail-ink-soft, #6a4d0e); margin-right: auto; }
+.flail .hireling-sheet .hireling-service-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+/* ============================================================
+   CHARACTER CREATOR (Ship C1)
+   ============================================================ */
+.flail.character-creator .cc-root {
+  display: flex; flex-direction: column; height: 100%;
+  background: var(--flail-paper, #faf3e0); color: var(--flail-ink, #2a2008);
+}
+
+/* Step rail */
+.flail.character-creator .cc-rail {
+  display: flex; gap: 0.25rem; padding: 0.5rem 0.6rem; flex: 0 0 auto;
+  border-bottom: 2px solid var(--flail-rule, #3a2c0a);
+}
+.flail.character-creator .cc-rail-step {
+  display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.6rem;
+  border-radius: 14px; font-size: 0.78rem; color: var(--flail-ink-soft, #6a4d0e);
+  opacity: 0.6;
+}
+.flail.character-creator .cc-rail-step.is-active { opacity: 1; font-weight: 700; color: var(--flail-rule, #3a2c0a); }
+.flail.character-creator .cc-rail-step.is-done { opacity: 0.85; }
+.flail.character-creator .cc-rail-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--flail-rule, #3a2c0a); color: #f4ead2; font-size: 0.72rem;
+}
+
+/* Body */
+.flail.character-creator .cc-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0.7rem 0.9rem; }
+.flail.character-creator .cc-h { font-family: 'Modesto Condensed', 'Cinzel', serif; color: var(--flail-rule, #3a2c0a); margin: 0 0 0.5rem; }
+.flail.character-creator .cc-hint { font-size: 0.78rem; color: var(--flail-ink-soft, #6a4d0e); opacity: 0.9; }
+
+/* Identity */
+.flail.character-creator .cc-identity-row { display: flex; gap: 0.8rem; align-items: center; }
+.flail.character-creator .cc-portrait {
+  width: 84px; height: 84px; object-fit: cover; border: 2px solid var(--flail-rule, #3a2c0a);
+  border-radius: 4px; cursor: pointer; flex: 0 0 auto;
+}
+.flail.character-creator .cc-field { display: flex; flex-direction: column; flex: 1 1 auto; font-weight: 600; gap: 0.2rem; }
+.flail.character-creator .cc-field input { width: 100%; }
+.flail.character-creator .cc-name-row { display: flex; gap: 0.4rem; align-items: stretch; }
+.flail.character-creator .cc-name-row input { flex: 1 1 auto; }
+.flail.character-creator .cc-name-rand {
+  flex: 0 0 auto; cursor: pointer; padding: 0 0.6rem;
+  border: 1px solid var(--flail-rule, #3a2c0a); border-radius: 4px;
+  background: var(--flail-paper-2, #f4ead2); color: #1a1206;
+}
+
+/* Class — larger cards, always-black label text, readable selected state */
+.flail.character-creator .cc-class-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 0.7rem;
+}
+.flail.character-creator .cc-class-card {
+  display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 0.4rem;
+  min-height: 52px; padding: 0.6rem 0.8rem; border: 2px solid var(--flail-rule, #3a2c0a); border-radius: 5px;
+  background: var(--flail-paper-2, #f4ead2); color: #000; cursor: pointer; text-align: left;
+}
+.flail.character-creator .cc-class-card:hover { background: #efe0b8; }
+.flail.character-creator .cc-class-card.is-selected {
+  /* Keep text black; show selection with a gold frame + tint, never an
+     inverted dark fill that would make the label unreadable. */
+  background: #f3e2b4; border-color: #b58b3e;
+  box-shadow: inset 0 0 0 2px #b58b3e;
+  color: #000; font-weight: 700;
+}
+.flail.character-creator .cc-class-card .cc-class-name { font-size: 1rem; font-weight: 700; color: #000; }
+.flail.character-creator .cc-class-card .cc-class-hp { font-size: 0.82rem; color: #000; white-space: nowrap; }
+.flail.character-creator .cc-class-detail {
+  border: 1px solid var(--flail-rule, #3a2c0a); border-radius: 4px; padding: 0.6rem; background: var(--flail-paper-2, #f4ead2);
+}
+.flail.character-creator .cc-class-detail h3 { margin: 0 0 0.3rem; color: var(--flail-rule, #3a2c0a); }
+.flail.character-creator .cc-class-meta { font-size: 0.8rem; margin: 0 0 0.4rem; }
+.flail.character-creator .cc-class-skills { margin: 0; padding-left: 1.1rem; font-size: 0.8rem; }
+.flail.character-creator .cc-class-skills li { margin-bottom: 0.2rem; }
+
+/* Attributes */
+.flail.character-creator .cc-roll-cta { text-align: center; padding: 1.2rem 0; }
+.flail.character-creator .cc-roll-btn {
+  font-size: 1rem; padding: 0.5rem 1.2rem; cursor: pointer;
+  background: var(--flail-rule, #3a2c0a); color: #f4ead2; border: none; border-radius: 4px;
+}
+.flail.character-creator .cc-attr-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; margin-bottom: 0.7rem; }
+.flail.character-creator .cc-attr-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  border: 1px solid var(--flail-rule, #3a2c0a); border-radius: 4px; padding: 0.4rem 0.2rem;
+  background: var(--flail-paper-2, #f4ead2);
+}
+.flail.character-creator .cc-attr-label { font-weight: 700; font-size: 0.78rem; color: var(--flail-rule, #3a2c0a); }
+.flail.character-creator .cc-attr-value { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+.flail.character-creator .cc-attr-dice { display: flex; gap: 0.15rem; }
+.flail.character-creator .cc-die {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; font-size: 0.68rem; border: 1px solid var(--flail-rule, #3a2c0a);
+  border-radius: 3px; background: #fff;
+}
+.flail.character-creator .cc-die.dropped { opacity: 0.35; text-decoration: line-through; }
+.flail.character-creator .cc-swap { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.82rem; }
+.flail.character-creator .cc-swap select { min-width: 72px; }
+.flail.character-creator .cc-swap-note { color: #2a6a2a; font-weight: 700; }
+
+/* Footer */
+.flail.character-creator .cc-footer {
+  flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between;
+  padding: 0.5rem 0.9rem; border-top: 2px solid var(--flail-rule, #3a2c0a);
+}
+.flail.character-creator .cc-footer-right { display: flex; gap: 0.4rem; }
+.flail.character-creator .cc-btn { cursor: pointer; padding: 0.35rem 0.8rem; }
+.flail.character-creator .cc-btn.cc-next { background: var(--flail-rule, #3a2c0a); color: #f4ead2; border: none; border-radius: 4px; }
+.flail.character-creator .cc-btn.cc-next[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+/* Character creator — C2 hand-off + review steps */
+.flail.character-creator .cc-handoff { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+.flail.character-creator .cc-open-btn {
+  cursor: pointer; padding: 0.5rem 1rem; font-size: 0.9rem;
+  background: var(--flail-rule, #3a2c0a); color: #f4ead2; border: none; border-radius: 4px;
+}
+.flail.character-creator .cc-current { font-size: 0.85rem; color: #000; margin: 0.2rem 0 0; }
+.flail.character-creator .cc-current.cc-muted { color: var(--flail-ink-soft, #6a4d0e); font-style: italic; }
+
+.flail.character-creator .cc-review-head { display: flex; gap: 0.8rem; align-items: center; margin-bottom: 0.6rem; }
+.flail.character-creator .cc-review-img {
+  width: 72px; height: 72px; object-fit: cover; border: 2px solid var(--flail-rule, #3a2c0a); border-radius: 4px; flex: 0 0 auto;
+}
+.flail.character-creator .cc-review-name { font-family: 'Modesto Condensed', 'Cinzel', serif; font-size: 1.2rem; color: var(--flail-rule, #3a2c0a); }
+.flail.character-creator .cc-review-sub { font-size: 0.82rem; color: #000; }
+.flail.character-creator .cc-review-attrs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.flail.character-creator .cc-review-attr {
+  padding: 0.25rem 0.5rem; border: 1px solid var(--flail-rule, #3a2c0a); border-radius: 4px;
+  background: var(--flail-paper-2, #f4ead2); color: #000; font-size: 0.82rem;
+}
+
+/* Character creator — quick-build bar */
+.flail.character-creator .cc-quickbuild-bar { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+.flail.character-creator .cc-quickbuild {
+  cursor: pointer; padding: 0.4rem 0.9rem; font-weight: 700;
+  background: #b58b3e; color: #1a1206; border: 1px solid #3a2c0a; border-radius: 4px;
+}
+.flail.character-creator .cc-quickbuild:hover { background: #c9a24f; }
+.flail.character-creator .cc-quickbuild-note { font-size: 0.78rem; color: var(--flail-ink-soft, #6a4d0e); font-style: italic; }

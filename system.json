@@ -2,7 +2,7 @@
   "id": "flail",
   "title": "FLAIL!",
   "description": "An old-school fantasy brawler by Andre Novoa. Roll-under saves, poker-dice combat, slot-based inventory, eight wildly different classes.",
-  "version": "0.4.111",
+  "version": "0.4.123",
   "compatibility": {
     "minimum": "13",
     "verified": "14",
@@ -14,8 +14,12 @@
       "url": "https://github.com/reubentaylor"
     }
   ],
-  "esmodules": ["module/flail.mjs"],
-  "styles": ["styles/flail.css"],
+  "esmodules": [
+    "module/flail.mjs"
+  ],
+  "styles": [
+    "styles/flail.css"
+  ],
   "languages": [
     {
       "lang": "en",
@@ -31,28 +35,116 @@
   "primaryTokenAttribute": "hp",
   "documentTypes": {
     "Actor": {
-      "character": { "htmlFields": ["biography", "notes"] },
-      "npc":       { "htmlFields": ["description"] },
-      "construct": { "htmlFields": ["description"] }
+      "character": {
+        "htmlFields": [
+          "biography",
+          "notes"
+        ]
+      },
+      "npc": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "construct": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "hireling": {
+        "htmlFields": [
+          "description"
+        ]
+      }
     },
     "Item": {
-      "weapon":       { "htmlFields": ["description"] },
-      "armour":       { "htmlFields": ["description"] },
-      "gear":         { "htmlFields": ["description"] },
-      "spell":        { "htmlFields": ["description"] },
-      "prayer":       { "htmlFields": ["description"] },
-      "gift":         { "htmlFields": ["description"] },
-      "talent":       { "htmlFields": ["description"] },
-      "gadget":       { "htmlFields": ["description"] },
-      "feature":      { "htmlFields": ["description"] },
-      "condition":    { "htmlFields": ["description"] },
-      "instrument":   { "htmlFields": ["description"] },
-      "guild":        { "htmlFields": ["description"] },
-      "background":   { "htmlFields": ["description"] },
-      "combatTalent": { "htmlFields": ["description", "reminderText"] },
-      "combatTree":   { "htmlFields": ["description"] },
-      "religion":     { "htmlFields": ["description", "layOnHandsFumble"] },
-      "master":       { "htmlFields": ["description"] }
+      "weapon": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "armour": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "gear": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "spell": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "prayer": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "gift": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "talent": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "gadget": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "feature": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "condition": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "instrument": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "guild": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "background": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "combatTalent": {
+        "htmlFields": [
+          "description",
+          "reminderText"
+        ]
+      },
+      "combatTree": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "religion": {
+        "htmlFields": [
+          "description",
+          "layOnHandsFumble"
+        ]
+      },
+      "master": {
+        "htmlFields": [
+          "description"
+        ]
+      }
     }
   },
   "url": "https://github.com/reubentaylor/flail-system",

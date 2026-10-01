@@ -13,6 +13,11 @@ import { summonUndeadPuppetToken, deleteUndeadPuppetTokens } from "../documents/
 import { WIZARD_SPELLS } from "../setup/wizard-spells-data.mjs";
 import { loadPickedTalents } from "../helpers/combat-trees.mjs";
 import { executeReaction } from "../dice/reactive-prompt.mjs";
+import {
+  getHirelingsFor, linkPatron, unlinkPatron, payAllowance, rollMorale,
+  levelUpHireling, useHirelingAbility, resetDaily, resetSessionAllowances,
+  hasRepeatableAbility
+} from "../documents/hireling-ops.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -112,7 +117,15 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       clearUsage:      FlailCharacterSheet.#onClearUsage,
       adjustHp:        FlailCharacterSheet.#onAdjustHp,
       adjustResource:  FlailCharacterSheet.#onAdjustResource,
-      selectTab:       FlailCharacterSheet.#onSelectTab
+      selectTab:       FlailCharacterSheet.#onSelectTab,
+      hirelingOpen:        FlailCharacterSheet.#onHirelingOpen,
+      hirelingPay:         FlailCharacterSheet.#onHirelingPay,
+      hirelingMorale:      FlailCharacterSheet.#onHirelingMorale,
+      hirelingLevel:       FlailCharacterSheet.#onHirelingLevel,
+      hirelingAbility:     FlailCharacterSheet.#onHirelingAbility,
+      hirelingNewDay:      FlailCharacterSheet.#onHirelingNewDay,
+      hirelingUnlink:      FlailCharacterSheet.#onHirelingUnlink,
+      hirelingNewSession:  FlailCharacterSheet.#onHirelingNewSession
     },
     form: {
       submitOnChange: true,
@@ -128,6 +141,7 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
     abilitiesPanel: { template: "systems/flail/templates/actor/parts/abilities-panel.hbs" },
     inventoryPanel: { template: "systems/flail/templates/actor/parts/inventory-panel.hbs" },
     classPanel:     { template: "systems/flail/templates/actor/parts/class-panel.hbs" },
+    hirelingsPanel: { template: "systems/flail/templates/actor/parts/hirelings-panel.hbs" },
     notesPanel:     { template: "systems/flail/templates/actor/parts/notes-panel.hbs" }
   };
 
@@ -410,8 +424,31 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       { id: "abilities", label: "FLAIL.Tab.Abilities", active: this._activeTab === "abilities" },
       { id: "inventory", label: "FLAIL.Tab.Inventory", active: this._activeTab === "inventory" },
       { id: "class",     label: "FLAIL.Tab.Class",     active: this._activeTab === "class"     },
+      { id: "hirelings", label: "FLAIL.Tab.Hirelings", active: this._activeTab === "hirelings" },
       { id: "notes",     label: "FLAIL.Tab.Notes",     active: this._activeTab === "notes"     }
     ];
+
+    // --- H2: Hirelings serving this character ---
+    ctx.hirelings = getHirelingsFor(actor).map(h => {
+      const lvl = h.system?.level ?? 1;
+      return {
+        id: h.id,
+        name: h.name,
+        img: h.img,
+        level: lvl,
+        typeLabel: FLAIL.hirelingTypes?.[h.system?.hirelingType]?.label ?? "—",
+        allowance: h.system?.allowance ?? 0,
+        allowancePaid: !!h.system?.allowancePaid,
+        hp: h.system?.hp ?? { value: 0, max: 0 },
+        canLevelUp: lvl < 6 && (actor.system?.level ?? 1) > lvl,
+        hasRepeatableAbility: hasRepeatableAbility(h),
+        isHealer: h.system?.hirelingType === "healer",
+        abilityDailyUsed: !!h.system?.abilityDailyUsed,
+        abilityUsesLeft: h.system?.abilityUsesLeft ?? 0
+      };
+    });
+    ctx.hasHirelings = ctx.hirelings.length > 0;
+    ctx.hirelingDue = ctx.hirelings.filter(h => !h.allowancePaid && h.allowance > 0).length;
 
     // Resource label (depends on class).
     const resKey = classDef.resource;
@@ -1261,6 +1298,13 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       el.addEventListener("dragover",  this.#onBackgroundDragOver.bind(this));
       el.addEventListener("dragleave", this.#onBackgroundDragLeave.bind(this));
       el.addEventListener("drop",      this.#onBackgroundDrop.bind(this));
+    });
+
+    // Hireling drop zone (Hirelings tab) — drop a hireling Actor to hire.
+    root.querySelectorAll("[data-flail-drop-target='hireling']").forEach(el => {
+      el.addEventListener("dragover", ev => { ev.preventDefault(); el.classList.add("drag-over"); });
+      el.addEventListener("dragleave", () => el.classList.remove("drag-over"));
+      el.addEventListener("drop", this.#onHirelingDrop.bind(this));
     });
 
     // Spell-list drop zones — currently the Bone Whisperer's Known Spells
@@ -5982,5 +6026,79 @@ export class FlailCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2
       submit: v => v
     });
     return (chosen && typeof chosen === "object") ? chosen : null;
+  }
+
+  /* -------------------------------------------- */
+  /*  H2 — Hirelings panel                        */
+  /* -------------------------------------------- */
+
+  /** Drop a hireling Actor onto the panel to hire them into this patron's service. */
+  async #onHirelingDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.classList.remove("drag-over");
+    let payload;
+    try { payload = JSON.parse(event.dataTransfer.getData("text/plain")); }
+    catch { return; }
+    if (payload.type !== "Actor") {
+      ui.notifications?.warn("FLAIL: drop a hireling here to hire them.");
+      return;
+    }
+    const hireling = await fromUuid(payload.uuid);
+    if (!hireling) return;
+    if (hireling.type !== "hireling") {
+      ui.notifications?.warn("FLAIL: only a hireling actor can be hired here.");
+      return;
+    }
+    await linkPatron(hireling, this.actor);
+    this.render(false);
+  }
+
+  /** Resolve the hireling Actor a panel button refers to. */
+  #hirelingFromEvent(target) {
+    const id = target.dataset.hirelingId ?? target.closest("[data-hireling-id]")?.dataset.hirelingId;
+    return id ? game.actors.get(id) : null;
+  }
+
+  static async #onHirelingOpen(event, target) {
+    this.#hirelingFromEvent(target)?.sheet?.render(true);
+  }
+
+  static async #onHirelingPay(event, target) {
+    const h = this.#hirelingFromEvent(target);
+    if (h) { await payAllowance(h); this.render(false); }
+  }
+
+  static async #onHirelingMorale(event, target) {
+    const h = this.#hirelingFromEvent(target);
+    if (!h) return;
+    const adv = event.shiftKey ? 1 : (event.ctrlKey || event.metaKey) ? -1 : 0;
+    await rollMorale(h, { advantage: adv });
+    this.render(false);
+  }
+
+  static async #onHirelingLevel(event, target) {
+    const h = this.#hirelingFromEvent(target);
+    if (h) { await levelUpHireling(h); this.render(false); }
+  }
+
+  static async #onHirelingAbility(event, target) {
+    const h = this.#hirelingFromEvent(target);
+    if (h) { await useHirelingAbility(h); this.render(false); }
+  }
+
+  static async #onHirelingNewDay(event, target) {
+    const h = this.#hirelingFromEvent(target);
+    if (h) { await resetDaily(h); this.render(false); }
+  }
+
+  static async #onHirelingUnlink(event, target) {
+    const h = this.#hirelingFromEvent(target);
+    if (h) { await unlinkPatron(h); this.render(false); }
+  }
+
+  static async #onHirelingNewSession(event, target) {
+    await resetSessionAllowances(this.actor);
+    this.render(false);
   }
 }
