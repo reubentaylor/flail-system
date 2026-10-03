@@ -68,6 +68,7 @@ import { ensureGuildsCompendium } from "./setup/import-guilds.mjs";
 import { ensureHexcrawlTablesCompendium } from "./setup/import-hexcrawl-tables.mjs";
 import { openHiringRoller } from "./apps/hiring-roller.mjs";
 import { FlailCharacterCreator, createDraftActorForUser } from "./apps/character-creator.mjs";
+import { stowItems } from "./helpers/stow.mjs";
 
 const TAG = "FLAIL |";
 
@@ -645,7 +646,17 @@ Hooks.once("ready", async () => {
     rollHiring: () => openHiringRoller(),
 
     /** C1 — open the guided character creator. */
-    createCharacter: () => new FlailCharacterCreator().render(true)
+    createCharacter: () => new FlailCharacterCreator().render(true),
+
+    /**
+     * Auto-place items into a character's inventory slots. Returns the
+     * items actually placed. Used by the optional Item Piles bridge to
+     * stow looted items instead of leaving them in the loose tray.
+     * @param {Actor} actor
+     * @param {Item[]} items
+     * @param {{order?: string[]}} [opts]
+     */
+    stowItems: (actor, items, opts) => stowItems(actor, items, opts)
   });
 });
 Hooks.on  ("canvasReady", () => console.log(`${TAG} canvasReady`));
