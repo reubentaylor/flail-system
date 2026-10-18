@@ -22,7 +22,9 @@ import {
   FlailCombatTalentModel,
   FlailCombatTreeModel,
   FlailReligionModel,
-  FlailMasterModel
+  FlailMasterModel,
+  FlailPactModel,
+  FlailInvocationModel
 } from "./data/items.mjs";
 
 import { FlailActor } from "./documents/actor.mjs";
@@ -52,6 +54,8 @@ import { ensureTinkererGadgetsCompendium } from "./setup/import-tinkerer-gadgets
 import { ensureThievingTalentsCompendium } from "./setup/import-thieving-talents.mjs";
 import { ensureReligionsCompendium } from "./setup/import-religions.mjs";
 import { ensureMastersCompendium } from "./setup/import-masters.mjs";
+import { ensureInvocationsCompendium } from "./setup/import-invocations.mjs";
+import { ensureDarkPactsCompendium } from "./setup/import-dark-pacts.mjs";
 import { ensureCompendiumOrganization } from "./setup/compendium-organization.mjs";
 import { registerEffectsChatListeners } from "./dice/effects-runner.mjs";
 import { ensureUndeadPuppetActor, deleteUndeadPuppetTokens } from "./documents/undead-puppet.mjs";
@@ -151,6 +155,22 @@ Hooks.once("init", () => {
     game.settings.register("flail", "mastersVersion", {
       name: "FLAIL Masters version",
       hint: "Internal — last bundled-masters version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "invocationsVersion", {
+      name: "FLAIL Invocations version",
+      hint: "Internal — last bundled-invocations version this world synced from. Do not edit.",
+      scope: "world",
+      config: false,
+      type: Number,
+      default: 0
+    });
+    game.settings.register("flail", "darkPactsVersion", {
+      name: "FLAIL Dark Pacts version",
+      hint: "Internal — last bundled-dark-pacts version this world synced from. Do not edit.",
       scope: "world",
       config: false,
       type: Number,
@@ -336,7 +356,9 @@ Hooks.once("init", () => {
       combatTalent: FlailCombatTalentModel,
       combatTree:   FlailCombatTreeModel,
       religion:     FlailReligionModel,
-      master:       FlailMasterModel
+      master:       FlailMasterModel,
+      pact:         FlailPactModel,
+      invocation:   FlailInvocationModel
     };
     console.log(`${TAG} init — data models registered`);
 
@@ -425,6 +447,8 @@ Hooks.once("init", () => {
         "systems/flail/templates/item/types/combatTree.hbs",
         "systems/flail/templates/item/types/religion.hbs",
         "systems/flail/templates/item/types/master.hbs",
+        "systems/flail/templates/item/types/pact.hbs",
+        "systems/flail/templates/item/types/invocation.hbs",
         "systems/flail/templates/chat/attack-roll.hbs",
         "systems/flail/templates/chat/save-roll.hbs",
         "systems/flail/templates/chat/cast-prayer.hbs",
@@ -531,6 +555,10 @@ Hooks.once("ready", async () => {
   // Masters resolve their repertoire against the wizard-spells pack, so
   // this must run after ensureWizardSpellsCompendium() (above).
   await ensureMastersCompendium();
+  // Warlock: invocations first, then pacts (which resolve invocation
+  // refs + bestiary Fiend refs — bestiary is synced above).
+  await ensureInvocationsCompendium();
+  await ensureDarkPactsCompendium();
   // Ensure sidebar folders + in-pack folders LAST — after all packs
   // exist. GM-only, version-gated, "don't clobber" for user changes.
   await ensureCompendiumOrganization();

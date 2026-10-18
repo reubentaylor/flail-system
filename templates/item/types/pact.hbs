@@ -1,0 +1,103 @@
+{{!--
+  Dark Pact Item sheet — editor for a Warlock's pact. Mirrors the
+  Master / Religion sheets (reuses rel-* styling). Fields: tagline /
+  pact key / patron names / Patron's Boon / Fiend (bestiary NPC drop) /
+  invocation table drop-zone / custom-template flag. Description is
+  supplied by body.hbs.
+
+  NOTE: no named <select> — it corrupts submitOnChange updates in
+  ApplicationV2 forms (Foundry v13/v14).
+--}}
+<div class="flail-religion-sheet flail-master-sheet flail-pact-sheet">
+  <section class="rel-section">
+    <header class="tab-label">Dark Pact</header>
+    <label class="rel-full">Tagline
+      <input type="text" name="system.tagline" value="{{system.tagline}}" placeholder="Evocative subtitle" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label class="rel-full">Pact key
+      <input type="text" name="system.pactKey" value="{{system.pactKey}}" list="pact-key-suggestions" placeholder="e.g. infernalBargain, custom" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <datalist id="pact-key-suggestions">
+      <option value="infernalBargain"></option>
+      <option value="voidCovenant"></option>
+      <option value="draconicAccord"></option>
+      <option value="deathBond"></option>
+      <option value="custom"></option>
+    </datalist>
+    <p class="rel-hint">Invocations whose <em>Pact</em> field matches this key are sorted under this pact in the compendium.</p>
+  </section>
+
+  <section class="rel-section">
+    <header class="tab-label">Patron Names</header>
+    <p class="rel-hint">Suggested patrons, one per line. The Warlock may pick one or invent their own.</p>
+    <textarea name="system.patronNamesText" rows="4" {{#unless editable}}disabled{{/unless}}>{{patronNamesText}}</textarea>
+  </section>
+
+  <section class="rel-section">
+    <header class="tab-label">Patron's Boon</header>
+    <p class="rel-hint">Triggered when the Warlock rolls triplets while casting an invocation.</p>
+    {{editor patronBoonHTML target="system.patronBoon" button=true editable=editable engine="prosemirror"}}
+  </section>
+
+  <section class="rel-section rel-symbol">
+    <header class="tab-label">The Fiend</header>
+    <p class="rel-hint">Drag an NPC from the FLAIL Bestiary here — its stat block is used for the Fiend.</p>
+    <div class="pact-fiend-drop rel-single-dropzone" data-drop-target="pactFiend">
+      {{#if system.fiend.name}}
+      <div class="rel-symbol-row">
+        <span class="rel-symbol-name">{{system.fiend.name}}</span>
+        {{#if system.fiend.uuid}}
+        <span class="rel-prayer-uuid" title="{{system.fiend.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="Not found in the bestiary — display only"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if editable}}
+        <button type="button" data-action="pactFiendRemove" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </div>
+      {{else}}
+      <div class="rel-single-empty">{{#if system.fiendAnyUndead}}Drop the chosen undead creature here.{{else}}Drop the Fiend's NPC here.{{/if}}</div>
+      {{/if}}
+    </div>
+    <label class="rel-full">Fiend note
+      <input type="text" name="system.fiendNote" value="{{system.fiendNote}}" placeholder="Appearance and any stat adjustments" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label class="rel-checkbox">
+      <input type="checkbox" name="system.fiendAnyUndead" {{#if system.fiendAnyUndead}}checked{{/if}} {{#unless editable}}disabled{{/unless}} />
+      Any undead creature may serve as the Fiend
+    </label>
+  </section>
+
+  <section class="rel-section rel-prayers">
+    <header class="tab-label">Invocations, d10</header>
+    <p class="rel-hint">Drag invocation items into the table. Warlocks start with four random invocations from their pact and take a new random one each level.</p>
+    <ul class="rel-prayers-list pact-invocations-dropzone" data-drop-target="pactInvocations">
+      {{#each system.invocations as |inv i|}}
+      <li class="rel-prayer-row" data-index="{{i}}">
+        <span class="rel-prayer-num">{{add i 1}}.</span>
+        <span class="rel-prayer-name">{{inv.name}}</span>
+        {{#if inv.uuid}}
+        <span class="rel-prayer-uuid" title="{{inv.uuid}}"><i class="fas fa-link"></i></span>
+        {{else}}
+        <span class="rel-prayer-missing" title="No UUID resolved — invocation will be skipped at grant"><i class="fas fa-triangle-exclamation"></i></span>
+        {{/if}}
+        {{#if ../editable}}
+        <button type="button" data-action="pactInvocationRemove" data-index="{{i}}" title="Remove"><i class="fas fa-trash"></i></button>
+        {{/if}}
+      </li>
+      {{/each}}
+      {{#unless system.invocations.length}}
+      <li class="rel-prayers-empty">Drop invocation items here to build this pact's table.</li>
+      {{/unless}}
+    </ul>
+  </section>
+
+  {{#if editable}}
+  <section class="rel-section rel-flags">
+    <label class="rel-checkbox">
+      <input type="checkbox" name="system.isCustomTemplate" {{#if system.isCustomTemplate}}checked{{/if}} />
+      Custom Template (marks this as an editable homebrew starter)
+    </label>
+  </section>
+  {{/if}}
+</div>

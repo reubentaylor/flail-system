@@ -34,6 +34,9 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       // Ship A — Wizard Master (patron)
       masterSpellRemove:     FlailItemSheet.#onMasterSpellRemove,
       masterSignatureRemove: FlailItemSheet.#onMasterSignatureRemove,
+      // Warlock — Dark Pact
+      pactInvocationRemove:  FlailItemSheet.#onPactInvocationRemove,
+      pactFiendRemove:       FlailItemSheet.#onPactFiendRemove,
       // v0.4.80 — gadget effects framework
       gadgetEffectAdd:      FlailItemSheet.#onGadgetEffectAdd,
       gadgetEffectRemove:   FlailItemSheet.#onGadgetEffectRemove,
@@ -112,6 +115,25 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   static async #onMasterSignatureRemove(event, target) {
     if (this.item.type !== "master") return;
     await this.item.update({ "system.signatureItem": { uuid: "", name: "" } });
+  }
+
+  /** Remove an invocation entry from a Dark Pact's table. */
+  static async #onPactInvocationRemove(event, target) {
+    if (this.item.type !== "pact") return;
+    const idx = Number(target.dataset.index);
+    if (!Number.isInteger(idx)) return;
+    const current = [...(this.item.system.invocations ?? [])];
+    if (idx < 0 || idx >= current.length) return;
+    current.splice(idx, 1);
+    await this.item.update({ "system.invocations": current });
+    this.render();
+  }
+
+  /** Clear the Dark Pact's Fiend reference. */
+  static async #onPactFiendRemove(event, target) {
+    if (this.item.type !== "pact") return;
+    await this.item.update({ "system.fiend": { uuid: "", name: "" } });
+    this.render();
   }
 
   /** Clear the guild's sigil reference (single item, v0.4.68). */
@@ -301,6 +323,17 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       );
       ctx.descriptionHTML = await enrich(this.item.system.description ?? "", { relativeTo: this.item, secrets: this.item.isOwner });
     }
+
+    // Dark Pact Item — enrich description + Patron's Boon; patron
+    // names edit as one-per-line text, parsed back on submit.
+    if (this.item.type === "pact") {
+      const enrich = foundry.applications.ux.TextEditor.implementation.enrichHTML.bind(
+        foundry.applications.ux.TextEditor.implementation
+      );
+      ctx.descriptionHTML = await enrich(this.item.system.description ?? "", { relativeTo: this.item, secrets: this.item.isOwner });
+      ctx.patronBoonHTML  = await enrich(this.item.system.patronBoon ?? "",  { relativeTo: this.item, secrets: this.item.isOwner });
+      ctx.patronNamesText = (this.item.system.patronNames ?? []).join("\n");
+    }
     return ctx;
   }
 
@@ -329,6 +362,15 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     const adornmentInput = form.querySelector('input[name="isAdornment"]');
     if (adornmentInput) {
       foundry.utils.setProperty(data, "flags.flail.adornment", adornmentInput.checked);
+    }
+
+    if (this.item.type === "pact") {
+      const text = foundry.utils.getProperty(data, "system.patronNamesText");
+      if (text !== undefined) {
+        const names = String(text).split(/\r?\n/).map(t => t.trim()).filter(Boolean);
+        foundry.utils.setProperty(data, "system.patronNames", names);
+        delete data.system.patronNamesText;
+      }
     }
 
     if (this.item.type === "weapon") {
@@ -524,6 +566,69 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       });
     }
 
+    // Dark Pact Item — two drop zones:
+    //   invocations (list, invocation items only — the d10 table)
+    //   fiend       (single, NPC Actor — the Fiend's stat block)
+    if (this.item.type === "pact") {
+      const bindZone = (selector, onDrop) => {
+        const zone = root.querySelector(selector);
+        if (!zone) return;
+        zone.addEventListener("dragover", ev => {
+          ev.preventDefault();
+          if (ev.dataTransfer) ev.dataTransfer.dropEffect = "copy";
+          zone.classList.add("drop-active");
+        });
+        zone.addEventListener("dragleave", () => zone.classList.remove("drop-active"));
+        zone.addEventListener("drop", async ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          zone.classList.remove("drop-active");
+          let payload;
+          try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); }
+          catch { return; }
+          await onDrop(payload);
+          this.render();
+        });
+      };
+
+      bindZone(".pact-invocations-dropzone", async payload => {
+        if (payload?.type !== "Item") {
+          ui.notifications?.warn("A pact's invocation table only accepts invocation items.");
+          return;
+        }
+        const dropped = await Item.implementation.fromDropData(payload);
+        if (!dropped) return;
+        if (dropped.type !== "invocation") {
+          ui.notifications?.warn("A pact's invocation table only accepts invocation items.");
+          return;
+        }
+        const uuid = dropped.uuid || payload.uuid || "";
+        if (!uuid) { ui.notifications?.warn("Dropped item has no resolvable UUID."); return; }
+        const current = [...(this.item.system.invocations ?? [])];
+        if (current.some(e => e.uuid === uuid)) {
+          ui.notifications?.info(`"${dropped.name}" is already in this table.`);
+          return;
+        }
+        current.push({ uuid, name: dropped.name });
+        await this.item.update({ "system.invocations": current });
+      });
+
+      bindZone(".pact-fiend-drop", async payload => {
+        if (payload?.type !== "Actor") {
+          ui.notifications?.warn("Drop an NPC actor (e.g. from the FLAIL Bestiary) as the Fiend.");
+          return;
+        }
+        const dropped = await Actor.implementation.fromDropData(payload);
+        if (!dropped) return;
+        if (dropped.type !== "npc") {
+          ui.notifications?.warn("The Fiend must be an NPC actor.");
+          return;
+        }
+        const uuid = dropped.uuid || payload.uuid || "";
+        await this.item.update({ "system.fiend": { uuid, name: dropped.name } });
+      });
+    }
+
     // Guild drop zones — one for talent items, one for feature items.
     // On drop, snapshot the dropped item's data and append to the
     // matching schema array. The character-sheet guild-drop handler
@@ -607,7 +712,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     });
 
     // v0.4.80 — condition drop zones on gadget effects (mechanics tab).
-    if (["gadget", "spell"].includes(this.item.type)) {
+    if (["gadget", "spell", "invocation"].includes(this.item.type)) {
       this.#attachGadgetEffectDropZones(root);
     }
     // v0.4.95 — combat tree slot drop zones.
@@ -684,7 +789,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
    * select. Selected type governs which fields the sheet renders.
    */
   static async #onGadgetEffectAdd(event, target) {
-    if (!["gadget", "spell"].includes(this.item.type)) return;
+    if (!["gadget", "spell", "invocation"].includes(this.item.type)) return;
     // Prevent the form's submit-on-change from processing this click
     // (it doesn't need to, and interference caused pre-v0.4.83 bugs).
     event?.preventDefault?.();
@@ -733,7 +838,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async #onGadgetEffectRemove(event, target) {
-    if (!["gadget", "spell"].includes(this.item.type)) return;
+    if (!["gadget", "spell", "invocation"].includes(this.item.type)) return;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     const idx = Number(target.dataset.index);
@@ -746,7 +851,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async #onGadgetEffectMoveUp(event, target) {
-    if (!["gadget", "spell"].includes(this.item.type)) return;
+    if (!["gadget", "spell", "invocation"].includes(this.item.type)) return;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     const idx = Number(target.dataset.index);
@@ -759,7 +864,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   static async #onGadgetEffectMoveDown(event, target) {
-    if (!["gadget", "spell"].includes(this.item.type)) return;
+    if (!["gadget", "spell", "invocation"].includes(this.item.type)) return;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     const idx = Number(target.dataset.index);
@@ -777,7 +882,7 @@ export class FlailItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
    * or "condition" — and the handler clears its Uuid + Name pair.
    */
   static async #onGadgetEffectClearRef(event, target) {
-    if (!["gadget", "spell"].includes(this.item.type)) return;
+    if (!["gadget", "spell", "invocation"].includes(this.item.type)) return;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     const idx = Number(target.dataset.index);

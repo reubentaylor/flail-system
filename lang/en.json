@@ -23,7 +23,9 @@
       "combatTalent": "Combat Talent",
       "combatTree":   "Combat Tree",
       "religion":     "Religion",
-      "master":       "Master"
+      "master":       "Master",
+      "pact":         "Dark Pact",
+      "invocation":   "Invocation"
     }
   },
   "FLAIL": {
@@ -471,7 +473,9 @@
       "background":   "Background",
       "combatTalent": "Combat Talent",
       "religion":     "Religion",
-      "master":       "Master"
+      "master":       "Master",
+      "pact":         "Dark Pact",
+      "invocation":   "Invocation"
     },
     "Item": {
       "New": "New {type}",

@@ -796,6 +796,105 @@ export class FlailMasterModel extends foundry.abstract.TypeDataModel {
   }
 }
 
+/* -------------------------------------------- */
+/*  Invocation — Warlock casting Item           */
+/* -------------------------------------------- */
+
+/**
+ * Invocation Item — a Warlock's castable power (Warlock booklet,
+ * "Invocations"). Mirrors FlailSpellModel: text with [DICE] / [SUM]
+ * tokens plus the shared effects framework for optional automation.
+ *
+ * `pact` is the owning Dark Pact's key (infernalBargain / voidCovenant /
+ * draconicAccord / deathBond, or free text for homebrew) and drives
+ * in-pack folder sorting. `tableIndex` is the invocation's 1-10 position
+ * on its pact's d10 table, so random draws can roll a real d10.
+ *
+ * Cost is paid in hit points (dice = HP spent) — no resource pool.
+ */
+export class FlailInvocationModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      ...descriptionField(),
+      pact:          new fields.StringField({ blank: true, initial: "" }),
+      tableIndex:    new fields.NumberField({ integer: true, min: 0, max: 10, initial: 0 }),
+      effectFormula: new fields.StringField({ blank: true, initial: "" }),
+      suggestedDice: new fields.NumberField({ integer: true, min: 1, max: 13, initial: 2 }),
+      ...sharedEffectsSchema()
+    };
+  }
+}
+
+/* -------------------------------------------- */
+/*  Dark Pact — Warlock patron Item             */
+/* -------------------------------------------- */
+
+/**
+ * Dark Pact Item — the Warlock's chosen pact (Warlock booklet, "Dark
+ * Pacts"). First-class Item mirroring the Cleric Religion and Wizard
+ * Master: dropped onto a Warlock it defines the invocation table the
+ * Warlock draws from (four random at creation, one per level).
+ *
+ * Schema:
+ *   - tagline, description  — flavour
+ *   - pactKey               — matches invocation.system.pact
+ *   - patronNames[]         — suggested patron names (player picks / invents)
+ *   - patronBoon            — triggered on a triplet while casting
+ *   - fiend {uuid,name}     — bestiary NPC used for the Fiend's stats
+ *   - fiendNote             — appearance + stat adjustments (e.g. small drake)
+ *   - fiendAnyUndead        — Death Bond: any undead creature may serve
+ *   - invocations[]         — {uuid,name} refs to the pact's d10 table
+ *   - attributeBonuses      — homebrew flexibility, empty for canonicals
+ *   - isCustomTemplate      — the "Custom Pact" seed
+ */
+export class FlailPactModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      tagline:     new fields.StringField({ blank: true, initial: "" }),
+      description: new fields.HTMLField({ required: false, blank: true, initial: "" }),
+      pactKey:     new fields.StringField({ blank: true, initial: "custom" }),
+
+      patronNames: new fields.ArrayField(
+        new fields.StringField({ blank: false }),
+        { initial: [] }
+      ),
+      patronBoon:  new fields.HTMLField({ required: false, blank: true, initial: "" }),
+
+      // Fiend — single Actor reference into the bestiary (display +
+      // future summon). Name cached so it renders without resolving.
+      fiend: new fields.SchemaField({
+        uuid: new fields.StringField({ blank: true, initial: "" }),
+        name: new fields.StringField({ blank: true, initial: "" })
+      }),
+      fiendNote:      new fields.StringField({ blank: true, initial: "" }),
+      fiendAnyUndead: new fields.BooleanField({ initial: false }),
+
+      // uuid may be blank when a bundled name failed to resolve at sync
+      // time — the entry still displays and is skipped at grant.
+      invocations: new fields.ArrayField(
+        new fields.SchemaField({
+          uuid: new fields.StringField({ blank: true, initial: "" }),
+          name: new fields.StringField({ blank: true, initial: "" })
+        }),
+        { initial: [] }
+      ),
+
+      attributeBonuses: new fields.ArrayField(
+        new fields.SchemaField({
+          attrKey:  new fields.StringField({
+            choices: ["str", "dex", "cha", "int", "luck"],
+            initial: "str"
+          }),
+          delta:    new fields.NumberField({ integer: true, initial: 0 })
+        }),
+        { initial: [] }
+      ),
+
+      isCustomTemplate: new fields.BooleanField({ initial: false })
+    };
+  }
+}
+
 /* ============================================================
  *  v0.4.95 — Combat Tree Foundation (Ship 1)
  * ============================================================ */
