@@ -1,0 +1,31 @@
+{{!-- Invocation body (Warlock). Pact is free text with suggestions —
+     no named <select> (submitOnChange corruption in v13/v14). --}}
+<section class="card">
+  <h3>{{localize "FLAIL.Section.Properties"}}</h3>
+  <div class="row">
+    <label>Dark Pact
+      <input type="text" name="system.pact" value="{{system.pact}}" list="invocation-pact-suggestions" placeholder="infernalBargain, voidCovenant…" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <datalist id="invocation-pact-suggestions">
+      <option value="infernalBargain"></option>
+      <option value="voidCovenant"></option>
+      <option value="draconicAccord"></option>
+      <option value="deathBond"></option>
+      <option value="custom"></option>
+    </datalist>
+    <label>d10 entry
+      <input type="number" name="system.tableIndex" value="{{system.tableIndex}}" min="0" max="10" {{#unless editable}}disabled{{/unless}} />
+    </label>
+    <label>{{localize "FLAIL.Field.SuggestedDice"}}
+      <input type="number" name="system.suggestedDice" value="{{system.suggestedDice}}" min="1" max="13" {{#unless editable}}disabled{{/unless}} />
+    </label>
+  </div>
+  <p class="hint">Cast by spending hit points: [DICE] = hit points spent, [SUM] = total rolled.</p>
+  <label class="block">{{localize "FLAIL.Field.EffectFormula"}}
+    <textarea name="system.effectFormula" rows="3" placeholder="[SUM] damage to one target Nearby…" {{#unless editable}}disabled{{/unless}}>{{system.effectFormula}}</textarea>
+  </label>
+</section>
+
+{{!-- Mechanics (shared effects editor). Formulas may use @DICE (hit
+     points spent) and @SUM (rolled total). Empty = text-only. --}}
+{{> "systems/flail/templates/item/parts/effects-editor.hbs"}}

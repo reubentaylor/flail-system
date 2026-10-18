@@ -2,7 +2,7 @@
   "id": "flail",
   "title": "FLAIL!",
   "description": "An old-school fantasy brawler by Andre Novoa. Roll-under saves, poker-dice combat, slot-based inventory, eight wildly different classes.",
-  "version": "0.4.124",
+  "version": "0.4.125",
   "compatibility": {
     "minimum": "13",
     "verified": "14",
@@ -141,6 +141,17 @@
         ]
       },
       "master": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "pact": {
+        "htmlFields": [
+          "description",
+          "patronBoon"
+        ]
+      },
+      "invocation": {
         "htmlFields": [
           "description"
         ]

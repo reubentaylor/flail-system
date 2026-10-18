@@ -20,7 +20,7 @@
  *     never blocks world load
  */
 
-export const ORGANIZATION_VERSION = 6;
+export const ORGANIZATION_VERSION = 7;
 
 const VERSION_SETTING = "compendiumOrgVersion";
 
@@ -43,6 +43,7 @@ const SIDEBAR_FOLDERS = [
   { path: "FLAIL Class Features/Druid",                color: "#4c7d3a" },
   { path: "FLAIL Class Features/Tinkerer",             color: "#4c7d3a" },
   { path: "FLAIL Class Features/Warrior",              color: "#4c7d3a" },
+  { path: "FLAIL Class Features/Warlock",              color: "#4c7d3a" },
   { path: "FLAIL Class Features/Wizard",               color: "#4c7d3a" },
   { path: "FLAIL Bestiary",                            color: "#7a2626" },
   { path: "FLAIL GM Tools",                            color: "#4a2470" }
@@ -70,6 +71,8 @@ const PACK_FOLDER_ASSIGNMENTS = {
   "flail-combat-trees":     "FLAIL Class Features/Warrior",
   "flail-wizard-spells":    "FLAIL Class Features/Wizard",
   "flail-masters":          "FLAIL Class Features/Wizard",
+  "flail-dark-pacts":       "FLAIL Class Features/Warlock",
+  "flail-invocations":      "FLAIL Class Features/Warlock",
   "flail-bestiary":         "FLAIL Bestiary",
   "flail-hexcrawl-tables":  "FLAIL GM Tools",
   "flail-rolltables":       "FLAIL GM Tools",
@@ -174,6 +177,26 @@ const IN_PACK_FOLDER_SPECS = [
         custom:        "Custom Template"
       };
       return map[tree] ?? null;
+    }
+  },
+  {
+    // v0.4.125: Warlock invocations by owning Dark Pact. Homebrew pact
+    // keys fall through to "Other".
+    pack: "flail-invocations",
+    docType: "Item",
+    folderNames: [
+      "The Infernal Bargain", "The Void Covenant",
+      "The Draconic Accord", "The Death Bond"
+    ],
+    dynamicFolderNames: true,
+    deriveFolder(item) {
+      const map = {
+        infernalBargain: "The Infernal Bargain",
+        voidCovenant:    "The Void Covenant",
+        draconicAccord:  "The Draconic Accord",
+        deathBond:       "The Death Bond"
+      };
+      return map[item.system?.pact ?? ""] ?? "Other";
     }
   },
   {
